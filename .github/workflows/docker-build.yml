@@ -57,9 +57,9 @@ jobs:
         run: |
           docker run --rm knn-recommendation-system
 
-      # Step 8: Push the Docker image to Docker Hub (optional)
-      - name: Push Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
-        run: |
-          docker tag knn-recommendation-system ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
-          docker push ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+    #   # Step 8: Push the Docker image to Docker Hub (optional)
+    #   - name: Push Docker image
+    #     if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
+    #     run: |
+    #       docker tag knn-recommendation-system ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+    #       docker push ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
