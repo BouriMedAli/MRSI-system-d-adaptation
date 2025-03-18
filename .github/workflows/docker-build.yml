@@ -13,6 +13,9 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # Specify the environment where DOCKER_HUB_USERNAME and DOCKER_HUB_TOKEN are defined
+    environment: docker-hub-env
+
     steps:
       # Step 1: Check out the repository code
       - name: Checkout code
@@ -36,13 +39,13 @@ jobs:
           python KNN.py
         # Add additional test commands here if needed
 
-      # Step 5: Log in to Docker Hub (optional, for publishing images)
+      # Step 5: Log in to Docker Hub using environment variables
       - name: Log in to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ env.DOCKER_HUB_TOKEN }}
 
       # Step 6: Build the Docker image
       - name: Build Docker image
@@ -58,5 +61,5 @@ jobs:
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
-          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker tag knn-recommendation-system ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker push ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
