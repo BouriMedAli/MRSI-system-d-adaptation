@@ -1,23 +1,21 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from app.model import RecommenderSystem
+from fastapi import FastAPI, HTTPException
+import pandas as pd
+from app.model import RecommandeurKNN
 
-# Initialisation de l'API
 app = FastAPI()
-recommender = RecommenderSystem("data/dataset_etudiants.csv")
 
-# Schéma de la requête
-class ProfilUtilisateur(BaseModel):
-    numerique: list
-    groupes: list
-    competences: list
-    interets: list
-
-@app.post("/recommend")
-def get_recommendations(profil: ProfilUtilisateur):
-    recommendations = recommender.recommander_etudiants(profil.dict())
-    return recommendations[['ID_Étudiant', 'Nom']].to_dict(orient="records")
+# Chargement du modèle de recommandation
+recommandeur = RecommandeurKNN("data/dataset_etudiants.csv")
 
 @app.get("/")
-def read_root():
-    return {"message": "API de recommandation sociale avec FastAPI"}
+def root():
+    return {"message": "Bienvenue sur l'API de recommandation KNN"}
+
+@app.post("/recommander/")
+def obtenir_recommandation(data: dict):
+    try:
+        query_df = pd.DataFrame([data])
+        recommendations = recommandeur.recommander(query_df)
+        return {"recommendations": recommendations}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
