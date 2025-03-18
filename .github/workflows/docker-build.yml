@@ -1,0 +1,62 @@
+name: Docker Build and Test
+
+# Trigger this workflow only on push or pull request to the KNN-bouri branch
+on:
+  push:
+    branches:
+      - KNN-bouri
+  pull_request:
+    branches:
+      - KNN-bouri
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment for testing
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Step 3: Install dependencies
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run Python script tests (if applicable)
+      - name: Run Python script tests
+        run: |
+          python KNN.py
+        # Add additional test commands here if needed
+
+      # Step 5: Log in to Docker Hub (optional, for publishing images)
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # Step 6: Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t knn-recommendation-system .
+
+      # Step 7: Test the Docker container
+      - name: Test Docker container
+        run: |
+          docker run --rm knn-recommendation-system
+
+      # Step 8: Push the Docker image to Docker Hub (optional)
+      - name: Push Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
+        run: |
+          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
