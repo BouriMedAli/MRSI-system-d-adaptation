@@ -1,34 +1,36 @@
-name: CI - Run Tests
+name: CI
 
 on:
   push:
     branches:
-      - eya-KNN  # Remplace par le nom de ta branche si besoin
+      - eya-KNN  # Spécifier la branche 'eya-KNN'
   pull_request:
+    branches:
+      - eya-KNN  # Spécifier la branche 'eya-KNN'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: eya-KNN  # S'assurer que la branche 'eya-KNN' est check-out
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.9"  # Assure-toi que cette version correspond à ton projet
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest  # Installation de pytest si non inclus dans requirements.txt
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -e .
 
-      - name: Run tests with pytest
-        run: pytest  # Exécute tous les tests présents dans le projet
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV
 
-      - name: Linting with flake8 (optionnel)
-        run: |
-          pip install flake8
-          flake8 app/ --max-line-length=88  # Vérifie si ton code suit les bonnes pratiques
+    - name: Run tests
+      run: |
+        pytest app/tests/test_example.py
