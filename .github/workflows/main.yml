@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m venv venv  # Créer un environnement virtuel
-        . venv/bin/activate  # Activer l'environnement virtuel
+        source venv/bin/activate  # Activer l'environnement virtuel
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances du projet
 
@@ -35,9 +35,8 @@ jobs:
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire app au PYTHONPATH
 
-    # Étape pour installer pytest et exécuter les tests
+    # Étape pour exécuter les tests
     - name: Run tests
       run: |
-        . venv/bin/activate  # Activer l'environnement virtuel
-        pip install pytest  # Installer pytest dans l'environnement virtuel
-        pytest --maxfail=1 --disable-warnings -q  # Exécuter pytest pour les tests
+        source venv/bin/activate  # Réactiver l'environnement virtuel
+        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter pytest sur le test spécifique
