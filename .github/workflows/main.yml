@@ -3,10 +3,10 @@ name: Run tests
 on:
   push:
     branches:
-      - eya-KNN  # Le pipeline sera déclenché uniquement pour la branche eya-KNN
+      - eya-KNN
   pull_request:
     branches:
-      - eya-KNN  # Le pipeline sera déclenché pour les PRs vers la branche eya-KNN
+      - eya-KNN
 
 jobs:
   test:
@@ -23,13 +23,19 @@ jobs:
       with:
         python-version: '3.9'  # Utiliser Python 3.9
 
-    # Étape pour installer les dépendances nécessaires
+    # Étape pour créer et activer l'environnement virtuel et installer les dépendances
     - name: Install dependencies
       run: |
         python -m venv venv  # Créer un environnement virtuel
         . venv/bin/activate  # Activer l'environnement virtuel
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances du projet
+
+    # Étape pour vérifier que pytest est installé dans l'environnement virtuel
+    - name: Check if pytest is installed
+      run: |
+        . venv/bin/activate  # Activer l'environnement virtuel
+        pip show pytest  # Vérifier si pytest est installé
 
     # Étape pour ajouter app au PYTHONPATH
     - name: Set PYTHONPATH
