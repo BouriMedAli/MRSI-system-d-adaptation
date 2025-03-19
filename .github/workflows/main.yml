@@ -21,13 +21,11 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.9'  # Utilisez la version que vous avez localement ou une autre version de Python
+        python-version: '3.9'  # Utilisez la version de Python que vous préférez
 
-    # 3. Créer et activer l'environnement virtuel
+    # 3. Installer les dépendances Python
     - name: Install dependencies
       run: |
-        python -m venv venv  # Créer un environnement virtuel
-        . venv/bin/activate  # Activer l'environnement virtuel
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances à partir du fichier requirements.txt
 
@@ -38,5 +36,4 @@ jobs:
     # 5. Exécuter les tests avec pytest
     - name: Run tests
       run: |
-        . venv/bin/activate  # Réactiver l'environnement virtuel
-        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter le test spécifié dans le fichier
+        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter les tests avec pytest
