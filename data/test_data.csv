@@ -1,0 +1,4 @@
+ID_Étudiant,Nom,Travaux_Collaboratifs,Coéquipiers,Communautés,Nombre_Interactions,Compétences,Centres_d'Intérêt,recommandations_correctes
+1,Etudiant_1,8,"[49, 36, 30]","['Club Robotique', 'Groupe IA']",91,"['Blockchain', 'IA', 'Data Science']","['Jeux vidéo', 'Musique']","[2, 3, 4]"
+2,Etudiant_2,5,"[16, 5]","['Club Entrepreneurs', 'Groupe IA']",63,"['IA', 'Blockchain', 'Python']","['Musique']","[1, 3, 5]"
+3,Etudiant_3,10,"[22, 9, 41, 34]","['Groupe IA', 'Club Robotique']",23,"['Design', 'Python', 'Blockchain']","['Jeux vidéo', 'Robotique']","[1, 4, 6]"
