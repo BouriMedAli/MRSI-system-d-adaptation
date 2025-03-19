@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - eya-KNN  # Spécifier la branche 'eya-KNN'
+      - eya-KNN
   pull_request:
     branches:
-      - eya-KNN  # Spécifier la branche 'eya-KNN'
+      - eya-KNN
 
 jobs:
   test:
@@ -16,7 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        ref: eya-KNN  # S'assurer que la branche 'eya-KNN' est check-out
+        ref: eya-KNN
 
     - name: Set up Python
       uses: actions/setup-python@v2
