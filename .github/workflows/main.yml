@@ -13,30 +13,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Étape pour vérifier le code source
+    # 1. Vérifier le code source
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Étape pour configurer Python avec la version souhaitée
+    # 2. Configurer Python avec la version souhaitée
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.9'  # Utiliser Python 3.9
 
-    # Étape pour créer et activer l'environnement virtuel et installer les dépendances
+    # 3. Créer et activer l'environnement virtuel
     - name: Install dependencies
       run: |
         python -m venv venv  # Créer un environnement virtuel
         . venv/bin/activate  # Activer l'environnement virtuel
         pip install --upgrade pip  # Mettre à jour pip
-        pip install -r requirements.txt  # Installer les dépendances du projet
+        pip install -r requirements.txt  # Installer les dépendances
 
-    # Étape pour ajouter app au PYTHONPATH
+    # 4. Ajouter le répertoire 'app' au PYTHONPATH
     - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire app au PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire 'app' au PYTHONPATH
 
-    # Étape pour exécuter les tests
+    # 5. Exécuter les tests
     - name: Run tests
       run: |
         . venv/bin/activate  # Réactiver l'environnement virtuel
-        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter pytest sur le test spécifique
+        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter les tests
