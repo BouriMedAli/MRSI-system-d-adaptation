@@ -1,40 +1,41 @@
-name: CI Pipeline
+name: Run tests
 
 on:
   push:
     branches:
-      - eya-KNN  # La branche cible est maintenant 'eya-KNN'
+      - eya-KNN  # S'assurer que le pipeline ne s'exécute que pour la branche eya-KNN
   pull_request:
     branches:
-      - eya-KNN  # La branche cible pour les PR est aussi 'eya-KNN'
+      - eya-KNN  # S'assurer que le pipeline fonctionne pour les PR dans la branche eya-KNN
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # Utilise un environnement Ubuntu pour les tests
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2  # Récupère le code de ton dépôt GitHub
+    # Étape pour vérifier le code source
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'  # Choisis la version de Python que tu utilises
+    # Étape pour configurer Python avec la version souhaitée
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Utilise la version Python 3.9
 
-      - name: Create virtual environment
-        run: python -m venv venv  # Crée un environnement virtuel
+    # Étape pour installer les dépendances nécessaires
+    - name: Install dependencies
+      run: |
+        python -m venv venv  # Créer un environnement virtuel
+        . venv/bin/activate  # Activer l'environnement virtuel
+        pip install -r requirements.txt  # Installer les dépendances du projet
 
-      - name: Install dependencies
-        run: |
-          source venv/bin/activate  # Active l'environnement virtuel
-          pip install -r requirements.txt  # Installe les dépendances définies dans requirements.txt
+    # Étape pour définir PYTHONPATH, qui permet de localiser les modules dans le répertoire app
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV
 
-      - name: Install pytest
-        run: |
-          source venv/bin/activate  # Active l'environnement virtuel
-          pip install pytest  # Installe pytest explicitement
-
-      - name: Run tests
-        run: |
-          source venv/bin/activate  # Active l'environnement virtuel
-          pytest app/tests/test_example.py  # Exécute tes tests avec pytest
+    # Étape pour exécuter les tests avec pytest
+    - name: Run tests
+      run: |
+        . venv/bin/activate  # Activer l'environnement virtuel
+        pytest app/tests/test_example.py  # Exécuter le test spécifique
