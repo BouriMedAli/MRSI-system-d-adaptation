@@ -31,11 +31,11 @@ jobs:
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances du projet
 
-    # Étape pour vérifier que pytest est installé dans l'environnement virtuel
-    - name: Check if pytest is installed
+    # Étape pour vérifier que pytest est bien installé
+    - name: Install pytest explicitly
       run: |
         . venv/bin/activate  # Activer l'environnement virtuel
-        pip show pytest  # Vérifier si pytest est installé
+        pip install pytest  # Installer pytest explicitement
 
     # Étape pour ajouter app au PYTHONPATH
     - name: Set PYTHONPATH

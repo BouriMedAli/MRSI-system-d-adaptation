@@ -3,3 +3,4 @@ uvicorn
 pandas
 numpy
 scikit-learn
+pytest==8.3.5  # Assurez-vous d'indiquer une version compatible
