@@ -31,12 +31,6 @@ jobs:
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances du projet
 
-    # Étape pour vérifier que pytest est bien installé
-    - name: Install pytest explicitly
-      run: |
-        . venv/bin/activate  # Activer l'environnement virtuel
-        pip install pytest  # Installer pytest explicitement
-
     # Étape pour ajouter app au PYTHONPATH
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire app au PYTHONPATH
