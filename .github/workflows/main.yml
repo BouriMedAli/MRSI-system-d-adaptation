@@ -1,50 +1,42 @@
-name: Python CI
+name: Run tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - eya-KNN  # Modifier si vous utilisez une autre branche pour vos modifications
   pull_request:
-    branches: [main]
+    branches:
+      - eya-KNN  # Modifier si vous utilisez une autre branche pour vos PR
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Utilisation de la dernière version d'Ubuntu
 
     steps:
-      # Étape 1: Vérification du code
-      - name: Checkout code
-        uses: actions/checkout@v2
+    # 1. Vérifier le code source
+    - name: Checkout code
+      uses: actions/checkout@v2  # Vérifier le code du repository
 
-      # Étape 2: Configurer l'environnement Python
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+    # 2. Configurer Python avec la version souhaitée
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'  # Utilisez la version que vous avez localement ou une autre version de Python
 
-      # Étape 3: Créer l'environnement virtuel
-      - name: Create virtual environment
-        run: python -m venv venv
+    # 3. Créer et activer l'environnement virtuel
+    - name: Install dependencies
+      run: |
+        python -m venv venv  # Créer un environnement virtuel
+        . venv/bin/activate  # Activer l'environnement virtuel
+        pip install --upgrade pip  # Mettre à jour pip
+        pip install -r requirements.txt  # Installer les dépendances à partir du fichier requirements.txt
 
-      # Étape 4: Activer l'environnement et installer les dépendances
-      - name: Install dependencies
-        run: |
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+    # 4. Ajouter le répertoire 'app' au PYTHONPATH
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire 'app' au PYTHONPATH pour éviter les erreurs d'importation
 
-      # Étape 5: Ajouter 'app' au PYTHONPATH
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV
-
-      # Étape 6: Vérification de la version de Python et des packages installés
-      - name: Check Python version and installed packages
-        run: |
-          . venv/bin/activate
-          python --version
-          pip freeze
-
-      # Étape 7: Exécuter les tests
-      - name: Run tests
-        run: |
-          . venv/bin/activate
-          pytest --maxfail=1 --disable-warnings -q
+    # 5. Exécuter les tests avec pytest
+    - name: Run tests
+      run: |
+        . venv/bin/activate  # Réactiver l'environnement virtuel
+        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter le test spécifié dans le fichier
