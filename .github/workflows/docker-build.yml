@@ -39,27 +39,27 @@ jobs:
           python KNN.py
         # Add additional test commands here if needed
 
-    #   # Step 5: Log in to Docker Hub
-    #   - name: Log in to Docker Hub
-    #     if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
-    #     uses: docker/login-action@v2
-    #     with:
-    #         username: ${{ secrets.DOCKER_HUB_USERNAME }}
-    #         password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      # Step 6: Build the Docker image
+      # Step 5: Build the Docker image
       - name: Build Docker image
         run: |
           docker build -t knn-recommendation-system .
 
-      # Step 7: Test the Docker container
+      # Step 6: Test the Docker container
       - name: Test Docker container
         run: |
           docker run --rm knn-recommendation-system
+      
+      # Step 7: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
+        uses: docker/login-action@v2
+        with:
+            username: ${{ secrets.DOCKER_HUB_USERNAME }}
+            password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    #   # Step 8: Push the Docker image to Docker Hub (optional)
-    #   - name: Push Docker image
-    #     if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
-    #     run: |
-    #       docker tag knn-recommendation-system ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
-    #       docker push ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+      # Step 8: Push the Docker image to Docker Hub (optional)
+      - name: Push Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
+        run: |
+          docker tag knn-recommendation-system ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker push ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
