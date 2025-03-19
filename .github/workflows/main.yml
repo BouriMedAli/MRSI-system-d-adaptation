@@ -3,10 +3,10 @@ name: Run tests
 on:
   push:
     branches:
-      - eya-KNN  # S'assurer que le pipeline ne s'exécute que pour la branche eya-KNN
+      - eya-KNN  # Le pipeline sera déclenché uniquement pour la branche eya-KNN
   pull_request:
     branches:
-      - eya-KNN  # S'assurer que le pipeline fonctionne pour les PR dans la branche eya-KNN
+      - eya-KNN  # Le pipeline sera déclenché pour les PRs vers la branche eya-KNN
 
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.9'  # Utilise la version Python 3.9
+        python-version: '3.9'  # Utiliser Python 3.9
 
     # Étape pour installer les dépendances nécessaires
     - name: Install dependencies
@@ -31,13 +31,13 @@ jobs:
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances du projet
 
-    # Étape pour définir PYTHONPATH, qui permet de localiser les modules dans le répertoire app
+    # Étape pour ajouter app au PYTHONPATH
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire app au PYTHONPATH
 
-    # Étape pour exécuter les tests avec pytest
+    # Étape pour installer pytest et exécuter les tests
     - name: Run tests
       run: |
         . venv/bin/activate  # Activer l'environnement virtuel
-        pip install pytest  # Assurer que pytest est installé dans l'environnement virtuel
-        pytest --maxfail=1 --disable-warnings -q  # Exécuter pytest pour les tests, avec des options supplémentaires
+        pip install pytest  # Installer pytest dans l'environnement virtuel
+        pytest --maxfail=1 --disable-warnings -q  # Exécuter pytest pour les tests
