@@ -61,5 +61,5 @@ jobs:
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
-          docker tag knn-recommendation-system ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
-          docker push ${{ env.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
