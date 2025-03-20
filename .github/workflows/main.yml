@@ -62,7 +62,11 @@ jobs:
       - name: Run Docker container
         run: docker run -d --name recommender-container -v $(pwd):/app -p 8001:8001 my-recommender  # Lancer le conteneur avec le volume monté
 
-      # 4. Attendre que FastAPI démarre sur le port 8001
+      # 4. Démarrer FastAPI dans le conteneur
+      - name: Start FastAPI
+        run: docker exec -d recommender-container uvicorn app.main:app --host 0.0.0.0 --port 8001
+
+      # 5. Attendre que FastAPI démarre sur le port 8001
       - name: Wait for FastAPI to start
         run: |
           for i in {1..10}; do
@@ -77,14 +81,14 @@ jobs:
           docker logs recommender-container
           exit 1
 
-      # 5. Vérifier que l'application tourne bien
+      # 6. Vérifier que l'application tourne bien
       - name: Check running container
         run: docker ps -a  # Vérifier que le conteneur est en cours d'exécution
 
-      # 6. Ajouter le répertoire racine au PYTHONPATH dans le conteneur
+      # 7. Ajouter le répertoire racine au PYTHONPATH dans le conteneur
       - name: Set PYTHONPATH in container
         run: docker exec recommender-container bash -c "echo 'export PYTHONPATH=/app' >> ~/.bashrc && source ~/.bashrc"
 
-      # 7. Exécuter les tests dans le conteneur Docker
+      # 8. Exécuter les tests dans le conteneur Docker
       - name: Run tests inside container
         run: docker exec recommender-container bash -c "export PYTHONPATH=/app && pytest app/tests/test_example.py"
