@@ -58,18 +58,33 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-recommender .  # Construire l'image Docker
 
-      # 3. Lancer le conteneur en arrière-plan avec le volume monté
+      # 3. Lancer le conteneur en arrière-plan avec le port 8001
       - name: Run Docker container
-        run: docker run -d --name recommender-container -v $(pwd):/app -p 8000:8000 my-recommender  # Lancer le conteneur avec le volume monté
+        run: docker run -d --name recommender-container -v $(pwd):/app -p 8001:8001 my-recommender  # Lancer le conteneur avec FastAPI sur le port 8001
 
-      # 4. Vérifier que l'application tourne bien
+      # 4. Attendre que FastAPI démarre sur le port 8001
+      - name: Wait for FastAPI to start
+        run: |
+          for i in {1..10}; do
+            if curl --fail http://localhost:8001/docs; then
+              echo "FastAPI is up!"
+              exit 0
+            fi
+            echo "Waiting for FastAPI..."
+            sleep 5
+          done
+          echo "FastAPI did not start in time."
+          docker logs recommender-container
+          exit 1
+
+      # 5. Vérifier que le conteneur tourne bien
       - name: Check running container
         run: docker ps -a  # Vérifier que le conteneur est en cours d'exécution
 
-      # 5. Ajouter le répertoire racine au PYTHONPATH dans le conteneur
+      # 6. Ajouter le répertoire racine au PYTHONPATH dans le conteneur
       - name: Set PYTHONPATH in container
-        run: docker exec recommender-container bash -c "echo 'export PYTHONPATH=/app' >> ~/.bashrc && source ~/.bashrc"
+        run: docker exec recommender-container bash -c "export PYTHONPATH=/app"
 
-      # 6. Exécuter les tests dans le conteneur Docker
+      # 7. Exécuter les tests dans le conteneur Docker
       - name: Run tests inside container
-        run: docker exec recommender-container bash -c "export PYTHONPATH=/app && pytest app/tests/test_example.py"
+        run: docker exec recommender-container bash -c "pytest app/tests/test_example.py"
