@@ -56,20 +56,20 @@ jobs:
 
     # 2. Construire l'image Docker
     - name: Build Docker image
-      run: docker build -t my-recommender .  # Construire l'image Docker avec le nom 'my-recommender'
+      run: docker build -t my-recommender .  # Construire l'image Docker
 
     # 3. Lancer le conteneur en arrière-plan
     - name: Run Docker container
-      run: docker run -d --name recommender-container my-recommender  # Lancer le conteneur en arrière-plan
+      run: docker run -d --name recommender-container -p 8000:8000 my-recommender  # Lancer le conteneur en arrière-plan avec FastAPI
 
     # 4. Vérifier que l'application tourne bien
     - name: Check running container
-      run: docker ps -a  # Vérifier si le conteneur est bien lancé
+      run: docker ps -a  # Vérifier que le conteneur est en cours d'exécution
 
     # 5. Lancer FastAPI dans le conteneur
     - name: Start FastAPI server
-      run: docker exec -d recommender-container uvicorn app.main:app --host 0.0.0.0 --port 8000  # Lancer FastAPI dans le conteneur
+      run: docker exec -d recommender-container python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000  # Lancer FastAPI avec --reload
 
     # 6. Exécuter les tests à l'intérieur du conteneur
     - name: Run tests inside container
-      run: docker exec -e PYTHONPATH=/app recommender-container pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Ajouter PYTHONPATH au conteneur pour que les tests fonctionnent
+      run: docker exec recommender-container pytest app/tests/test_example.py  # Exécuter les tests à l'intérieur du conteneur Docker
