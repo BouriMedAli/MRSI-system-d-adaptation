@@ -56,16 +56,16 @@ jobs:
 
     # 2. Construire l'image Docker
     - name: Build Docker image
-      run: docker build -t my-recommender .
+      run: docker build -t my-recommender .  # Construire l'image Docker avec le nom 'my-recommender'
 
     # 3. Lancer le conteneur en arrière-plan
     - name: Run Docker container
-      run: docker run -d --name recommender-container my-recommender
+      run: docker run -d --name recommender-container my-recommender  # Lancer le conteneur en arrière-plan
 
     # 4. Vérifier que l'application tourne bien
     - name: Check running container
-      run: docker ps -a
+      run: docker ps -a  # Vérifier si le conteneur est bien lancé
 
     # 5. Exécuter les tests à l'intérieur du conteneur
     - name: Run tests inside container
-      run: docker exec recommender-container pytest app/tests/test_example.py
+      run: docker exec -e PYTHONPATH=/app recommender-container pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Ajouter PYTHONPATH au conteneur pour que les tests fonctionnent
