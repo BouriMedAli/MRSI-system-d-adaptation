@@ -58,22 +58,18 @@ jobs:
     - name: Build Docker image
       run: docker build -t my-recommender .  # Construire l'image Docker
 
-    # 3. Lancer le conteneur en arrière-plan
+    # 3. Lancer le conteneur en arrière-plan avec le volume monté
     - name: Run Docker container
-      run: docker run -d --name recommender-container -p 8000:8000 my-recommender  # Lancer le conteneur en arrière-plan avec FastAPI
+      run: docker run -d --name recommender-container -v $(pwd):/app my-recommender  # Lancer le conteneur avec le volume monté
 
     # 4. Vérifier que l'application tourne bien
     - name: Check running container
       run: docker ps -a  # Vérifier que le conteneur est en cours d'exécution
 
-    # 5. Définir le PYTHONPATH dans le conteneur
-    - name: Set PYTHONPATH inside Docker
-      run: docker exec recommender-container bash -c "echo 'PYTHONPATH=/app' >> ~/.bashrc"
+    # 5. Ajouter le répertoire racine au PYTHONPATH dans le conteneur
+    - name: Set PYTHONPATH in container
+      run: docker exec recommender-container bash -c "echo \"PYTHONPATH=/app\" >> /etc/environment"  # Ajouter PYTHONPATH
 
-    # 6. Lancer FastAPI dans le conteneur
-    - name: Start FastAPI server
-      run: docker exec -d recommender-container python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000  # Lancer FastAPI avec --reload
-
-    # 7. Exécuter les tests à l'intérieur du conteneur
+    # 6. Exécuter les tests dans le conteneur Docker
     - name: Run tests inside container
-      run: docker exec recommender-container pytest app/tests/test_example.py  # Exécuter les tests à l'intérieur du conteneur Docker
+      run: docker exec recommender-container pytest app/tests/test_example.py  # Lancer les tests dans le conteneur
