@@ -66,6 +66,10 @@ jobs:
     - name: Check running container
       run: docker ps -a  # Vérifier si le conteneur est bien lancé
 
-    # 5. Exécuter les tests à l'intérieur du conteneur
+    # 5. Lancer FastAPI dans le conteneur
+    - name: Start FastAPI server
+      run: docker exec -d recommender-container uvicorn app.main:app --host 0.0.0.0 --port 8000  # Lancer FastAPI dans le conteneur
+
+    # 6. Exécuter les tests à l'intérieur du conteneur
     - name: Run tests inside container
       run: docker exec -e PYTHONPATH=/app recommender-container pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Ajouter PYTHONPATH au conteneur pour que les tests fonctionnent
