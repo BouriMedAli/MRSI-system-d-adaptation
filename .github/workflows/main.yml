@@ -1,43 +1,71 @@
-name: Run tests
+name: Run tests and Evaluate Model
 
 on:
   push:
     branches:
-      - eya-KNN  # Modifier si vous utilisez une autre branche pour vos modifications
+      - eya-KNN  # Modifier si nécessaire
   pull_request:
     branches:
-      - eya-KNN  # Modifier si vous utilisez une autre branche pour vos PR
+      - eya-KNN  # Modifier si nécessaire
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # Utilisation de la dernière version d'Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
     # 1. Vérifier le code source
     - name: Checkout code
-      uses: actions/checkout@v2  # Vérifier le code du repository
+      uses: actions/checkout@v2
 
     # 2. Configurer Python avec la version souhaitée
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.9'  # Utilisez la version de Python que vous préférez
+        python-version: '3.9'
 
     # 3. Installer les dépendances Python
     - name: Install dependencies
       run: |
-        pip install --upgrade pip  # Mettre à jour pip
-        pip install -r requirements.txt  # Installer les dépendances à partir du fichier requirements.txt
+        pip install --upgrade pip
+        pip install -r requirements.txt
 
-    # 4. Installer le projet en mode éditable (optionnel)
+    # 4. Installer le projet en mode éditable
     - name: Install project in editable mode
       run: pip install -e .
 
     # 5. Ajouter le répertoire racine au PYTHONPATH
     - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV  # Ajouter le répertoire racine au PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
     # 6. Exécuter les tests avec pytest
-    - name: Run tests
-      run: |
-        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter les tests avec pytest
+    - name: Run unit tests
+      run: pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q
+
+    # 7. Exécuter l'évaluation du modèle
+    - name: Evaluate Model
+      run: python -m app.evaluate  # Exécuter evaluate.py
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test  # S'exécute après les tests
+
+    steps:
+    # 1. Vérifier le code source
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # 2. Construire l'image Docker
+    - name: Build Docker image
+      run: docker build -t my-recommender .
+
+    # 3. Lancer le conteneur en arrière-plan
+    - name: Run Docker container
+      run: docker run -d --name recommender-container my-recommender
+
+    # 4. Vérifier que l'application tourne bien
+    - name: Check running container
+      run: docker ps -a
+
+    # 5. Exécuter les tests à l'intérieur du conteneur
+    - name: Run tests inside container
+      run: docker exec recommender-container pytest app/tests/test_example.py
