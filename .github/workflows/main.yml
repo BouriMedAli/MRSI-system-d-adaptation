@@ -60,7 +60,7 @@ jobs:
 
       # 3. Lancer le conteneur en arrière-plan avec le volume monté
       - name: Run Docker container
-        run: docker run -d --name recommender-container -v $(pwd):/app my-recommender  # Lancer le conteneur avec le volume monté
+        run: docker run -d --name recommender-container -v $(pwd):/app -p 8000:8000 my-recommender  # Lancer le conteneur avec le volume monté
 
       # 4. Vérifier que l'application tourne bien
       - name: Check running container
@@ -72,4 +72,4 @@ jobs:
 
       # 6. Exécuter les tests dans le conteneur Docker
       - name: Run tests inside container
-        run: docker exec recommender-container bash -c "pytest app/tests/test_example.py"
+        run: docker exec recommender-container bash -c "export PYTHONPATH=/app && pytest app/tests/test_example.py"
