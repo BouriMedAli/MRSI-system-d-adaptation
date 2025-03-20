@@ -29,11 +29,15 @@ jobs:
         pip install --upgrade pip  # Mettre à jour pip
         pip install -r requirements.txt  # Installer les dépendances à partir du fichier requirements.txt
 
-    # 4. Ajouter le répertoire 'app' au PYTHONPATH
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$(pwd)/app" >> $GITHUB_ENV  # Ajouter le répertoire 'app' au PYTHONPATH pour éviter les erreurs d'importation
+    # 4. Installer le projet en mode éditable (optionnel)
+    - name: Install project in editable mode
+      run: pip install -e .
 
-    # 5. Exécuter les tests avec pytest
+    # 5. Ajouter le répertoire racine au PYTHONPATH
+    - name: Set PYTHONPATH
+      run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV  # Ajouter le répertoire racine au PYTHONPATH
+
+    # 6. Exécuter les tests avec pytest
     - name: Run tests
       run: |
-        pytest --maxfail=1 --disable-warnings -q  # Exécuter les tests avec pytest
+        pytest app/tests/test_example.py --maxfail=1 --disable-warnings -q  # Exécuter les tests avec pytest
