@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - Maryem-KNN
+      - maryem-knn
   pull_request:
     branches:
-      - Maryem-KNN
+      - maryem-knn
 
 jobs:
   build-and-run:
