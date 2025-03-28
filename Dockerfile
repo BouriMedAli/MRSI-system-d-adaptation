@@ -2,18 +2,22 @@
 FROM python:3.9
 
 # Définir le dossier de travail
-WORKDIR /app/Dataset
+WORKDIR /app
 
-#  Copier le code dans le conteneur
-COPY model.py .
-COPY requirements.txt .
+#  Copier tous les fichiers necessaires dans le conteneur
+COPY . .
+COPY Dataset/dataset_etudiants.csv /app/Dataset/
 
 # Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-#  Exécuter le script quand le conteneur démarre
-CMD ["python", "model.py"]
-
 # exposer le conteneur
 EXPOSE 8000
+
+#  Exécuter le script quand le conteneur démarre
+#CMD ["python", "model.py"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+
 
