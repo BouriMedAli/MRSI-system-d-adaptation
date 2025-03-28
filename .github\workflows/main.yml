@@ -1,0 +1,40 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - Maryem-KNN
+  pull_request:
+    branches:
+      - Maryem-KNN
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+      
+      - name: Run model script
+        run: python model.py
+      
+      - name: Build Docker image
+        run: docker build -t recommandation_system .
+      
+      - name: Run Docker container
+        run: docker run -d -p 8000:8000 --name recommandation_container recommandation_system
+      
+      - name: Test API
+        run: |
+          sleep 5  # Attendre le démarrage de FastAPI
+          curl -X 'GET' 'http://localhost:8000/' -H 'accept: application/json'
