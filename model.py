@@ -60,7 +60,7 @@ def recommend_collaborators(student_id, k=3):
         recommendations.append(student_info)
         print(f"- {df.iloc[idx]['Nom']} (ID: {df.iloc[idx]['ID_Étudiant']})")
         print(f"  Compétences : {df.iloc[idx]['Compétences']}")
-        print(f"  Centres d'Intérêt : {df.iloc[idx]['Centres_d\'Intérêt']}")
+        print(f"""  Centres d'Intérêt : {df.iloc[idx]["Centres_d'Intérêt"]}""")
         print(f"  Distance : {distances[0][list(recommended_indices).index(idx)]:.4f}\n")
 
     return recommendations
