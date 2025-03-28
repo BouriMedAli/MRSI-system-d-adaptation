@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Étape 1 : Charger la dataset
-df = pd.read_csv("dataset_etudiants.csv")
+df = pd.read_csv("Dataset/dataset_etudiants.csv")
 
 # Étape 2 : Prétraitement des données
 mlb_skills = MultiLabelBinarizer()
@@ -48,7 +48,6 @@ def recommend_collaborators(student_id, k=3):
     print(f"\nRecommandations pour {df.iloc[student_idx]['Nom']} :")
     print(f"  Compétences : {df.iloc[student_idx]['Compétences']}")
     print(f"  Centres d'Intérêt : {df.iloc[student_idx]['Centres_d\'Intérêt']}\n")
-
     print("Étudiants recommandés pour collaboration :")
     for idx in recommended_indices:
         student_info = {

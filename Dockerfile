@@ -16,3 +16,4 @@ CMD ["python", "model.py"]
 
 # exposer le conteneur
 EXPOSE 8000
+
