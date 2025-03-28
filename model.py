@@ -47,7 +47,7 @@ def recommend_collaborators(student_id, k=3):
     recommendations = []
     print(f"\nRecommandations pour {df.iloc[student_idx]['Nom']} :")
     print(f"  Compétences : {df.iloc[student_idx]['Compétences']}")
-    print(f"  Centres d'Intérêt : {df.iloc[student_idx]['Centres_d\'Intérêt']}\n")
+    print(f""" Centres d'Intérêt : {df.iloc[student_idx]["Centres_d'Intérêt"]}\n""")
     print("Étudiants recommandés pour collaboration :")
     for idx in recommended_indices:
         student_info = {
