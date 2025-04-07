@@ -34,7 +34,13 @@ jobs:
       - name: Run Docker container
         run: docker run -d -p 8000:8000 --name recommandation_container recommandation_system
       
+      - name: Wait for FastAPI to be ready
+        run: |
+          for i in {1..30}; do
+            curl --output /dev/null --silent --head --fail http://localhost:8000/ && break
+            sleep 2
+          done
+      
       - name: Test API
         run: |
-          sleep 60  # Attendre le démarrage de FastAPI
           curl -X 'GET' 'http://localhost:8000/' -H 'accept: application/json'
