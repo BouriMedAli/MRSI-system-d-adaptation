@@ -1,0 +1,27 @@
+name: Test FastAPI KNN App
+
+on:
+  push:
+    branches: [ Salma-KNN ]
+  pull_request:
+    branches: [ Salma-KNN ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Lint and check syntax
+      run: |
+        python -m py_compile main.py model.py
