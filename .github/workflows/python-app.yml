@@ -24,4 +24,4 @@ jobs:
 
     - name: Lint and check syntax
       run: |
-        python -m py_compile main.py model.py
+        python -m py_compile main.py knn_model.py
