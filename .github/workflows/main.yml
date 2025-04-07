@@ -36,5 +36,5 @@ jobs:
       
       - name: Test API
         run: |
-          sleep 10  # Attendre le démarrage de FastAPI
+          sleep 30  # Attendre le démarrage de FastAPI
           curl -X 'GET' 'http://localhost:8000/' -H 'accept: application/json'
