@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Recommendation System{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <header class="bg-blue-800 text-white p-4">
+    <nav class="container mx-auto flex justify-between items-center">
+      <div class="flex space-x-4">
+        <a href="/" class="hover:text-yellow-400">Home</a>
+        <a href="/compare" class="hover:text-yellow-400">Compare</a>
+        <a href="/add_user" class="hover:text-yellow-400">Add User</a>
+      </div>
+    
+      <div class="relative">
+        <form action="/search" method="get">
+          <input type="text" name="query" placeholder="Rechercher étudiant (ID ou Nom)" 
+                 class="px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </form>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container mx-auto py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="bg-blue-800 text-white p-4 text-center">
+    &copy; 2025 Recommendation System Master Recherche Informatique.
+  </footer>
+  <script src="/static/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}User Profile - {{ user_id }}{% endblock %}
+{% block content %}
+<section>
+  <h1 class="text-3xl font-bold mb-4">Profile User: {{ user_id }}</h1>
+  <div class="bg-white p-4 shadow rounded">
+    <h2 class="text-xl font-semibold mb-2">Personalized Recommendations</h2>
+    <ul class="list-disc ml-6">
+      {% for rec in recommendations %}
+      <li class="mb-2">
+        <span class="font-medium">{{ rec["Nom"] }}</span>
+        <span class="text-sm text-gray-600">(Similarity: {{ rec["Similarity"] | round(2) }})</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

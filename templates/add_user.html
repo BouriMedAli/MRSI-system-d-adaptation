@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Add New User{% endblock %}
+{% block content %}
+<section>
+  <h1 class="text-3xl font-bold mb-4">Add New User</h1>
+  <form method="post" action="/add_user" class="bg-white shadow rounded p-6 max-w-lg mx-auto">
+
+    <h1 class="text-3xl font-bold mb-4">User Info</h1>
+    <div class="mb-4">
+      <label for="user_name" placeholder="ex:Etudiant_123" class="block mb-1 font-medium">Name</label>
+      <input type="text" id="user_name" name="user_name" placeholder="" required class="w-full border rounded px-3 py-2">
+    </div>
+    <div class="mb-4">
+      <label for="communities" class="block mb-1 font-medium">Communities (comma-separated)</label>
+      <input type="text" id="communities" name="communities" placeholder="ex:Groupe IA" class="w-full border rounded px-3 py-2">
+    </div>
+    <div class="mb-4">
+      <label for="skills" class="block mb-1 font-medium">Skills (comma-separated)</label>
+      <input type="text" id="skills" name="skills" placeholder="ex:Design,IA,Python" class="w-full border rounded px-3 py-2">
+    </div>
+    <div class="mb-4">
+      <label for="interests" class="block mb-1 font-medium">Interests (comma-separated)</label>
+      <input type="text" id="interests" name="interests" placeholder="ex:Hackathon,Robotique" class="w-full border rounded px-3 py-2">
+    </div>
+    <div class="mb-4">
+      <label for="interactions" class="block mb-1 font-medium">Number of Interactions</label>
+      <input type="number" id="interactions" name="interactions" placeholder="" required class="w-full border rounded px-3 py-2">
+    </div>
+    <div class="mb-4">
+      <label for="teamwork" class="block mb-1 font-medium">Teamwork Score</label>
+      <input type="number" id="teamwork" name="teamwork" placeholder="" required class="w-full border rounded px-3 py-2">
+    </div>
+    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Add User</button>
+  </form>
+</section>
+{% endblock %}
