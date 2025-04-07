@@ -1,0 +1,21 @@
+<!-- templates/comparison_table.html -->
+<div class="overflow-x-auto">
+  <table class="min-w-full">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2 text-left">Modèle</th>
+        <th class="px-4 py-2 text-center">RMSE</th>
+        <th class="px-4 py-2 text-center">MAE</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for model, metrics in comparison.items() %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border-t">{{ model }}</td>
+        <td class="px-4 py-2 border-t text-center">{{ metrics.RMSE|round(2) }}</td>
+        <td class="px-4 py-2 border-t text-center">{{ metrics.MAE|round(2) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
