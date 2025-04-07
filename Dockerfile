@@ -16,8 +16,8 @@ EXPOSE 8000
 
 #  Exécuter le script quand le conteneur démarre
 #CMD ["python", "model.py"]
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
-
+CMD ["api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
 
 

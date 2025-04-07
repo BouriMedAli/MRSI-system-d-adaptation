@@ -1,30 +1,6 @@
 from model import recommend_collaborators,evaluate_recommendations_cosine
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
-import pandas as pd
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.neighbors import NearestNeighbors
-
-# Charger les données et le modèle
-df = pd.read_csv("Dataset/dataset_etudiants.csv")
-
-# Prétraitement des données
-mlb_skills = MultiLabelBinarizer()
-skills_encoded = mlb_skills.fit_transform(df['Compétences'])
-skills_df = pd.DataFrame(skills_encoded, columns=mlb_skills.classes_)
-
-mlb_interests = MultiLabelBinarizer()
-interests_encoded = mlb_interests.fit_transform(df["Centres_d'Intérêt"])
-interests_df = pd.DataFrame(interests_encoded, columns=mlb_interests.classes_)
-
-df['Nombre_Interactions'] = (df['Nombre_Interactions'] - df['Nombre_Interactions'].min()) / (df['Nombre_Interactions'].max() - df['Nombre_Interactions'].min())
-
-features = pd.concat([skills_df, interests_df, df[['Nombre_Interactions']]], axis=1)
-
-# Construction du modèle KNN
-k = 3
-knn = NearestNeighbors(n_neighbors=k, metric='euclidean')
-knn.fit(features)
 
 # FastAPI Setup
 app = FastAPI()
