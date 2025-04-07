@@ -1,4 +1,3 @@
-
 # MRSI System d'Adaptation
 
 ![Project Logo](assets/logo.png)
@@ -7,7 +6,7 @@ This project is a **Recommendation System** designed to provide personalized rec
 
 This branch, **Ahmedou_Yahye_branch**, contains the latest updates and features for the system.
 
-> **Note**: This project was created by **Ahmedou Yahye** as part of a student project for **Système de Recommandation** at **FSS**, as part of a **Master's degree in Computer Science**.
+> **Note**: This project was created by **Ahmedou Yahye** as part of a student project for **Système de Recommandation** at **FSS**, as part of a **Master's degree in Computer Science**, and was supervised by **PhD Mrs. Corinne Amel Zayani**.
 
 ---
 
@@ -180,4 +179,4 @@ Contributions are welcome! Please follow these steps:
 
 ## License
 
-**
+---continue ...---
