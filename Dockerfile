@@ -15,9 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 #  Exécuter le script quand le conteneur démarre
-#CMD ["python", "model.py"]
-CMD ["api:app", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
-
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
