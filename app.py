@@ -1,0 +1,65 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+import pandas as pd
+import ast
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import MultiLabelBinarizer
+
+
+# Chargement des données et préparation
+df = pd.read_csv("Dataset/dataset_etudiants.csv")
+df["Coéquipiers"] = df["Coéquipiers"].apply(ast.literal_eval)
+df["Communautés"] = df["Communautés"].apply(ast.literal_eval)
+df["Compétences"] = df["Compétences"].apply(ast.literal_eval)
+df["Centres_d'Intérêt"] = df["Centres_d'Intérêt"].apply(ast.literal_eval)
+
+
+df["Nombre_Coéquipiers"] = df["Coéquipiers"].apply(lambda x: len(set(x)))
+
+
+mlb = MultiLabelBinarizer()
+communities_encoded = pd.DataFrame(mlb.fit_transform(df["Communautés"]), columns=["Comm_" + label for label in mlb.classes_])
+skills_encoded = pd.DataFrame(mlb.fit_transform(df["Compétences"]), columns=["Skill_" + label for label in mlb.classes_])
+interests_encoded = pd.DataFrame(mlb.fit_transform(df["Centres_d'Intérêt"]), columns=["Interest_" + label for label in mlb.classes_])
+
+
+features = pd.concat([
+    df[["Travaux_Collaboratifs", "Nombre_Interactions", "Nombre_Coéquipiers"]],
+    communities_encoded, skills_encoded, interests_encoded
+], axis=1)
+
+
+knn = NearestNeighbors(n_neighbors=5, metric='cosine')
+knn.fit(features)
+
+
+# Création de l'application FastAPI
+app = FastAPI()
+
+
+class RecommandationRequest(BaseModel):
+    id_etudiant: int
+
+
+@app.post("/recommander/")
+def recommander(request: RecommandationRequest):
+    """
+    Fonction qui recommande des coéquipiers similaires à un étudiant donné.
+    """
+    id_etudiant = request.id_etudiant
+    # Trouver l'index de l'étudiant dans le dataframe
+    try:
+        index = df[df["ID_Étudiant"] == id_etudiant].index[0]
+    except IndexError:
+        return {"error": "Étudiant non trouvé"}
+   
+    # Obtenir les données de l'étudiant pour les utiliser dans le modèle KNN
+    student_features = features.iloc[index:index+1]
+    distances, indices = knn.kneighbors(student_features)
+   
+    # Récupérer les recommandations et les retourner, excluant l'étudiant lui-même
+    recommandations = df.iloc[indices[0]]
+    recommandations = recommandations[recommandations["ID_Étudiant"] != id_etudiant][["ID_Étudiant", "Nom"]]
+    return recommandations.to_dict(orient="records")
+
+
