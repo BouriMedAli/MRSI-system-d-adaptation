@@ -1,158 +1,111 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MultiLabelBinarizer, MinMaxScaler
-from sklearn.neighbors import NearestNeighbors
+from surprise import Dataset, Reader, KNNBasic
+from surprise.model_selection import train_test_split
+from fastapi import FastAPI
+from pydantic import BaseModel
+import uvicorn
+from collections import defaultdict
 
-# Step 1: Load the dataset
+# Initialize FastAPI app
+app = FastAPI(title="Student Recommendation API")
+
+# Load and preprocess the dataset
 data = pd.read_csv("Dataset/dataset_etudiants.csv")
-
-# Step 2: Preprocess the dataset
-# Convert string representations of lists into actual lists
 data['Coéquipiers'] = data['Coéquipiers'].apply(lambda x: eval(x))
 data['Communautés'] = data['Communautés'].apply(lambda x: eval(x))
 data['Compétences'] = data['Compétences'].apply(lambda x: eval(x))
 data['Centres_d\'Intérêt'] = data['Centres_d\'Intérêt'].apply(lambda x: eval(x))
 
-# Step 3: One-hot encode categorical columns
-mlb_communautés = MultiLabelBinarizer()
-communautés_encoded = mlb_communautés.fit_transform(data['Communautés'])
+# Create a "ratings" dataset by converting features into implicit ratings
+# We'll treat each community, skill, and interest as an "item" with a rating of 1 if present
+ratings_data = []
 
-mlb_compétences = MultiLabelBinarizer()
-compétences_encoded = mlb_compétences.fit_transform(data['Compétences'])
+# Add communities as items
+for idx, row in data.iterrows():
+    student_id = row['ID_Étudiant']
+    for community in row['Communautés']:
+        ratings_data.append({'user_id': student_id, 'item_id': f"comm_{community}", 'rating': 1})
+    for skill in row['Compétences']:
+        ratings_data.append({'user_id': student_id, 'item_id': f"skill_{skill}", 'rating': 1})
+    for interest in row['Centres_d\'Intérêt']:
+        ratings_data.append({'user_id': student_id, 'item_id': f"int_{interest}", 'rating': 1})
 
-mlb_centres_d_intérêt = MultiLabelBinarizer()
-centres_d_intérêt_encoded = mlb_centres_d_intérêt.fit_transform(data['Centres_d\'Intérêt'])
+ratings_df = pd.DataFrame(ratings_data)
 
-# Combine all encoded features with numeric features
-numeric_features = data[['Travaux_Collaboratifs', 'Nombre_Interactions']].values
-features = np.hstack([numeric_features, communautés_encoded, compétences_encoded, centres_d_intérêt_encoded])
+# Define the reader for surprise (ratings are binary: 1 for presence)
+reader = Reader(rating_scale=(0, 1))
+dataset = Dataset.load_from_df(ratings_df[['user_id', 'item_id', 'rating']], reader)
 
-# Normalize the full feature set
-scaler_full = MinMaxScaler()
-features_normalized = scaler_full.fit_transform(features)
+# Build the full trainset
+trainset = dataset.build_full_trainset()
 
-# Normalize individual feature subsets
-scaler_numeric = MinMaxScaler().fit(numeric_features)
-scaler_communautés = MinMaxScaler().fit(communautés_encoded)
-scaler_compétences = MinMaxScaler().fit(compétences_encoded)
-scaler_centres_d_intérêt = MinMaxScaler().fit(centres_d_intérêt_encoded)
-
-# Apply KNN algorithm
-k = 5  # Number of neighbors to recommend
-knn_full = NearestNeighbors(n_neighbors=k, metric='euclidean')
-knn_full.fit(features_normalized)
-
-knn_skills = NearestNeighbors(n_neighbors=k, metric='euclidean')
-knn_skills.fit(scaler_compétences.transform(compétences_encoded))
-
-knn_interests = NearestNeighbors(n_neighbors=k, metric='euclidean')
-knn_interests.fit(scaler_centres_d_intérêt.transform(centres_d_intérêt_encoded))
-
-knn_communities = NearestNeighbors(n_neighbors=k, metric='euclidean')
-knn_communities.fit(scaler_communautés.transform(communautés_encoded))
-
-# Function to recommend students based on a hybrid query profile
-def recommend_students_by_profile(query_profile, knn_model, scaler, mlb_communautés, mlb_compétences, mlb_centres_d_intérêt):
-    # Create a feature vector for the query profile
-    query_numeric = np.array(query_profile['numeric']).reshape(1, -1)  # Reshape to 2D array
-    query_communautés = mlb_communautés.transform([query_profile['communautés']])
-    query_compétences = mlb_compétences.transform([query_profile['compétences']])
-    query_centres_d_intérêt = mlb_centres_d_intérêt.transform([query_profile['centres_d_intérêt']])
-    
-    # Combine all features
-    query_features = np.hstack([query_numeric, query_communautés, query_compétences, query_centres_d_intérêt])
-    
-    # Normalize the query features
-    query_features_normalized = scaler.transform(query_features)
-    
-    # Find the k nearest neighbors
-    distances, indices = knn_model.kneighbors(query_features_normalized)
-    
-    # Get the recommended students
-    similar_students_indices = indices.flatten()
-    similar_students = data.iloc[similar_students_indices]
-    
-    return similar_students
-
-# Function to recommend students based on skills
-def recommend_students_by_skills(query_skills, knn_model, scaler, mlb_compétences):
-    # Encode the query skills
-    query_encoded = mlb_compétences.transform([query_skills])
-    
-    # Normalize the query features
-    query_normalized = scaler.transform(query_encoded)
-    
-    # Find the k nearest neighbors
-    distances, indices = knn_model.kneighbors(query_normalized)
-    
-    # Get the recommended students
-    similar_students_indices = indices.flatten()
-    similar_students = data.iloc[similar_students_indices]
-    
-    return similar_students
-
-# Function to recommend students based on interests
-def recommend_students_by_interests(query_interests, knn_model, scaler, mlb_centres_d_intérêt):
-    # Encode the query interests
-    query_encoded = mlb_centres_d_intérêt.transform([query_interests])
-    
-    # Normalize the query features
-    query_normalized = scaler.transform(query_encoded)
-    
-    # Find the k nearest neighbors
-    distances, indices = knn_model.kneighbors(query_normalized)
-    
-    # Get the recommended students
-    similar_students_indices = indices.flatten()
-    similar_students = data.iloc[similar_students_indices]
-    
-    return similar_students
-
-# Function to recommend students based on community memberships
-def recommend_students_by_communities(query_communities, knn_model, scaler, mlb_communautés):
-    # Encode the query communities
-    query_encoded = mlb_communautés.transform([query_communities])
-    
-    # Normalize the query features
-    query_normalized = scaler.transform(query_encoded)
-    
-    # Find the k nearest neighbors
-    distances, indices = knn_model.kneighbors(query_normalized)
-    
-    # Get the recommended students
-    similar_students_indices = indices.flatten()
-    similar_students = data.iloc[similar_students_indices]
-    
-    return similar_students
-
-# Example usage for each type of recommendation
-# Define a query profile (hypothetical student)
-query_profile = {
-    'numeric': [7, 50],  # Travaux_Collaboratifs, Nombre_Interactions
-    'communautés': ['Club Robotique', 'Groupe IA'],  # Communities
-    'compétences': ['Blockchain', 'IA'],  # Skills
-    'centres_d_intérêt': ['Jeux vidéo', 'Musique']  # Interests
+# Train the KNNBasic model (user-based collaborative filtering)
+sim_options = {
+    'name': 'cosine',  # Use cosine similarity
+    'user_based': True  # User-based collaborative filtering
 }
+model = KNNBasic(k=5, sim_options=sim_options)
+model.fit(trainset)
 
-# General hybrid recommendation
-recommended_students = recommend_students_by_profile(query_profile, knn_full, scaler_full, mlb_communautés, mlb_compétences, mlb_centres_d_intérêt)
-print("Recommended students based on hybrid query profile:")
-print(recommended_students[['ID_Étudiant', 'Nom']])
+# Pydantic model for request validation
+class QueryProfile(BaseModel):
+    numeric: list[float]  # [Travaux_Collaboratifs, Nombre_Interactions] - not used directly in surprise
+    communautés: list[str]
+    compétences: list[str]
+    centres_d_intérêt: list[str]
 
-# Skills-based recommendation
-query_skills = ['Blockchain', 'Data Science']  # Query profile: Skills
-recommended_students_skills = recommend_students_by_skills(query_skills, knn_skills, scaler_compétences, mlb_compétences)
-print("\nRecommended students with similar skills:")
-print(recommended_students_skills[['ID_Étudiant', 'Nom', 'Compétences']])
+# Function to convert query profile to "ratings"
+def profile_to_ratings(query_profile):
+    ratings = []
+    for comm in query_profile.communautés:
+        ratings.append(('query_user', f"comm_{comm}", 1))
+    for skill in query_profile.compétences:
+        ratings.append(('query_user', f"skill_{skill}", 1))
+    for interest in query_profile.centres_d_intérêt:
+        ratings.append(('query_user', f"int_{interest}", 1))
+    return ratings
 
-# Interests-based recommendation
-query_interests = ['Jeux vidéo', 'Musique']  # Query profile: Interests
-recommended_students_interests = recommend_students_by_interests(query_interests, knn_interests, scaler_centres_d_intérêt, mlb_centres_d_intérêt)
-print("\nRecommended students with similar interests:")
-print(recommended_students_interests[['ID_Étudiant', 'Nom', 'Centres_d\'Intérêt']])
+# Recommendation endpoint
+@app.post("/recommend/")
+async def recommend_students(query_profile: QueryProfile):
+    # Convert query profile to ratings
+    query_ratings = profile_to_ratings(query_profile)
+    
+    # Build a testset for the query profile
+    testset = [(user_id, item_id, rating) for user_id, item_id, rating in query_ratings]
+    
+    # Predict similarities for all users (students)
+    predictions = model.test(testset)
+    
+    # Aggregate similarities to find most similar students
+    similarities = defaultdict(float)
+    for pred in predictions:
+        # pred.uid is 'query_user', pred.iid is the item, pred.r_ui is the rating, pred.est is the estimated similarity
+        # We need to find the actual student (user) associated with the item
+        item = pred.iid
+        est_similarity = pred.est
+        # Find students who have this item
+        for student_idx, row in data.iterrows():
+            student_id = row['ID_Étudiant']
+            if (f"comm_{item}" in [f"comm_{c}" for c in row['Communautés']] or
+                f"skill_{item}" in [f"skill_{s}" for s in row['Compétences']] or
+                f"int_{item}" in [f"int_{i}" for i in row['Centres_d\'Intérêt']]):
+                similarities[student_id] += est_similarity
+    
+    # Sort students by similarity score and take top 5
+    top_students = sorted(similarities.items(), key=lambda x: x[1], reverse=True)[:5]
+    recommended_student_ids = [student_id for student_id, _ in top_students]
+    
+    # Get recommended students' details
+    similar_students = data[data['ID_Étudiant'].isin(recommended_student_ids)][['ID_Étudiant', 'Nom']].to_dict(orient='records')
+    
+    return {"recommended_students": similar_students}
 
-# Community-based recommendation
-query_communities = ['Club Robotique', 'Groupe IA']  # Query profile: Communities
-recommended_students_communities = recommend_students_by_communities(query_communities, knn_communities, scaler_communautés, mlb_communautés)
-print("\nRecommended students in similar communities:")
-print(recommended_students_communities[['ID_Étudiant', 'Nom', 'Communautés']])
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

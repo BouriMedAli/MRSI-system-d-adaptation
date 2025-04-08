@@ -10,8 +10,12 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container
-COPY . .
+# Copy the application code and dataset into the container
+COPY KNN.py .
+COPY Dataset/dataset_etudiants.csv Dataset/
 
-# Define the command to run the script
+# Expose the port FastAPI will run on
+EXPOSE 8000
+
+# Define the command to run the FastAPI app
 CMD ["python", "KNN.py"]
