@@ -13,45 +13,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Vérifier le code source
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Debug - List root files
+      # 2. Debug - Liste des fichiers dans le répertoire racine
+      - name: Debug - List files
         run: ls -al
 
-      - name: Debug - List app files
-        run: ls -al app
-
+      # 3. Installer Python
       - name: Install Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.9'
 
+      # 4. Installer les dépendances
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r app/requirements.txt
+          pip install -r requirements.txt  # requirements.txt est à la racine
 
+      # 5. Ajouter le répertoire racine au PYTHONPATH
       - name: Add project root to PYTHONPATH
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
+      # 6. Exécuter les tests unitaires
       - name: Run unit tests
         run: pytest testApi.py --maxfail=1 --disable-warnings -q
 
   docker:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build  # Ce job dépend du job build
 
     steps:
+      # 1. Vérifier le code source
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Construire l'image Docker
       - name: Build Docker image
-        run: docker build -t my-recommender -f Dockerfile .
+        run: docker build -t my-recommender -f dockerfile .
 
+      # 3. Lancer le conteneur Docker
       - name: Run Docker container
         run: docker run -d --name recommender-container -p 8001:8001 my-recommender
 
+      # 4. Attendre que FastAPI démarre
       - name: Wait for FastAPI to start
         run: |
           for i in {1..10}; do
@@ -66,11 +73,14 @@ jobs:
           docker logs recommender-container
           exit 1
 
+      # 5. Vérifier le conteneur en cours d'exécution
       - name: Check running container
         run: docker ps -a
 
+      # 6. Debug - Liste des fichiers dans le conteneur
       - name: Debug - Check files in container
         run: docker exec recommender-container ls -al
 
+      # 7. Exécuter les tests API à l'intérieur du conteneur Docker
       - name: Run API test inside container
         run: docker exec recommender-container python testApi.py
