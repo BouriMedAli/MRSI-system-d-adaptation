@@ -16,24 +16,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Debug - List files
+      - name: Debug - List root files
         run: ls -al
+
+      - name: Debug - List app files
+        run: ls -al app
 
       - name: Install Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.9'
 
-     - name: Install dependencies
+      - name: Install dependencies
         run: |
-       pip install --upgrade pip
-       pip install -r app/requirements.txt
-- name: Debug - List root files
-  run: ls -al
-
-- name: Debug - List app files
-  run: ls -al app  # à adapter si besoin
-
+          pip install --upgrade pip
+          pip install -r app/requirements.txt
 
       - name: Add project root to PYTHONPATH
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
