@@ -1,4 +1,4 @@
-name: Build and Deploy Docker Image
+name: CI/CD Pipeline
 
 on:
   push:
@@ -15,10 +15,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Change to frontend folder
-        working-directory: ./frontend
-        run: echo "Moved to frontend directory"
 
       - name: Set up Python
         uses: actions/setup-python@v3
