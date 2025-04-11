@@ -9,8 +9,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/fastapi-knn  # Nom personnalisé pour l'image
-  DOCKERFILE_PATH: .  # Chemin vers le Dockerfile à la racine
+  IMAGE_NAME: bourimedali/msri-system-adaptation/fastapi-knn  # Converti en minuscules
+  DOCKERFILE_PATH: .
 
 jobs:
   build-and-push:
