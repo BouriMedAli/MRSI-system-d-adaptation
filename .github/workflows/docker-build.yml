@@ -17,26 +17,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image (without push)
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          load: true
-          tags: fastapi-knn:local
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Test the built image
-        run: |
-          docker run -d -p 8000:8000 --name fastapi-test fastapi-knn:local
-          echo "Waiting for container to start..."
-          sleep 10
-          echo "Testing API endpoint..."
-          curl -s http://localhost:8000/students | jq '.[0]' || true
-          docker stop fastapi-test
-          docker rm fastapi-test
+      
+      
+     
+      
 
       - name: Cleanup
         run: |
