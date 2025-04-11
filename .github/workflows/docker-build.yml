@@ -24,10 +24,16 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+     - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+       pip install --upgrade pip
+       pip install -r app/requirements.txt
+- name: Debug - List root files
+  run: ls -al
+
+- name: Debug - List app files
+  run: ls -al app  # à adapter si besoin
+
 
       - name: Add project root to PYTHONPATH
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
