@@ -9,39 +9,59 @@ on:
       - Nadia-KNN
 
 jobs:
-  build-and-run:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
         with:
           python-version: '3.9'
 
       - name: Install dependencies
-        run: pip install --no-cache-dir -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Add project root to PYTHONPATH
+        run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+
+      - name: Run unit tests
+        run: pytest testApi.py --maxfail=1 --disable-warnings -q
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Build Docker image
-        run: docker build -t nadia-knn-app .
+        run: docker build -t my-recommender -f dockerfile .
 
       - name: Run Docker container
-        run: docker run -d -p 8000:8000 --name nadia-knn-container nadia-knn-app
+        run: docker run -d --name recommender-container -p 8001:8001 my-recommender
 
-      - name: Wait for FastAPI to be ready
+      - name: Wait for FastAPI to start
         run: |
-          for i in {1..30}; do
-            curl --output /dev/null --silent --head --fail http://localhost:8000/ && break
-            sleep 2
+          for i in {1..10}; do
+            if curl --fail http://localhost:8001/docs; then
+              echo "FastAPI is up!"
+              exit 0
+            fi
+            echo "Waiting for FastAPI..."
+            sleep 5
           done
+          echo "FastAPI did not start in time."
+          docker logs recommender-container
+          exit 1
 
-      - name: Test API
-        run: |
-          curl -X GET http://localhost:8000/ -H 'accept: application/json'
+      - name: Check running container
+        run: docker ps -a
 
-      - name: Clean up Docker container
-        run: |
-          docker stop nadia-knn-container
-          docker rm nadia-knn-container
+      - name: Run API test inside container
+        run: docker exec recommender-container python testApi.py
