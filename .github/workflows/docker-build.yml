@@ -22,11 +22,9 @@ jobs:
           python-version: '3.9'
 
       - name: Install dependencies
-        working-directory: ./frontend
         run: pip install --no-cache-dir -r requirements.txt
 
       - name: Build Docker image
-        working-directory: ./frontend
         run: docker build -t nadia-knn-app .
 
       - name: Run Docker container
