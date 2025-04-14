@@ -1,6 +1,5 @@
 name: Docker Build and Push
 
-# Trigger this workflow only on push or pull request to the KNN-bouri branch
 on:
   push:
     branches:
@@ -13,11 +12,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
-    # Specify the environment where DOCKER_HUB_USERNAME and DOCKER_HUB_TOKEN are defined
-    environment: docker-hub-env
-
     steps:
-      # Step 1: Check out the repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -32,7 +27,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Train model
-        run: python your_script_name.py
+        run: python your_script_name.py  # Replace with your actual script
 
       - name: Upload model artifacts
         uses: actions/upload-artifact@v3
@@ -41,13 +36,11 @@ jobs:
           path: |
             model.pkl
             data.pkl
-            
-      # Step 2: Build the Docker image
+
       - name: Build Docker image
         run: |
           docker build -t knn-recommendation-system .
 
-      # Step 3: Log in to Docker Hub
       - name: Log in to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
@@ -55,7 +48,6 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # Step 4: Push the Docker image to Docker Hub
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
