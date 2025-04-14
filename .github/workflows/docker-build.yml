@@ -23,8 +23,8 @@ jobs:
 
       - name: Run code
         run: |
-        pip install -r requirements.txt
-        python3 KNN.py
+          pip install -r requirements.txt
+          python3 KNN.py
 
       # Step 2: Build the Docker image
       - name: Build Docker image
