@@ -6,7 +6,7 @@ This project is a **Recommendation System** designed to provide personalized rec
 
 This branch, **Ahmedou_Yahye_branch**, contains the latest updates and features for the system.
 
-> **Note**: This project was created by **Ahmedou Yahye** as part of a student project for **Système de Recommandation** at **FSS**, as part of a **Master's degree in Computer Science**, and was supervised by **PhD Mrs. Corinne Amel Zayani**.
+> **Note**: This project was created by **Ahmedou Yahye** as part of a student project for **Système de Recommandation** at **FSS**, as part of a projevt on **Master's in Computer Science**, and was supervised by **PhD Mrs. Corinne Amel Zayani**.
 
 ---
 
