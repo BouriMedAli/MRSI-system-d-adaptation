@@ -21,6 +21,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Run code
+        run: |
+          python3 KNN.py
+
       # Step 2: Build the Docker image
       - name: Build Docker image
         run: |

@@ -1,28 +1,39 @@
-# Use an official Python runtime as the base image
+# Use Python 3.9 slim image as base
 FROM python:3.9-slim
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Install build dependencies required for scikit-surprise
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    python3-dev \
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements file into the container
+# Copy requirements file
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+# Pin numpy to version 1.x for compatibility with surprise library
+RUN pip install --no-cache-dir numpy<2.0.0 && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code and dataset into the container
-COPY KNN.py .
-COPY Dataset/dataset_etudiants.csv Dataset/
+# Copy application code
+COPY app.py .
 
-# Expose the port FastAPI will run on
+# Create directory for model files if they're not mounted as volumes
+RUN mkdir -p /app/Dataset
+
+# Copy model files if they exist locally (will be overridden by volumes if used)
+COPY model.pkl data.pkl ./
+
+# Expose port
 EXPOSE 8000
 
-# Define the command to run the FastAPI app
-CMD ["python", "KNN.py"]
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Command to run the application
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
