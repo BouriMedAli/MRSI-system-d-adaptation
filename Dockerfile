@@ -1,55 +1,28 @@
-# Stage 1: Training
-FROM python:3.9-slim as trainer
-
-WORKDIR /app
-
-# Install system dependencies and update pip first
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --upgrade pip
-
-# Copy requirements first for caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir "numpy<2.0.0" && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Copy training files
-COPY KNN.py .
-COPY Dataset/ ./Dataset/
-
-# Create output directory
-RUN mkdir -p /app/output
-
-# Run training and save artifacts
-RUN python KNN.py && \
-    mv model.pkl data.pkl /app/output/
-
-# Stage 2: Runtime
+# Use an official Python runtime as the base image
 FROM python:3.9-slim
 
+# Set the working directory inside the container
 WORKDIR /app
 
-# Install system runtime dependencies and update pip
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --upgrade pip
+# Install build dependencies required for scikit-surprise
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install runtime dependencies
+# Copy the requirements file into the container
 COPY requirements.txt .
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app and trained models
-COPY app.py .
-COPY --from=trainer /app/output/ ./
+# Copy the application code and dataset into the container
+COPY KNN.py .
+COPY Dataset/dataset_etudiants.csv Dataset/
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-
+# Expose the port FastAPI will run on
 EXPOSE 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Define the command to run the FastAPI app
+CMD ["python", "KNN.py"]
