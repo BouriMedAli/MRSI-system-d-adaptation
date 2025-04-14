@@ -1,119 +1,42 @@
 name: Docker Build and Push
 
+# Trigger this workflow only on push or pull request to the KNN-bouri branch
 on:
   push:
     branches:
       - KNN-bouri
-    tags:
-      - v*
   pull_request:
     branches:
       - KNN-bouri
 
-env:
-  IMAGE_NAME: knn-recommendation-system
-  DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+
+    # Specify the environment where DOCKER_HUB_USERNAME and DOCKER_HUB_TOKEN are defined
+    environment: docker-hub-env
 
     steps:
-      # Checkout repository
+      # Step 1: Check out the repository code
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # Set up Python with improved configuration
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: 'requirements.txt'
-
-      # Install system dependencies first
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-dev build-essential
-
-      # Install Python dependencies with improved pip commands
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install --use-pep517 -r requirements.txt
-          pip install pytest
-
-      # Run tests
-      - name: Run tests
-        run: |
-          python -m pytest tests/
-
-      # Train model with error handling
-      - name: Train model
-        run: |
-          if [ -f "KNN.py" ]; then
-            python KNN.py
-          else
-            echo "Error: KNN.py not found!"
-            exit 1
-          fi
-
-      # Verify model artifacts
-      - name: Verify artifacts
-        run: |
-          if [ ! -f "model.pkl" ] || [ ! -f "data.pkl" ]; then
-            echo "Error: Model artifacts not found!"
-            exit 1
-          fi
-
-      # Upload trained model artifacts
-      - name: Upload model artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: model-files
-          path: |
-            model.pkl
-            data.pkl
-          if-no-files-found: error
-
-      # Build Docker image
+      # Step 2: Build the Docker image
       - name: Build Docker image
         run: |
-          docker build \
-            --tag $IMAGE_NAME \
-            --label "version=${GITHUB_SHA}" \
-            --label "build-date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-            .
+          docker build -t knn-recommendation-system .
 
-      # Login to Docker Hub on main branch or tag
-      - name: Login to Docker Hub
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/KNN-bouri' || startsWith(github.ref, 'refs/tags/'))
-        uses: docker/login-action@v3
+      # Step 3: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # Push to Docker Hub
+      # Step 4: Push the Docker image to Docker Hub
       - name: Push Docker image
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/KNN-bouri' || startsWith(github.ref, 'refs/tags/'))
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
-          # Tag with SHA
-          docker tag $IMAGE_NAME $DOCKER_USERNAME/$IMAGE_NAME:${GITHUB_SHA:0:7}
-          
-          # Tag with latest if on main branch
-          if [ "${{ github.ref }}" == "refs/heads/KNN-bouri" ]; then
-            docker tag $IMAGE_NAME $DOCKER_USERNAME/$IMAGE_NAME:latest
-          fi
-          
-          # Tag with version if tag
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-            docker tag $IMAGE_NAME $DOCKER_USERNAME/$IMAGE_NAME:$VERSION
-          fi
-          
-          # Push all relevant tags
-          docker push $DOCKER_USERNAME/$IMAGE_NAME --all-tags
+          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-system:latest

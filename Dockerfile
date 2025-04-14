@@ -1,39 +1,48 @@
-# Use Python 3.9 slim image as base
-FROM python:3.9-slim
+# Stage 1: Training
+FROM python:3.9-slim as trainer
 
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
+# Copy requirements first for caching
 COPY requirements.txt .
-
-# Install Python dependencies
-# Pin numpy to version 1.x for compatibility with surprise library
 RUN pip install --no-cache-dir numpy<2.0.0 && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy training files
+COPY KNN.py .
+COPY Dataset/ ./Dataset/
+
+# Create output directory
+RUN mkdir -p /app/output
+
+# Run training and save artifacts
+RUN python KNN.py && \
+    mv model.pkl data.pkl /app/output/
+
+# Stage 2: Runtime
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+COPY --from=trainer /root/.local /root/.local
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app and trained models
 COPY app.py .
-
-# Create directory for model files if they're not mounted as volumes
-RUN mkdir -p /app/Dataset
-
-# Copy model files if they exist locally (will be overridden by volumes if used)
-COPY model.pkl data.pkl ./
-
-# Expose port
-EXPOSE 8000
+COPY --from=trainer /app/output/ ./
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Command to run the application
+EXPOSE 8000
+
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
