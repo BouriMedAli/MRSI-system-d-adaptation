@@ -26,18 +26,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up Python
+      # Set up Python with improved configuration
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
 
-      # Install dependencies
-      - name: Install dependencies
+      # Install system dependencies first
+      - name: Install system dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y python3-dev build-essential
+
+      # Install Python dependencies with improved pip commands
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --use-pep517 -r requirements.txt
           pip install pytest
 
       # Run tests
@@ -45,15 +52,21 @@ jobs:
         run: |
           python -m pytest tests/
 
-      # Train model
+      # Train model with error handling
       - name: Train model
-        run: python KNN.py
+        run: |
+          if [ -f "KNN.py" ]; then
+            python KNN.py
+          else
+            echo "Error: KNN.py not found!"
+            exit 1
+          fi
 
       # Verify model artifacts
       - name: Verify artifacts
         run: |
           if [ ! -f "model.pkl" ] || [ ! -f "data.pkl" ]; then
-            echo "Model artifacts not found!"
+            echo "Error: Model artifacts not found!"
             exit 1
           fi
 
@@ -65,6 +78,7 @@ jobs:
           path: |
             model.pkl
             data.pkl
+          if-no-files-found: error
 
       # Build Docker image
       - name: Build Docker image
