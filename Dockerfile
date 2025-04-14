@@ -3,11 +3,12 @@ FROM python:3.9-slim as trainer
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and update pip first
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --upgrade pip
 
 # Copy requirements first for caching
 COPY requirements.txt .
@@ -30,7 +31,14 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install runtime dependencies directly
+# Install system runtime dependencies and update pip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --upgrade pip
+
+# Install runtime dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
