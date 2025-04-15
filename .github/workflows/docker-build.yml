@@ -21,20 +21,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up metadata for Docker image
-      - name: Set up Docker metadata
-        id: meta
-        run: |
-          echo "image_name=student-knn-recommender" >> $GITHUB_ENV
-          echo "image_tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_ENV
-
-      # Step 3: Build the Docker image
+      # Step 2: Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.image_name }}:${{ env.image_tag }} .
-          docker tag ${{ env.image_name }}:${{ env.image_tag }} ${{ env.image_name }}:latest
+          docker build -t knn-recommendation-system .
 
-      # Step 4: Log in to Docker Hub
+      # Step 3: Log in to Docker Hub
       - name: Log in to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
@@ -42,14 +34,10 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # Step 5: Push the Docker image to Docker Hub with clear naming
+      # Step 4: Push the Docker image to Docker Hub
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
-          # Tag with both versioned tag and latest
-          docker tag ${{ env.image_name }}:${{ env.image_tag }} ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.image_name }}:${{ env.image_tag }}
-          docker tag ${{ env.image_name }}:${{ env.image_tag }} ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.image_name }}:latest
-          
-          # Push both tags
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.image_name }}:${{ env.image_tag }}
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.image_name }}:latest
+          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
+          echo "Successfully pushed: ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest"
