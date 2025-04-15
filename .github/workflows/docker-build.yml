@@ -31,13 +31,13 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          username: mohamedalibouri
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       # Step 4: Push the Docker image to Docker Hub
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
-          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
+          docker tag knn-recommendation-system mohamedalibouri/knn-recommendation-api:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
           echo "Successfully pushed: mohamedalibouri/knn-recommendation-api:latest"
