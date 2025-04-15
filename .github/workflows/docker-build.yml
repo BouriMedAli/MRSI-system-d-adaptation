@@ -40,4 +40,4 @@ jobs:
         run: |
           docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
-          echo "Successfully pushed: ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest"
+          echo "Successfully pushed: mohamedalibouri/knn-recommendation-api:latest"
