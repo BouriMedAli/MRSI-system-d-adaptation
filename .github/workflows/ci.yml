@@ -1,32 +1,94 @@
 name: CI Pipeline
 
-
 on:
   push:
     branches:
       - Ahmedou_Yahye_branch
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   pull_request:
     branches:
       - Ahmedou_Yahye_branch
 
 jobs:
-  test:
+  build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+        os: [ubuntu-latest]
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: ${{ matrix.python-version }}
+
+    - name: Create virtual environment
+      run: |
+        python -m venv venv
+        echo "VIRTUAL_ENV=$PWD/venv" >> $GITHUB_ENV
+        echo "$PWD/venv/bin" >> $GITHUB_PATH
+
+    - name: Cache virtual environment
+      uses: actions/cache@v3
+      with:
+        path: |
+          venv/
+          .venv/
+        key: ${{ runner.os }}-venv-${{ hashFiles('requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-venv-
 
     - name: Install dependencies
       run: |
+        source venv/bin/activate
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install -r dev-requirements.txt
+        pip freeze
 
-    - name: Run tests
+    - name: Set up dataset directory
+      run: mkdir -p dataset
+
+    - name: Run code quality checks
       run: |
-        pytest
+        source venv/bin/activate
+        black --check .
+        isort --check-only .
+        flake8 .
+        mypy .
+
+    - name: Run security checks
+      run: |
+        source venv/bin/activate
+        safety check --full-report
+
+    - name: Run tests with coverage
+      run: |
+        source venv/bin/activate
+        pytest \
+          --cov=modules \
+          --cov-report=xml \
+          --cov-report=term \
+          --junitxml=test-results/junit.xml \
+          --verbose
+      env:
+        PYTHONPYCACHEPREFIX: ${{ github.workspace }}/__pycache__
+        PYTHONDONTWRITEBYTECODE: 1
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: success()
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: test-results/
