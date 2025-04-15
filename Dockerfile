@@ -1,17 +1,17 @@
-# Étape 1 : Image de base officielle
-FROM python:3.10-slim
+# Use an official lightweight Python image.
+FROM python:3.8-slim
 
-# Étape 2 : Définir le répertoire de travail
+# Set the working directory in the container.
 WORKDIR /app
 
-# Étape 3 : Copier les fichiers nécessairesSAs
+# Copy the requirements file and install dependencies.
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copy the rest of the application code.
 COPY . .
 
-# Étape 4 : Installer les dépendances
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Étape 5 : Exposer le port de l’API
-EXPOSE 8000
-
-# Étape 6 : Lancer FastAPI avec Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# By default, the CMD will evaluate an environment variable TEST.
+# If TEST is set to "true", it will run pytest; otherwise, it will launch the FastAPI app.
+# We use "sh -c" to enable a conditional command.
+CMD ["sh", "-c", "if [ \"$TEST\" = \"true\" ]; then pytest; else uvicorn app:app --host 127.0.0.6 --port 80; fi"]
