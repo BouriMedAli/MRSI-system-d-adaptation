@@ -6,30 +6,41 @@ import uvicorn
 from collections import defaultdict
 import time
 import os
+from surprise import Dataset, Reader, KNNBasic
 
 # Initialize FastAPI app
 app = FastAPI(title="Student Recommendation API")
 
-# Load the saved model and data
-try:
-    start_time = time.time()
-    with open('model.pkl', 'rb') as f:
-        model = pickle.load(f)
+# Load the trained model and data
+def load_model_and_data():
+    print("Loading pre-trained model and data...")
     
-    with open('data.pkl', 'rb') as f:
-        data = pickle.load(f)
-    load_time = time.time() - start_time
-    print(f"Model and data loaded successfully in {load_time:.2f} seconds!")
-    print(f"Dataset contains {len(data)} students")
-    
-    # Pre-process data for faster lookups
-    student_communities = {row['ID_Étudiant']: set(row['Communautés']) for _, row in data.iterrows()}
-    student_skills = {row['ID_Étudiant']: set(row['Compétences']) for _, row in data.iterrows()}
-    student_interests = {row['ID_Étudiant']: set(row['Centres_d\'Intérêt']) for _, row in data.iterrows()}
-    
-except Exception as e:
-    print(f"Error loading model or data: {e}")
-    raise HTTPException(status_code=500, detail="Model or data not available")
+    try:
+        # Load the model
+        with open('model.pkl', 'rb') as f:
+            model = pickle.load(f)
+            
+        # Load the data
+        with open('data.pkl', 'rb') as f:
+            data = pickle.load(f)
+            
+        print("Successfully loaded pre-trained model and data")
+        return model, data
+        
+    except FileNotFoundError:
+        print("Error: Pre-trained model not found. Make sure to run KNN.py first.")
+        raise HTTPException(status_code=500, detail="Model files not found. Model training required before API startup.")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        raise HTTPException(status_code=500, detail=f"Error loading model: {str(e)}")
+
+# Load the model and data at startup
+model, data = load_model_and_data()
+
+# Pre-process data for faster lookups
+student_communities = {row['ID_Étudiant']: set(row['Communautés']) for _, row in data.iterrows()}
+student_skills = {row['ID_Étudiant']: set(row['Compétences']) for _, row in data.iterrows()}
+student_interests = {row['ID_Étudiant']: set(row['Centres_d\'Intérêt']) for _, row in data.iterrows()}
 
 # Pydantic model for request validation
 class QueryProfile(BaseModel):

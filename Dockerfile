@@ -19,10 +19,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code and dataset into the container
 COPY KNN.py .
+COPY app.py .
 COPY Dataset/dataset_etudiants.csv Dataset/
 
 # Expose the port FastAPI will run on
 EXPOSE 8000
 
-# Define the command to run the FastAPI app
-CMD ["python", "KNN.py"]
+# Run KNN.py to create the model, then start the FastAPI app
+CMD python KNN.py && python app.py
