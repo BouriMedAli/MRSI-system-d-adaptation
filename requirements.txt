@@ -1,26 +1,26 @@
 # FastAPI for building the web application
-fastapi==0.95.2
+fastapi
 
 # Uvicorn for running the FastAPI application
-uvicorn[standard]==0.22.0
+uvicorn[standard]
 
 # Jinja2 for rendering templates
-jinja2==3.1.2
+jinja2
 
 # Scikit-learn for machine learning models
-scikit-learn==1.2.2
+scikit-learn
 
 # Surprise for recommendation system algorithms
-scikit-surprise==1.1.1
+scikit-surprise
 
 # Numpy (compatible with Surprise)
 numpy==1.24.3
 
 # Pandas for data manipulation
-pandas==1.5.3
+pandas
 
 # Pydantic for data validation
-pydantic==1.10.7
+pydantic
 
 # Matplotlib for visualizations (optional, if needed)
-matplotlib==3.7.1
+matplotlib
