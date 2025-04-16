@@ -1,27 +1,35 @@
-name: Docker Test Pipeline
+name: FastAPI Docker CI
 
-on:
-  push:
-    branches: [ Nadia-KNN ]
-  pull_request:
-    branches: [ Nadia-KNN ]
+on: [push]
 
 jobs:
-  test-docker:
+  build-and-run-api:
+    name: Build and Run FastAPI Docker App
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 📦 Récupération du code source
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      
-      
-     
-      
-
-      - name: Cleanup
+      # 🐳 Construction de l’image Docker
+      - name: Build Docker image
         run: |
-          docker rmi fastapi-knn:local || true
+          docker build -t fastapi-app .
+
+      # 🚀 Lancement du conteneur
+      - name: Run Docker container
+        run: |
+          docker run -d -p 8000:8000 --name fastapi-container fastapi-app
+          sleep 5  # Attendre que le serveur démarre
+
+      # 🔎 Tester l'API
+      - name: Test API root endpoint
+        run: |
+          curl --fail http://localhost:8000/ || (echo "API failed" && exit 1)
+
+      # 🧹 Nettoyage (optionnel mais recommandé)
+      - name: Clean up
+        run: |
+          docker stop fastapi-container
+          docker rm fastapi-container
