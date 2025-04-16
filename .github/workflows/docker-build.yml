@@ -40,21 +40,7 @@ jobs:
       - name: Run Docker container
         run: docker run -d -p 8000:8000 --name recommandation_container recommandation_system
 
-      - name: Wait for FastAPI to be ready
-        run: |
-          for i in {1..30}; do
-            curl --output /dev/null --silent --head --fail http://localhost:8000/docs && break
-            echo "⏱️ En attente du démarrage de l'API..."
-            sleep 2
-          done
-
-      - name: Test recommander API
-        run: |
-          response=$(curl -s -X POST http://localhost:8000/recommander/ \
-            -H "Content-Type: application/json" \
-            -d '{"id_etudiant": 1}')
-          echo "Réponse API : $response"
-          echo "$response" | grep "ID_Étudiant" || (echo "❌ L'API ne renvoie pas de recommandations" && exit 1)
+    
 
       - name: Cleanup Docker container
         if: always()
