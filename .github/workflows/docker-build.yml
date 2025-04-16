@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - Chaima-KNN
+      - Nadia-KNN
   pull_request:
     branches:
-      - Chaima-KNN
+      - Nadia-KNN
   workflow_dispatch:
 
 jobs:
