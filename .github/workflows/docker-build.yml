@@ -4,31 +4,24 @@ on: [push]
 
 jobs:
   build-and-run-api:
-    name: Build and Run FastAPI Docker App
     runs-on: ubuntu-latest
 
     steps:
-      # 📦 Récupération du code source
-      - name: Checkout source code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 🐳 Construction de l’image Docker
       - name: Build Docker image
-        run: |
-          docker build -t fastapi-app .
+        run: docker build -t fastapi-app .
 
-      # 🚀 Lancement du conteneur
       - name: Run Docker container
         run: |
           docker run -d -p 8000:8000 --name fastapi-container fastapi-app
-          sleep 5  # Attendre que le serveur démarre
+          sleep 5
 
-      # 🔎 Tester l'API
       - name: Test API root endpoint
         run: |
           curl --fail http://localhost:8000/ || (echo "API failed" && exit 1)
 
-      # 🧹 Nettoyage (optionnel mais recommandé)
       - name: Clean up
         run: |
           docker stop fastapi-container
