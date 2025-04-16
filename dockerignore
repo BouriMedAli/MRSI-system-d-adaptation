@@ -1,0 +1,25 @@
+# Dossiers à ignorer
+__pycache__/
+.github/
+.git/
+.gitignore
+
+# Fichiers de config ou secrets
+*.env
+*.log
+
+# Environnements virtuels
+venv/
+env/
+
+# Éditeurs
+*.vscode/
+*.idea/
+
+# Données inutiles
+*.csv
+!Dataset/dataset_etudiants.csv
+
+# Autres
+*.pyc
+.DS_Store
