@@ -1,27 +1,67 @@
-name: FastAPI Docker CI
+name: CI/CD Pipeline
 
-on: [push]
+on:
+  push:
+    branches:
+      - Chaima-KNN
+  pull_request:
+    branches:
+      - Chaima-KNN
+  workflow_dispatch:
 
 jobs:
-  build-and-run-api:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-     
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Vérifier présence du dataset
+        run: |
+          if [ ! -f Dataset/dataset_etudiants.csv ]; then
+            echo "Fichier dataset manquant"
+            exit 1
+          else
+            echo "✅ Dataset trouvé"
+          fi
+
+      - name: Build Docker image
+        run: docker build -t recommandation_system .
 
       - name: Run Docker container
-        run: |
-          docker run -d -p 8000:8000 --name fastapi-container fastapi-app
-          sleep 5
+        run: docker run -d -p 8000:8000 --name recommandation_container recommandation_system
 
-      - name: Test API root endpoint
+      - name: Wait for FastAPI to be ready
         run: |
-          curl --fail http://localhost:8000/ || (echo "API failed" && exit 1)
+          for i in {1..30}; do
+            curl --output /dev/null --silent --head --fail http://localhost:8000/docs && break
+            echo "⏱️ En attente du démarrage de l'API..."
+            sleep 2
+          done
 
-      - name: Clean up
+      - name: Test recommander API
         run: |
-          docker stop fastapi-container
-          docker rm fastapi-container
+          response=$(curl -s -X POST http://localhost:8000/recommander/ \
+            -H "Content-Type: application/json" \
+            -d '{"id_etudiant": 1}')
+          echo "Réponse API : $response"
+          echo "$response" | grep "ID_Étudiant" || (echo "❌ L'API ne renvoie pas de recommandations" && exit 1)
+
+      - name: Cleanup Docker container
+        if: always()
+        run: docker rm -f recommandation_container || true
+
+      - name: 🪵 Show Docker logs on failure
+        if: failure()
+        run: docker logs recommandation_container || true
