@@ -58,6 +58,14 @@ jobs:
           echo "Réponse API : $response"
           echo "$response" | grep "ID_Étudiant" || (echo "❌ L'API ne renvoie pas de recommandations" && exit 1)
 
+      - name: Test recommander_svd API
+        run: |
+          response=$(curl -s -X POST http://localhost:8000/recommander_svd/ \
+            -H "Content-Type: application/json" \
+            -d '{"id_etudiant": 1}')
+          echo "Réponse API (SVD) : $response"
+          echo "$response" | grep "ID_Étudiant" || (echo "❌ L'API SVD ne renvoie pas de recommandations" && exit 1)
+
       - name: Cleanup Docker container
         if: always()
         run: docker rm -f recommandation_container || true
