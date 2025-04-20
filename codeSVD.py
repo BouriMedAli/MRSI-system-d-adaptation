@@ -11,17 +11,19 @@ df = pd.read_csv(os.path.join("Dataset", "dataset_etudiants.csv"))
 df["Coéquipiers"] = df["Coéquipiers"].apply(ast.literal_eval)
 
 # Création de la matrice étudiant-étudiant (coéquipiers)
-# Format : ligne = étudiant, colonne = coéquipier, valeur = 1 si collaboration
 student_ids = df["ID_Étudiant"].tolist()
 collab_matrix = pd.DataFrame(0, index=student_ids, columns=student_ids)
+valid_ids = set(student_ids)
 
 for i, row in df.iterrows():
     for teammate in row["Coéquipiers"]:
-        if teammate in collab_matrix.columns:
+        if teammate in valid_ids:
             collab_matrix.at[row["ID_Étudiant"], teammate] = 1
+            collab_matrix.at[teammate, row["ID_Étudiant"]] = 1  # Assure la symétrie
 
 # Appliquer SVD
-svd = TruncatedSVD(n_components=10)
+n_components = min(10, len(collab_matrix.columns) - 1)
+svd = TruncatedSVD(n_components=n_components)
 svd_matrix = svd.fit_transform(collab_matrix)
 
 # Calcul de la similarité cosinus
