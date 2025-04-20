@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Système de Recommandation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+    }
+    h1, h3, h4 {
+      color: #2c3e50;
+    }
+    .ribbon {
+      display: inline-block;
+      padding: 0.4em 0.8em;
+      background: #d1e7dd;
+      border-radius: 20px;
+      margin: 0.2em;
+      color: #0f5132;
+      font-weight: 500;
+    }
+    .card-custom {
+      background-color: #ffffff;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .form-select[multiple] {
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card-custom">
+      <h1 class="mb-4 text-center">🔍 Système de Recommandation d'Étudiants</h1>
+      <form id="form">
+        <div class="mb-3">
+          <label for="algo-select" class="form-label">Choisir l'algorithme :</label>
+          <select id="algo-select" class="form-select">
+            <option value="knn">KNN - Similarité par attributs</option>
+            <option value="co_clustering">Co-Clustering - Regroupement par interaction</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="competences" class="form-label">Compétences</label>
+          <select id="competences" class="form-select" multiple>
+            <option>Électronique</option>
+          <option>Science</option>
+          <option>Python</option>
+          <option>Marketing</option>
+          <option>IA</option>
+          <option>Design</option>
+          <option>Data</option>
+          <option>Blockchain</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="interets" class="form-label">Centres d'intérêt</label>
+          <select id="interets" class="form-select" multiple>
+            <option>Entrepreneuriat</option>
+            <option>Hackathon</option>
+            <option>Jeux</option>
+            <option>Musique</option>
+            <option>Robotique</option>
+            <option>Écologie</option>
+            <option>Vidéo</option>
+            </select>
+        </div>
+        <div class="mb-3">
+          <label for="travaux" class="form-label">Nombre de Travaux Collaboratifs</label>
+          <input type="number" id="travaux" class="form-control" required min="0" placeholder="Entrez un nombre..." />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">🔎 Lancer la recommandation</button>
+      </form>
+    </div>
+
+    <div class="card-custom">
+      <h3>📋 Résultats</h3>
+      <table class="table table-hover" id="result-table">
+        <thead class="table-light">
+          <tr>
+            <th>Nom</th>
+            <th>Compétences</th>
+            <th>Centres d'intérêt</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card-custom">
+      <h4>🎯 Graphe Circulaire</h4>
+      <canvas id="pie-chart" height="100"></canvas>
+
+      <h4 class="mt-5">💠 Nuage de Similarité</h4>
+      <canvas id="scatter-chart" height="200"></canvas>
+
+      <h4 class="mt-5">📊 Graphique des Compétences</h4>
+      <canvas id="bar-chart" height="200"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Récupérer dynamiquement les données de l'API pour compétences et centres d'intérêt
+    async function fetchData() {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/data"); // Assurez-vous que votre API renvoie ces données
+        const data = await response.json();
+
+        // Remplir les menus déroulants avec les données reçues
+        const competencesSelect = document.getElementById("competences");
+        const interetsSelect = document.getElementById("interets");
+
+        data.competences.forEach(comp => {
+          const option = document.createElement("option");
+          option.value = comp;
+          option.textContent = comp;
+          competencesSelect.appendChild(option);
+        });
+
+        data.interets.forEach(inter => {
+          const option = document.createElement("option");
+          option.value = inter;
+          option.textContent = inter;
+          interetsSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Erreur lors du chargement des données :", error);
+      }
+    }
+
+    document.getElementById("form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const algo = document.getElementById("algo-select").value;
+      const competences = Array.from(document.getElementById("competences").selectedOptions).map(o => o.value.trim());
+      const interets = Array.from(document.getElementById("interets").selectedOptions).map(o => o.value.trim());
+      const travaux = parseInt(document.getElementById("travaux").value);
+
+      if (isNaN(travaux) || travaux < 0) {
+        alert("Veuillez entrer un nombre valide de travaux collaboratifs.");
+        return;
+      }
+
+      if (competences.length === 0 || interets.length === 0) {
+        alert("Veuillez sélectionner au moins une compétence et un centre d'intérêt.");
+        return;
+      }
+
+      try {
+        const endpoint = algo === "knn" ? "/recommend" : "/cluster";
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ competences, interets, travaux })
+        });
+
+        if (!response.ok) throw new Error("Erreur serveur");
+
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          alert("Aucun résultat trouvé.");
+          return;
+        }
+
+        afficherResultats(data);
+      } catch (err) {
+        alert("Erreur : " + err.message);
+      }
+    });
+
+    function afficherResultats(data) {
+      const tableBody = document.querySelector("#result-table tbody");
+      tableBody.innerHTML = "";
+
+      const pieLabels = [], pieValues = [], scatterData = [], barLabels = [], barValues = [];
+
+      data.forEach((item, i) => {
+        const row = tableBody.insertRow();
+        row.insertCell(0).textContent = item.nom;
+
+        const compList = item.competences.split(",").map(c => c.trim());
+        const interList = item.interets.split(",").map(i => i.trim());
+
+        row.insertCell(1).innerHTML = compList.map(c => `<span class='ribbon'>${c}</span>`).join(" ");
+        row.insertCell(2).innerHTML = interList.map(i => `<span class='ribbon'>${i}</span>`).join(" ");
+
+        pieLabels.push(item.nom);
+        pieValues.push(item.similarity);
+        scatterData.push({ x: i + 1, y: item.similarity, label: item.nom });
+
+        compList.forEach(c => {
+          const index = barLabels.indexOf(c);
+          if (index !== -1) {
+            barValues[index]++;
+          } else {
+            barLabels.push(c);
+            barValues.push(1);
+          }
+        });
+      });
+
+      // Mise à jour des graphiques
+      if (window.pieChart) window.pieChart.destroy();
+      if (window.scatterChart) window.scatterChart.destroy();
+      if (window.barChart) window.barChart.destroy();
+
+      // Graphe circulaire
+      window.pieChart = new Chart(document.getElementById("pie-chart"), {
+        type: "pie",
+        data: {
+          labels: pieLabels,
+          datasets: [{ data: pieValues, backgroundColor: ['#ff6f61', '#6b5b95', '#88b04b', '#f7c8b8', '#ff9a8b', '#f7c8b8'] }]
+        }
+      });
+
+      // Nuage de similarité
+      window.scatterChart = new Chart(document.getElementById("scatter-chart"), {
+        type: "scatter",
+        data: {
+          datasets: [{
+            label: "Similarité",
+            data: scatterData,
+            backgroundColor: "#ff9a8b",
+            borderColor: "#f0f0f0",
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { type: "linear", position: "bottom" },
+            y: { ticks: { min: 0, max: 1 } }
+          }
+        }
+      });
+
+      // Graphique des compétences
+      window.barChart = new Chart(document.getElementById("bar-chart"), {
+        type: "bar",
+        data: {
+          labels: barLabels,
+          datasets: [{
+            label: "Fréquence des Compétences",
+            data: barValues,
+            backgroundColor: "#88b04b",
+            borderColor: "#ffffff",
+            borderWidth: 2
+          }]
+        }
+      });
+    }
+
+    // Initialisation des données
+    fetchData();
+  </script>
+</body>
+</html>
