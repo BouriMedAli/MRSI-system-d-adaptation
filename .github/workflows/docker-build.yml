@@ -20,24 +20,43 @@ jobs:
       # Step 1: Check out the repository code
       - name: Checkout code
         uses: actions/checkout@v3
-
-      # Step 2: Build the Docker image
-      - name: Build Docker image
+      
+      # Step 2: Build the Docker image and run KNN.py inside a container
+      - name: Build and train model
         run: |
-          docker build -t knn-recommendation-system .
+          # First, build a temporary container to run KNN.py
+          docker build -t knn-temp -f Dockerfile.train .
+          
+          # Run the training container to generate model files
+          docker run --name knn-trainer knn-temp
+          
+          # Copy the generated model files from the container
+          docker cp knn-trainer:/app/model.pkl ./model.pkl
+          docker cp knn-trainer:/app/data.pkl ./data.pkl
+          
+          # Verify model files were created
+          ls -la model.pkl data.pkl
+          
+          # Remove temporary container
+          docker rm knn-trainer
+      
+      # Step 3: Build the final Docker image with pre-trained model
+      - name: Build application Docker image
+        run: |
+          docker build -t knn-recommendation-system -f Dockerfile.app .
 
-      # Step 3: Log in to Docker Hub
+      # Step 4: Log in to Docker Hub
       - name: Log in to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
         with:
-          username: mohamedalibouri
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # Step 4: Push the Docker image to Docker Hub
+      # Step 5: Push the Docker image to Docker Hub
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
-          docker tag knn-recommendation-system mohamedalibouri/knn-recommendation-api:latest
+          docker tag knn-recommendation-system ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
-          echo "Successfully pushed: mohamedalibouri/knn-recommendation-api:latest"
+          echo "Successfully pushed: ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest"
