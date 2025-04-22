@@ -31,27 +31,54 @@ data['Centres_d\'Intérêt'] = data['Centres_d\'Intérêt'].apply(lambda x: ast.
 
 print("Dataset preprocessed successfully")
 
-# Create implicit ratings for collaborative filtering
+# Create implicit ratings for collaborative filtering with weighted ratings
 print("Creating implicit ratings from student profiles...")
 ratings_data = []
 
+# Extract all unique communities, skills, and interests for cross-validation
+all_communities = set()
+all_skills = set()
+all_interests = set()
+
+for _, row in data.iterrows():
+    all_communities.update(row['Communautés'])
+    all_skills.update(row['Compétences'])
+    all_interests.update(row['Centres_d\'Intérêt'])
+
+# Add some negative samples for better evaluation
 for idx, row in data.iterrows():
     student_id = row['ID_Étudiant']
     
     # Add community affiliations as implicit ratings
     for community in row['Communautés']:
-        ratings_data.append({'user_id': student_id, 'item_id': f"comm_{community}", 'rating': 1})
-        print(f"Added rating: Student {student_id} → Community {community}")
+        # Positive rating with weight based on interaction count
+        weight = min(1.0, 0.5 + row['Nombre_Interactions'] / 200)
+        ratings_data.append({'user_id': student_id, 'item_id': f"comm_{community}", 'rating': weight})
+    
+    # Add negative samples for communities
+    other_communities = all_communities - set(row['Communautés'])
+    for community in list(other_communities)[:2]:  # Add 2 negative samples
+        ratings_data.append({'user_id': student_id, 'item_id': f"comm_{community}", 'rating': 0.1})
     
     # Add skills as implicit ratings
     for skill in row['Compétences']:
-        ratings_data.append({'user_id': student_id, 'item_id': f"skill_{skill}", 'rating': 1})
-        print(f"Added rating: Student {student_id} → Skill {skill}")
+        # Weight by travaux_collaboratifs score
+        weight = min(1.0, 0.4 + row['Travaux_Collaboratifs'] / 20)
+        ratings_data.append({'user_id': student_id, 'item_id': f"skill_{skill}", 'rating': weight})
+    
+    # Add negative samples for skills
+    other_skills = all_skills - set(row['Compétences'])
+    for skill in list(other_skills)[:2]:  # Add 2 negative samples
+        ratings_data.append({'user_id': student_id, 'item_id': f"skill_{skill}", 'rating': 0.2})
     
     # Add interests as implicit ratings
     for interest in row['Centres_d\'Intérêt']:
-        ratings_data.append({'user_id': student_id, 'item_id': f"int_{interest}", 'rating': 1})
-        print(f"Added rating: Student {student_id} → Interest {interest}")
+        ratings_data.append({'user_id': student_id, 'item_id': f"int_{interest}", 'rating': 0.9})
+    
+    # Add negative samples for interests
+    other_interests = all_interests - set(row['Centres_d\'Intérêt'])
+    for interest in list(other_interests)[:2]:  # Add 2 negative samples
+        ratings_data.append({'user_id': student_id, 'item_id': f"int_{interest}", 'rating': 0.3})
 
 ratings_df = pd.DataFrame(ratings_data)
 print(f"Created {len(ratings_df)} implicit ratings from student profiles")
@@ -69,9 +96,10 @@ print(f"Data split into training set ({len(trainset.build_testset())}) and test 
 print("Training KNN model...")
 sim_options = {
     'name': 'cosine',  # Use cosine similarity
-    'user_based': True  # User-based collaborative filtering
+    'user_based': True,  # User-based collaborative filtering
+    'min_support': 3,   # Minimum number of common items
 }
-model = KNNBasic(k=5, sim_options=sim_options)
+model = KNNBasic(k=10, sim_options=sim_options)
 model.fit(trainset)
 print("KNN model training complete")
 
@@ -151,13 +179,44 @@ student_id = 1
 rated_items = ratings_df[ratings_df['user_id'] == student_id]['item_id'].unique()
 recommend_items(model, student_id, all_items, rated_items, top_n=5)
 
-# Save the model and data for later use
+# Add student feature vectors for cold-start recommendations
+print("\nCreating feature vectors for students...")
+student_features = {}
+
+for idx, row in data.iterrows():
+    student_id = row['ID_Étudiant']
+    
+    # Create a feature vector for the student
+    feature_vector = {
+        'travaux_collaboratifs': row['Travaux_Collaboratifs'] / 10.0,  # Normalize to [0,1]
+        'nombre_interactions': row['Nombre_Interactions'] / 100.0,  # Normalize to [0,1]
+        'communautes': {comm: 1.0 for comm in row['Communautés']},
+        'competences': {skill: 1.0 for skill in row['Compétences']},
+        'interets': {interest: 1.0 for interest in row['Centres_d\'Intérêt']}
+    }
+    
+    student_features[student_id] = feature_vector
+
+# Save the model, data, and feature vectors for later use
 print("\nSaving model and data...")
 with open('model.pkl', 'wb') as f:
     pickle.dump(model, f)
 
 with open('data.pkl', 'wb') as f:
     pickle.dump(data, f)
+
+with open('student_features.pkl', 'wb') as f:
+    pickle.dump(student_features, f)
+
+# Save metadata about all possible categories
+metadata = {
+    'all_communities': list(all_communities),
+    'all_skills': list(all_skills),
+    'all_interests': list(all_interests)
+}
+
+with open('metadata.pkl', 'wb') as f:
+    pickle.dump(metadata, f)
 
 # Save accuracy metrics for reference
 accuracy_metrics = {
@@ -174,9 +233,13 @@ with open('accuracy_metrics.pkl', 'wb') as f:
 model_size = os.path.getsize('model.pkl') / 1024  # KB
 data_size = os.path.getsize('data.pkl') / 1024  # KB
 metrics_size = os.path.getsize('accuracy_metrics.pkl') / 1024  # KB
+features_size = os.path.getsize('student_features.pkl') / 1024  # KB
+metadata_size = os.path.getsize('metadata.pkl') / 1024  # KB
 
 print(f"\nModel saved: model.pkl ({model_size:.2f} KB)")
 print(f"Data saved: data.pkl ({data_size:.2f} KB)")
+print(f"Student features saved: student_features.pkl ({features_size:.2f} KB)")
+print(f"Metadata saved: metadata.pkl ({metadata_size:.2f} KB)")
 print(f"Accuracy metrics saved: accuracy_metrics.pkl ({metrics_size:.2f} KB)")
 
 print("Model training and evaluation complete!")

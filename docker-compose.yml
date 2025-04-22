@@ -1,15 +1,6 @@
 version: '3.8'
 
 services:
-  model-trainer:
-    image: mohamedalibouri/knn-recommendation-api:latest
-    container_name: knn-model-trainer
-    command: python KNN.py
-    volumes:
-      - model-data:/app
-    environment:
-      - LOG_LEVEL=info
-
   api-service:
     image: mohamedalibouri/knn-recommendation-api:latest
     container_name: knn-recommendation-api
