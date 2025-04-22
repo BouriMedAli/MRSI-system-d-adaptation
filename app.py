@@ -51,6 +51,8 @@ model, data, student_features, metadata = load_model_and_data()
 student_communities = {row['ID_Étudiant']: set(row['Communautés']) for _, row in data.iterrows()}
 student_skills = {row['ID_Étudiant']: set(row['Compétences']) for _, row in data.iterrows()}
 student_interests = {row['ID_Étudiant']: set(row['Centres_d\'Intérêt']) for _, row in data.iterrows()}
+student_collab_work = {row['ID_Étudiant']: row['Travaux_Collaboratifs'] for _, row in data.iterrows()}
+student_interactions = {row['ID_Étudiant']: row['Nombre_Interactions'] for _, row in data.iterrows()}
 
 # Pydantic model for request validation
 class QueryProfile(BaseModel):
@@ -200,15 +202,17 @@ async def recommend_students(query_profile: QueryProfile):
     recommended_student_ids = [student_id for student_id, _ in top_students]
     
     # Get recommended students' details
-    similar_students = data[data['ID_Étudiant'].isin(recommended_student_ids)][['ID_Étudiant', 'Nom']].to_dict(orient='records')
+    similar_students = data[data['ID_Étudiant'].isin(recommended_student_ids)].to_dict(orient='records')
     
-    # Add similarity scores and student features to results
+    # Add similarity scores and ensure all needed attributes are present
     for student in similar_students:
         student_id = student['ID_Étudiant']
-        student['similarity_score'] = similarities[student_id]
-        student['communautés'] = list(student_communities.get(student_id, []))
-        student['compétences'] = list(student_skills.get(student_id, []))
-        student['centres_d_intérêt'] = list(student_interests.get(student_id, []))
+        student['similarity_score'] = float(similarities[student_id])
+        student['Travaux_Collaboratifs'] = float(student_collab_work.get(student_id, 0))
+        student['Nombre_Interactions'] = float(student_interactions.get(student_id, 0))
+        student['Communautés'] = list(student_communities.get(student_id, []))
+        student['Compétences'] = list(student_skills.get(student_id, []))
+        student['Centres_d_Intérêt'] = list(student_interests.get(student_id, []))
     
     processing_time = time.time() - start_time
     
@@ -247,6 +251,8 @@ async def register_student(student: StudentRegistration):
         student_communities[next_id] = set(student.communautés)
         student_skills[next_id] = set(student.compétences)
         student_interests[next_id] = set(student.centres_d_intérêt)
+        student_collab_work[next_id] = student.travaux_collaboratifs
+        student_interactions[next_id] = student.nombre_interactions
         
         # Create feature vector
         feature_vector = {

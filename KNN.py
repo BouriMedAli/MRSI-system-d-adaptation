@@ -8,13 +8,34 @@ import ast
 
 print("Starting model training with KNN algorithm...")
 
-# Ensure the dataset directory exists
+# Create Dataset directory if it doesn't exist
 os.makedirs("Dataset", exist_ok=True)
 
-# Load and preprocess the dataset
+# Define the data path
 data_path = os.path.join("Dataset", "dataset_etudiants.csv")
-print(f"Loading dataset from {data_path}")
+print(f"Looking for dataset at {data_path}")
 
+# Check if the dataset file exists, if not, create it from the provided data
+if not os.path.exists(data_path):
+    print(f"Dataset not found at {data_path}. Creating it from the provided data...")
+    
+    # This is the data from the document
+    data = pd.DataFrame({
+        'ID_Étudiant': list(range(1, 51)),
+        'Nom': [f'Etudiant_{i}' for i in range(1, 51)],
+        'Travaux_Collaboratifs': [8, 5, 10, 9, 7, 5, 5, 2, 9, 5, 2, 8, 1, 7, 5, 5, 4, 7, 10, 5, 2, 7, 2, 8, 6, 3, 2, 4, 3, 1, 2, 3, 10, 2, 1, 4, 9, 4, 2, 5, 9, 8, 9, 9, 9, 4, 1, 7, 1, 4],
+        'Coéquipiers': ["[49, 36, 30]", "[16, 5]", "[22, 9, 41, 34]", "[36]", "[10]", "[47, 35, 30]", "[12, 35, 20, 43, 17]", "[19, 33, 24]", "[3, 37, 28, 23, 43]", "[43, 14, 25]", "[33, 46, 14, 37]", "[8, 26, 43]", "[41, 42, 47, 31, 12]", "[29, 28, 47, 50, 42]", "[9, 45, 29, 41, 16]", "[3]", "[7]", "[19, 10, 2, 41]", "[9, 27]", "[39, 10, 41, 6, 49]", "[50, 27, 44]", "[18, 14, 6, 30, 24]", "[32, 49]", "[41]", "[19, 8, 50, 49]", "[48, 49, 14, 9]", "[40, 43, 17]", "[10, 40, 3, 42, 9]", "[50, 42, 27, 21]", "[25]", "[17, 29, 24, 34]", "[31]", "[25]", "[44, 15, 28, 17]", "[34]", "[7, 44, 1, 30]", "[27]", "[14, 45, 12, 28, 2]", "[43]", "[15, 26, 9]", "[36, 17, 27]", "[20, 35, 4]", "[14]", "[46, 19, 43, 5]", "[31, 44, 46, 39, 25]", "[4, 47, 49]", "[46, 26, 31, 16]", "[20, 29, 40]", "[20, 37, 17]", "[36, 6, 18]"],
+        'Communautés': ["['Club Robotique', 'Groupe IA']", "['Club Entrepreneurs', 'Groupe IA']", "['Groupe IA', 'Club Robotique']", "['Association Écologie']", "['Association Écologie', 'Club Entrepreneurs']", "['Association Écologie']", "['Club Data Science']", "['Club Robotique']", "['Club Data Science', 'Association Écologie']", "['Association Écologie']", "['Club Data Science']", "['Club Data Science', 'Association Écologie']", "['Club Entrepreneurs']", "['Club Data Science']", "['Association Écologie', 'Groupe IA']", "['Association Écologie']", "['Groupe IA', 'Club Robotique']", "['Club Entrepreneurs']", "['Club Data Science']", "['Club Entrepreneurs']", "['Club Robotique', 'Groupe IA']", "['Groupe IA', 'Club Robotique']", "['Association Écologie']", "['Club Robotique', 'Groupe IA']", "['Club Robotique', 'Club Entrepreneurs']", "['Club Robotique', 'Groupe IA']", "['Club Data Science', 'Groupe IA']", "['Groupe IA']", "['Club Data Science']", "['Club Robotique', 'Club Data Science']", "['Association Écologie', 'Club Entrepreneurs']", "['Club Data Science', 'Club Robotique']", "['Association Écologie', 'Club Robotique']", "['Club Robotique', 'Club Entrepreneurs']", "['Club Entrepreneurs']", "['Club Robotique']", "['Association Écologie', 'Groupe IA']", "['Club Robotique']", "['Association Écologie']", "['Club Entrepreneurs', 'Association Écologie']", "['Association Écologie', 'Club Entrepreneurs']", "['Club Entrepreneurs', 'Groupe IA']", "['Groupe IA', 'Club Data Science']", "['Club Robotique', 'Club Entrepreneurs']", "['Club Data Science']", "['Club Entrepreneurs', 'Groupe IA']", "['Association Écologie']", "['Club Data Science', 'Club Robotique']", "['Groupe IA', 'Club Robotique']", "['Association Écologie', 'Groupe IA']"],
+        'Nombre_Interactions': [91, 63, 23, 23, 64, 9, 29, 82, 8, 72, 88, 39, 89, 71, 83, 7, 80, 45, 48, 81, 100, 38, 34, 73, 89, 68, 64, 70, 98, 93, 16, 88, 26, 38, 90, 68, 87, 20, 32, 53, 64, 35, 57, 56, 89, 68, 58, 68, 32, 11],
+        'Compétences': ["['Blockchain', 'IA', 'Data Science']", "['IA', 'Blockchain', 'Python']", "['Design', 'Python', 'Blockchain']", "['Blockchain', 'Data Science']", "['Électronique', 'Design']", "['Blockchain']", "['Blockchain', 'Marketing', 'Électronique']", "['Électronique', 'Marketing']", "['Blockchain', 'Marketing', 'IA']", "['Design', 'IA']", "['IA', 'Électronique', 'Data Science']", "['Design', 'Électronique']", "['IA', 'Électronique']", "['IA']", "['Python']", "['Blockchain']", "['Électronique']", "['Blockchain', 'Électronique', 'Design']", "['Marketing', 'Blockchain', 'Électronique']", "['IA', 'Blockchain']", "['Data Science', 'Électronique', 'Marketing']", "['IA', 'Blockchain']", "['Blockchain']", "['Blockchain', 'Design', 'Marketing']", "['IA', 'Design', 'Python']", "['Python', 'Design']", "['Design']", "['Data Science']", "['Marketing', 'Data Science', 'IA']", "['Blockchain']", "['Python', 'Blockchain', 'Marketing']", "['Blockchain', 'Design']", "['Blockchain']", "['Marketing', 'Data Science', 'Blockchain']", "['Python']", "['Data Science']", "['IA']", "['Data Science', 'Python']", "['Marketing', 'Data Science']", "['IA']", "['Blockchain']", "['Électronique']", "['Design', 'Data Science']", "['Data Science']", "['Design']", "['IA']", "['Blockchain', 'Marketing', 'Data Science']", "['Data Science', 'Blockchain']", "['Data Science', 'Blockchain']", "['IA', 'Blockchain', 'Data Science']"],
+        'Centres_d\'Intérêt': ["['Jeux vidéo', 'Musique']", "['Musique']", "['Jeux vidéo', 'Robotique']", "['Robotique']", "['Musique']", "['Entrepreneuriat', 'Musique']", "['Écologie', 'Jeux vidéo']", "['Écologie']", "['Jeux vidéo', 'Écologie', 'Robotique']", "['Jeux vidéo']", "['Musique']", "['Musique']", "['Robotique']", "['Hackathon', 'Entrepreneuriat']", "['Musique']", "['Robotique', 'Entrepreneuriat']", "['Écologie', 'Hackathon', 'Robotique']", "['Jeux vidéo', 'Musique']", "['Jeux vidéo']", "['Musique', 'Entrepreneuriat', 'Écologie']", "['Robotique']", "['Musique', 'Hackathon', 'Entrepreneuriat']", "['Hackathon', 'Entrepreneuriat']", "['Jeux vidéo']", "['Robotique', 'Hackathon']", "['Musique']", "['Entrepreneuriat']", "['Écologie', 'Musique']", "['Écologie', 'Jeux vidéo']", "['Musique', 'Robotique']", "['Hackathon', 'Robotique', 'Écologie']", "['Musique', 'Hackathon']", "['Jeux vidéo', 'Hackathon']", "['Musique', 'Robotique']", "['Robotique', 'Musique', 'Écologie']", "['Entrepreneuriat', 'Musique']", "['Jeux vidéo', 'Robotique']", "['Hackathon', 'Entrepreneuriat']", "['Hackathon', 'Jeux vidéo']", "['Entrepreneuriat', 'Musique', 'Hackathon']", "['Musique', 'Entrepreneuriat', 'Robotique']", "['Musique']", "['Entrepreneuriat']", "['Jeux vidéo', 'Entrepreneuriat', 'Robotique']", "['Musique', 'Jeux vidéo', 'Entrepreneuriat']", "['Hackathon', 'Écologie']", "['Écologie', 'Robotique']", "['Jeux vidéo', 'Robotique']", "['Jeux vidéo', 'Hackathon', 'Écologie']", "['Hackathon']"]
+    })
+    
+    # Save the dataset to CSV
+    data.to_csv(data_path, index=False)
+    print(f"Created dataset file at {data_path}")
+
+# Now try to load the dataset
 try:
     data = pd.read_csv(data_path)
     print(f"Successfully loaded dataset with {len(data)} students")
@@ -24,18 +45,28 @@ except Exception as e:
 
 # Convert string representations of lists to actual Python lists
 print("Converting string columns to Python lists...")
-data['Coéquipiers'] = data['Coéquipiers'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-data['Communautés'] = data['Communautés'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-data['Compétences'] = data['Compétences'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-data['Centres_d\'Intérêt'] = data['Centres_d\'Intérêt'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-
-print("Dataset preprocessed successfully")
-
-# Create implicit ratings for collaborative filtering with weighted ratings
-print("Creating implicit ratings from student profiles...")
-ratings_data = []
+try:
+    data['Coéquipiers'] = data['Coéquipiers'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    data['Communautés'] = data['Communautés'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    data['Compétences'] = data['Compétences'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    data['Centres_d\'Intérêt'] = data['Centres_d\'Intérêt'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    print("Dataset preprocessed successfully")
+except Exception as e:
+    print(f"Error preprocessing dataset: {e}. Attempting to fix the formatting...")
+    try:
+        # Manual fixing for common format issues
+        for col in ['Coéquipiers', 'Communautés', 'Compétences', 'Centres_d\'Intérêt']:
+            # Handle any potential formatting issues
+            data[col] = data[col].apply(lambda x: 
+                ast.literal_eval(x) if isinstance(x, str) else 
+                ([] if pd.isna(x) else x))
+        print("Dataset fixed and preprocessed successfully")
+    except Exception as e:
+        print(f"Failed to fix dataset: {e}")
+        exit(1)
 
 # Extract all unique communities, skills, and interests for cross-validation
+print("Extracting unique attributes...")
 all_communities = set()
 all_skills = set()
 all_interests = set()
@@ -44,6 +75,12 @@ for _, row in data.iterrows():
     all_communities.update(row['Communautés'])
     all_skills.update(row['Compétences'])
     all_interests.update(row['Centres_d\'Intérêt'])
+
+print(f"Found {len(all_communities)} unique communities, {len(all_skills)} unique skills, and {len(all_interests)} unique interests")
+
+# Create implicit ratings for collaborative filtering with weighted ratings
+print("Creating implicit ratings from student profiles...")
+ratings_data = []
 
 # Add some negative samples for better evaluation
 for idx, row in data.iterrows():
@@ -157,8 +194,12 @@ def recommend_items(model, student_id, all_items, rated_items, top_n=5):
     # Predict ratings for all unrated items
     for item in all_items:
         if item not in rated_items:
-            predicted_rating = model.predict(student_id, item).est
-            recommendations.append((item, predicted_rating))
+            try:
+                predicted_rating = model.predict(student_id, item).est
+                recommendations.append((item, predicted_rating))
+            except Exception as e:
+                print(f"Error predicting rating for {student_id}, {item}: {e}")
+                continue
     
     # Sort recommendations by predicted rating
     recommendations.sort(key=lambda x: x[1], reverse=True)
@@ -176,8 +217,11 @@ all_items = set(ratings_df['item_id'])
 
 # Example: Recommend items for a specific student (e.g., Student 1)
 student_id = 1
-rated_items = ratings_df[ratings_df['user_id'] == student_id]['item_id'].unique()
-recommend_items(model, student_id, all_items, rated_items, top_n=5)
+try:
+    rated_items = ratings_df[ratings_df['user_id'] == student_id]['item_id'].unique()
+    recommend_items(model, student_id, all_items, rated_items, top_n=5)
+except Exception as e:
+    print(f"Error generating recommendations for student {student_id}: {e}")
 
 # Add student feature vectors for cold-start recommendations
 print("\nCreating feature vectors for students...")
@@ -230,16 +274,19 @@ with open('accuracy_metrics.pkl', 'wb') as f:
     pickle.dump(accuracy_metrics, f)
 
 # Verify the files were created and show their sizes
-model_size = os.path.getsize('model.pkl') / 1024  # KB
-data_size = os.path.getsize('data.pkl') / 1024  # KB
-metrics_size = os.path.getsize('accuracy_metrics.pkl') / 1024  # KB
-features_size = os.path.getsize('student_features.pkl') / 1024  # KB
-metadata_size = os.path.getsize('metadata.pkl') / 1024  # KB
+try:
+    model_size = os.path.getsize('model.pkl') / 1024  # KB
+    data_size = os.path.getsize('data.pkl') / 1024  # KB
+    metrics_size = os.path.getsize('accuracy_metrics.pkl') / 1024  # KB
+    features_size = os.path.getsize('student_features.pkl') / 1024  # KB
+    metadata_size = os.path.getsize('metadata.pkl') / 1024  # KB
 
-print(f"\nModel saved: model.pkl ({model_size:.2f} KB)")
-print(f"Data saved: data.pkl ({data_size:.2f} KB)")
-print(f"Student features saved: student_features.pkl ({features_size:.2f} KB)")
-print(f"Metadata saved: metadata.pkl ({metadata_size:.2f} KB)")
-print(f"Accuracy metrics saved: accuracy_metrics.pkl ({metrics_size:.2f} KB)")
+    print(f"\nModel saved: model.pkl ({model_size:.2f} KB)")
+    print(f"Data saved: data.pkl ({data_size:.2f} KB)")
+    print(f"Student features saved: student_features.pkl ({features_size:.2f} KB)")
+    print(f"Metadata saved: metadata.pkl ({metadata_size:.2f} KB)")
+    print(f"Accuracy metrics saved: accuracy_metrics.pkl ({metrics_size:.2f} KB)")
+except Exception as e:
+    print(f"Error checking file sizes: {e}")
 
 print("Model training and evaluation complete!")
