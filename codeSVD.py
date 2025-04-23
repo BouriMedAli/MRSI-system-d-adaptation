@@ -1,7 +1,9 @@
 import pandas as pd
 import ast
-import os
-from sklearn.decomposition import TruncatedSVD
+#  pour gérer les chemins de fichiers.
+import os    
+#  pour réduire la dimensionnalité de la matrice.
+from sklearn.decomposition import TruncatedSVD   
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Charger le dataset
@@ -29,7 +31,7 @@ svd_matrix = svd.fit_transform(collab_matrix)
 # Calcul de la similarité cosinus
 similarity = cosine_similarity(svd_matrix)
 
-# Mapping index <-> ID étudiant
+# Mapping index <-> ID étudiant (matrice)
 index_to_id = dict(enumerate(collab_matrix.index))
 id_to_index = {v: k for k, v in index_to_id.items()}
 
@@ -37,6 +39,7 @@ def recommander_svd(id_etudiant: int, top_n=5):
     if id_etudiant not in id_to_index:
         return None
     
+    # Récupère sa ligne dans la matrice de similarité
     idx = id_to_index[id_etudiant]
     sim_scores = similarity[idx]
     

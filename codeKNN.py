@@ -19,6 +19,7 @@ communities_encoded = pd.DataFrame(mlb.fit_transform(df["Communautés"]), column
 skills_encoded = pd.DataFrame(mlb.fit_transform(df["Compétences"]), columns=["Skill_" + label for label in mlb.classes_])
 interests_encoded = pd.DataFrame(mlb.fit_transform(df["Centres_d'Intérêt"]), columns=["Interest_" + label for label in mlb.classes_])
 
+# Création du vecteur de caractéristiques
 features = pd.concat([
     df[["Travaux_Collaboratifs", "Nombre_Interactions", "Nombre_Coéquipiers"]],
     communities_encoded, skills_encoded, interests_encoded
