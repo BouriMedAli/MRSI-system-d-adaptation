@@ -1,23 +1,46 @@
-version: '3.8'
+version: '3'
 
 services:
-  api-service:
-    image: mohamedalibouri/knn-recommendation-api:latest
-    container_name: knn-recommendation-api
-    command: python app.py
+  # Model training service
+  train:
+    image: ${DOCKER_USERNAME:-student-recommender}/student-recommender-train:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.train
+    volumes:
+      - ./model:/app/model
+      - ./Dataset:/app/Dataset
+    networks:
+      - recommender-network
+
+  # FastAPI application service
+  app:
+    image: ${DOCKER_USERNAME:-student-recommender}/student-recommender-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.app
     ports:
       - "8000:8000"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     volumes:
-      - model-data:/app
-    environment:
-      - LOG_LEVEL=info
+      - ./model:/app/model
+    depends_on:
+      - train
+    networks:
+      - recommender-network
 
-volumes:
-  model-data:
+  # Streamlit frontend service
+  frontend:
+    image: ${DOCKER_USERNAME:-student-recommender}/student-recommender-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - app
+    networks:
+      - recommender-network
+
+networks:
+  recommender-network:
+    driver: bridge

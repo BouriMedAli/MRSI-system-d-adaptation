@@ -21,5 +21,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY KNN.py .
 COPY Dataset/ Dataset/
 
+# Make sure the model directory exists
+RUN mkdir -p model
+
 # Run KNN.py to create the model
 CMD ["python", "KNN.py"]

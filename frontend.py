@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import pandas as pd
+import time
 
 # Streamlit app configuration
 st.set_page_config(page_title="Student Recommendation System", layout="wide")
@@ -10,26 +11,49 @@ st.set_page_config(page_title="Student Recommendation System", layout="wide")
 API_URL = "http://localhost:8000/recommend/"
 REGISTER_URL = "http://localhost:8000/register/"
 CATEGORIES_URL = "http://localhost:8000/categories/"
+HEALTH_URL = "http://localhost:8000/health/"
+
+# Check API connection
+@st.cache_data(ttl=60)  # Cache for 60 seconds
+def check_api_connection():
+    try:
+        response = requests.get(HEALTH_URL, timeout=2)
+        return response.status_code == 200
+    except:
+        return False
 
 # Initialize session state
 if 'categories' not in st.session_state:
-    try:
-        response = requests.get(CATEGORIES_URL)
-        if response.status_code == 200:
-            st.session_state.categories = response.json()
-        else:
+    api_available = check_api_connection()
+    if api_available:
+        try:
+            response = requests.get(CATEGORIES_URL)
+            if response.status_code == 200:
+                st.session_state.categories = response.json()
+            else:
+                st.session_state.categories = {
+                    "communities": ["Club Robotique", "Groupe IA", "Club Entrepreneurs", "Association Écologie", "Club Data Science"],
+                    "skills": ["Blockchain", "IA", "Data Science", "Python", "Design", "Électronique", "Marketing"],
+                    "interests": ["Jeux vidéo", "Musique", "Robotique", "Entrepreneuriat", "Écologie", "Hackathon"]
+                }
+        except Exception as e:
+            st.error(f"Failed to connect to API: {str(e)}")
             st.session_state.categories = {
                 "communities": ["Club Robotique", "Groupe IA", "Club Entrepreneurs", "Association Écologie", "Club Data Science"],
                 "skills": ["Blockchain", "IA", "Data Science", "Python", "Design", "Électronique", "Marketing"],
                 "interests": ["Jeux vidéo", "Musique", "Robotique", "Entrepreneuriat", "Écologie", "Hackathon"]
             }
-    except Exception as e:
-        st.error(f"Failed to connect to API: {str(e)}")
+    else:
         st.session_state.categories = {
             "communities": ["Club Robotique", "Groupe IA", "Club Entrepreneurs", "Association Écologie", "Club Data Science"],
             "skills": ["Blockchain", "IA", "Data Science", "Python", "Design", "Électronique", "Marketing"],
             "interests": ["Jeux vidéo", "Musique", "Robotique", "Entrepreneuriat", "Écologie", "Hackathon"]
         }
+
+# Display connection status
+api_status = check_api_connection()
+if not api_status:
+    st.warning("⚠️ API connection not available. Some features may not work.")
 
 # Create tabs
 recommend_tab, register_tab, about_tab = st.tabs(["Get Recommendations", "Register New Student", "About"])
@@ -50,6 +74,7 @@ with recommend_tab:
             student_id = None
             if is_existing:
                 student_id = st.number_input("Student ID", min_value=1, value=1)
+            num_recommendations = st.slider("Number of Recommendations", 1, 10, 5)
 
         with col2:
             categories = st.session_state.categories
@@ -72,92 +97,106 @@ with recommend_tab:
             "numeric": [float(travaux_collaboratifs), float(nombre_interactions)],
             "communautés": communautes,
             "compétences": competences,
-            "centres_d_intérêt": interets  # Using underscore instead of apostrophe
+            "centres_d_intérêt": interets,
+            "num_recommendations": num_recommendations
         }
         if is_existing and student_id:
             query_profile["student_id"] = student_id
 
         try:
             with st.spinner("Getting recommendations..."):
+                start_time = time.time()
                 response = requests.post(API_URL, json=query_profile)
+                request_time = time.time() - start_time
+                
                 if response.status_code == 200:
                     data = response.json()
                     recommendations = data["recommended_students"]
-                    st.success(f"Recommendations retrieved in {data['metadata']['processing_time_ms']} ms")
+                    api_time = data["metadata"]["processing_time_ms"]
+                    total_time = request_time * 1000  # Convert to ms
+                    
+                    st.success(f"Recommendations retrieved in {api_time:.1f} ms (API) / {total_time:.1f} ms (total)")
 
-                    st.subheader("Recommended Students")
-                    for student in recommendations:
-                        # Ensure we have lists for all student attributes (not None)
-                        student_communities = student.get("Communautés", []) or []
-                        student_skills = student.get("Compétences", []) or []
-                        student_interests = student.get("Centres_d_Intérêt", []) or []
-                        
-                        common_communities = set(communautes).intersection(set(student_communities))
-                        common_skills = set(competences).intersection(set(student_skills))
-                        common_interests = set(interets).intersection(set(student_interests))
-                        
-                        # Get numerical attributes with defaults
-                        student_collab = student.get("Travaux_Collaboratifs", 5)
-                        student_interact = student.get("Nombre_Interactions", 50)
-                        
-                        collab_diff = abs(travaux_collaboratifs - student_collab)
-                        interact_diff = abs(nombre_interactions - student_interact)
-
-                        col1, col2 = st.columns([1, 3])
-                        with col1:
-                            st.write(f"**{student['Nom']}** (ID: {student['ID_Étudiant']})")
-                        with col2:
-                            # Ensure similarity score is between 0 and 1 for progress bar
-                            normalized_score = min(max(student.get('similarity_score', 0.5), 0), 1.0)
-                            st.progress(normalized_score)
-                            st.write(f"Similarity: {normalized_score:.2f}")
-
-                        with st.expander(f"Details for {student['Nom']}"):
-                            st.write(f"**Collaborative Work Score:** {student_collab}")
-                            st.write(f"**Number of Interactions:** {student_interact}")
+                    if not recommendations:
+                        st.info("No recommendations found matching your criteria.")
+                    else:
+                        st.subheader(f"{len(recommendations)} Recommended Students")
+                        for i, student in enumerate(recommendations, 1):
+                            # Ensure we have lists for all student attributes (not None)
+                            student_communities = student.get("Communautés", []) or []
+                            student_skills = student.get("Compétences", []) or []
+                            student_interests = student.get("Centres_d_Intérêt", []) or []
                             
-                            # Display communities, skills, and interests (ensure we never show "None")
-                            st.write("**Communities:**", ", ".join(student_communities) if student_communities else "No communities")
-                            st.write("**Skills:**", ", ".join(student_skills) if student_skills else "No skills")
-                            st.write("**Interests:**", ", ".join(student_interests) if student_interests else "No interests")
+                            common_communities = set(communautes).intersection(set(student_communities))
+                            common_skills = set(competences).intersection(set(student_skills))
+                            common_interests = set(interets).intersection(set(student_interests))
                             
-                            st.write("**Why this student is recommended:**")
-                            summary_parts = []
-                            if common_communities:
-                                summary_parts.append(f"shares {len(common_communities)} community(ies): {', '.join(common_communities)}")
-                            if common_skills:
-                                summary_parts.append(f"has {len(common_skills)} skill(s) in common: {', '.join(common_skills)}")
-                            if common_interests:
-                                summary_parts.append(f"shares {len(common_interests)} interest(s): {', '.join(common_interests)}")
-                            if collab_diff <= 2:
-                                summary_parts.append("has a similar collaborative work style")
-                            if interact_diff <= 10:
-                                summary_parts.append("has a similar level of interaction")
+                            # Get numerical attributes with defaults
+                            student_collab = student.get("Travaux_Collaboratifs", 5)
+                            student_interact = student.get("Nombre_Interactions", 50)
+                            
+                            collab_diff = abs(travaux_collaboratifs - student_collab)
+                            interact_diff = abs(nombre_interactions - student_interact)
+
+                            st.markdown(f"---")
+                            col1, col2 = st.columns([1, 3])
+                            with col1:
+                                st.write(f"### {i}. {student['Nom']}")
+                                st.write(f"ID: {student['ID_Étudiant']}")
+                            with col2:
+                                # Ensure similarity score is between 0 and 1 for progress bar
+                                normalized_score = min(max(student.get('similarity_score', 0.5), 0), 1.0)
+                                st.progress(normalized_score)
+                                st.write(f"Similarity: {normalized_score:.2f}")
+
+                            with st.expander(f"Details for {student['Nom']}"):
+                                st.write(f"**Collaborative Work Score:** {student_collab}")
+                                st.write(f"**Number of Interactions:** {student_interact}")
                                 
-                            # Ensure we always have something to say about the recommendation
-                            if not summary_parts:
-                                if len(student_communities) > 0:
-                                    summary_parts.append(f"is part of the {student_communities[0]} community")
-                                elif len(student_skills) > 0:
-                                    summary_parts.append(f"has {student_skills[0]} skills")
-                                elif len(student_interests) > 0:
-                                    summary_parts.append(f"is interested in {student_interests[0]}")
-                                else:
-                                    summary_parts.append("has a complementary profile")
+                                # Display communities, skills, and interests (ensure we never show "None")
+                                st.write("**Communities:**", ", ".join(student_communities) if student_communities else "No communities")
+                                st.write("**Skills:**", ", ".join(student_skills) if student_skills else "No skills")
+                                st.write("**Interests:**", ", ".join(student_interests) if student_interests else "No interests")
+                                
+                                st.write("**Why this student is recommended:**")
+                                summary_parts = []
+                                if common_communities:
+                                    summary_parts.append(f"shares {len(common_communities)} community(ies): {', '.join(common_communities)}")
+                                if common_skills:
+                                    summary_parts.append(f"has {len(common_skills)} skill(s) in common: {', '.join(common_skills)}")
+                                if common_interests:
+                                    summary_parts.append(f"shares {len(common_interests)} interest(s): {', '.join(common_interests)}")
+                                if collab_diff <= 2:
+                                    summary_parts.append("has a similar collaborative work style")
+                                if interact_diff <= 10:
+                                    summary_parts.append("has a similar level of interaction")
                                     
-                            st.write("This student " + (", ".join(summary_parts) + "."))
+                                # Ensure we always have something to say about the recommendation
+                                if not summary_parts:
+                                    if len(student_communities) > 0:
+                                        summary_parts.append(f"is part of the {student_communities[0]} community")
+                                    elif len(student_skills) > 0:
+                                        summary_parts.append(f"has {student_skills[0]} skills")
+                                    elif len(student_interests) > 0:
+                                        summary_parts.append(f"is interested in {student_interests[0]}")
+                                    else:
+                                        summary_parts.append("has a complementary profile")
+                                        
+                                st.write("This student " + (", ".join(summary_parts) + "."))
 
-                            st.write("**Similarity Breakdown:**")
-                            st.write(f"- Common Communities: {len(common_communities)} ({', '.join(common_communities) if common_communities else 'Different communities'})")
-                            st.write(f"- Common Skills: {len(common_skills)} ({', '.join(common_skills) if common_skills else 'Different skills'})")
-                            st.write(f"- Common Interests: {len(common_interests)} ({', '.join(common_interests) if common_interests else 'Different interests'})")
-                            st.write(f"- Collaborative Work Difference: {collab_diff}")
-                            st.write(f"- Interactions Difference: {interact_diff}")
+                                st.write("**Similarity Breakdown:**")
+                                st.write(f"- Common Communities: {len(common_communities)} ({', '.join(common_communities) if common_communities else 'Different communities'})")
+                                st.write(f"- Common Skills: {len(common_skills)} ({', '.join(common_skills) if common_skills else 'Different skills'})")
+                                st.write(f"- Common Interests: {len(common_interests)} ({', '.join(common_interests) if common_interests else 'Different interests'})")
+                                st.write(f"- Collaborative Work Difference: {collab_diff}")
+                                st.write(f"- Interactions Difference: {interact_diff}")
 
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
         except Exception as e:
             st.error(f"Connection failed: {str(e)}")
+            if not api_status:
+                st.info("The API service appears to be offline. Please check the backend service.")
 
 # --- Registration Tab ---
 with register_tab:
@@ -180,6 +219,8 @@ with register_tab:
     if submit_registration:
         if not nom:
             st.error("Student name is required")
+        elif not api_status:
+            st.error("Cannot register student: API service is unavailable")
         else:
             # Ensure at least one option is selected from each category for new students
             if not communautes:
@@ -195,13 +236,14 @@ with register_tab:
                 "nombre_interactions": nombre_interactions,
                 "communautés": communautes,
                 "compétences": competences,
-                "centres_d_intérêt": interets  # Using underscore instead of apostrophe
+                "centres_d_intérêt": interets
             }
             try:
                 with st.spinner("Registering student..."):
                     response = requests.post(REGISTER_URL, json=student_data)
                     if response.status_code == 200:
-                        st.success(f"Student registered! ID: {response.json()['student_id']}")
+                        data = response.json()
+                        st.success(f"Student registered! ID: {data['student_id']}")
                         st.balloons()
                     else:
                         st.error(f"Error: {response.status_code} - {response.text}")
@@ -232,7 +274,18 @@ with about_tab:
     - **Interests**: Personal and academic interests
 
     ## Technologies
-    - FastAPI backend with Scikit-Surprise recommendation algorithms
+    - FastAPI backend with Scikit-Surprise recommendation algorithms 
     - Streamlit interactive frontend
     - Docker containerization for easy deployment
     """)
+    
+    # Add system info
+    if api_status:
+        try:
+            response = requests.get("http://localhost:8000/")
+            if response.status_code == 200:
+                with st.expander("System Status"):
+                    st.success("✅ API is online and responding")
+                    st.json(response.json())
+        except:
+            pass

@@ -1,292 +1,371 @@
 import pandas as pd
 import numpy as np
 import pickle
-from surprise import Dataset, Reader, KNNBasic, accuracy
-from surprise.model_selection import train_test_split, cross_validate
 import os
 import ast
+import logging
+from surprise import Dataset, Reader, SVD, KNNBasic, accuracy
+from surprise.model_selection import train_test_split
+from collections import defaultdict
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import NearestNeighbors
+import itertools
 
-print("Starting model training with KNN algorithm...")
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Create Dataset directory if it doesn't exist
-os.makedirs("Dataset", exist_ok=True)
-
-# Define the data path
-data_path = os.path.join("Dataset", "dataset_etudiants.csv")
-print(f"Looking for dataset at {data_path}")
-
-# Check if the dataset file exists, if not, create it from the provided data
-if not os.path.exists(data_path):
-    print(f"Dataset not found at {data_path}. Creating it from the provided data...")
-    
-    # This is the data from the document
-    data = pd.DataFrame({
-        'ID_Étudiant': list(range(1, 51)),
-        'Nom': [f'Etudiant_{i}' for i in range(1, 51)],
-        'Travaux_Collaboratifs': [8, 5, 10, 9, 7, 5, 5, 2, 9, 5, 2, 8, 1, 7, 5, 5, 4, 7, 10, 5, 2, 7, 2, 8, 6, 3, 2, 4, 3, 1, 2, 3, 10, 2, 1, 4, 9, 4, 2, 5, 9, 8, 9, 9, 9, 4, 1, 7, 1, 4],
-        'Coéquipiers': ["[49, 36, 30]", "[16, 5]", "[22, 9, 41, 34]", "[36]", "[10]", "[47, 35, 30]", "[12, 35, 20, 43, 17]", "[19, 33, 24]", "[3, 37, 28, 23, 43]", "[43, 14, 25]", "[33, 46, 14, 37]", "[8, 26, 43]", "[41, 42, 47, 31, 12]", "[29, 28, 47, 50, 42]", "[9, 45, 29, 41, 16]", "[3]", "[7]", "[19, 10, 2, 41]", "[9, 27]", "[39, 10, 41, 6, 49]", "[50, 27, 44]", "[18, 14, 6, 30, 24]", "[32, 49]", "[41]", "[19, 8, 50, 49]", "[48, 49, 14, 9]", "[40, 43, 17]", "[10, 40, 3, 42, 9]", "[50, 42, 27, 21]", "[25]", "[17, 29, 24, 34]", "[31]", "[25]", "[44, 15, 28, 17]", "[34]", "[7, 44, 1, 30]", "[27]", "[14, 45, 12, 28, 2]", "[43]", "[15, 26, 9]", "[36, 17, 27]", "[20, 35, 4]", "[14]", "[46, 19, 43, 5]", "[31, 44, 46, 39, 25]", "[4, 47, 49]", "[46, 26, 31, 16]", "[20, 29, 40]", "[20, 37, 17]", "[36, 6, 18]"],
-        'Communautés': ["['Club Robotique', 'Groupe IA']", "['Club Entrepreneurs', 'Groupe IA']", "['Groupe IA', 'Club Robotique']", "['Association Écologie']", "['Association Écologie', 'Club Entrepreneurs']", "['Association Écologie']", "['Club Data Science']", "['Club Robotique']", "['Club Data Science', 'Association Écologie']", "['Association Écologie']", "['Club Data Science']", "['Club Data Science', 'Association Écologie']", "['Club Entrepreneurs']", "['Club Data Science']", "['Association Écologie', 'Groupe IA']", "['Association Écologie']", "['Groupe IA', 'Club Robotique']", "['Club Entrepreneurs']", "['Club Data Science']", "['Club Entrepreneurs']", "['Club Robotique', 'Groupe IA']", "['Groupe IA', 'Club Robotique']", "['Association Écologie']", "['Club Robotique', 'Groupe IA']", "['Club Robotique', 'Club Entrepreneurs']", "['Club Robotique', 'Groupe IA']", "['Club Data Science', 'Groupe IA']", "['Groupe IA']", "['Club Data Science']", "['Club Robotique', 'Club Data Science']", "['Association Écologie', 'Club Entrepreneurs']", "['Club Data Science', 'Club Robotique']", "['Association Écologie', 'Club Robotique']", "['Club Robotique', 'Club Entrepreneurs']", "['Club Entrepreneurs']", "['Club Robotique']", "['Association Écologie', 'Groupe IA']", "['Club Robotique']", "['Association Écologie']", "['Club Entrepreneurs', 'Association Écologie']", "['Association Écologie', 'Club Entrepreneurs']", "['Club Entrepreneurs', 'Groupe IA']", "['Groupe IA', 'Club Data Science']", "['Club Robotique', 'Club Entrepreneurs']", "['Club Data Science']", "['Club Entrepreneurs', 'Groupe IA']", "['Association Écologie']", "['Club Data Science', 'Club Robotique']", "['Groupe IA', 'Club Robotique']", "['Association Écologie', 'Groupe IA']"],
-        'Nombre_Interactions': [91, 63, 23, 23, 64, 9, 29, 82, 8, 72, 88, 39, 89, 71, 83, 7, 80, 45, 48, 81, 100, 38, 34, 73, 89, 68, 64, 70, 98, 93, 16, 88, 26, 38, 90, 68, 87, 20, 32, 53, 64, 35, 57, 56, 89, 68, 58, 68, 32, 11],
-        'Compétences': ["['Blockchain', 'IA', 'Data Science']", "['IA', 'Blockchain', 'Python']", "['Design', 'Python', 'Blockchain']", "['Blockchain', 'Data Science']", "['Électronique', 'Design']", "['Blockchain']", "['Blockchain', 'Marketing', 'Électronique']", "['Électronique', 'Marketing']", "['Blockchain', 'Marketing', 'IA']", "['Design', 'IA']", "['IA', 'Électronique', 'Data Science']", "['Design', 'Électronique']", "['IA', 'Électronique']", "['IA']", "['Python']", "['Blockchain']", "['Électronique']", "['Blockchain', 'Électronique', 'Design']", "['Marketing', 'Blockchain', 'Électronique']", "['IA', 'Blockchain']", "['Data Science', 'Électronique', 'Marketing']", "['IA', 'Blockchain']", "['Blockchain']", "['Blockchain', 'Design', 'Marketing']", "['IA', 'Design', 'Python']", "['Python', 'Design']", "['Design']", "['Data Science']", "['Marketing', 'Data Science', 'IA']", "['Blockchain']", "['Python', 'Blockchain', 'Marketing']", "['Blockchain', 'Design']", "['Blockchain']", "['Marketing', 'Data Science', 'Blockchain']", "['Python']", "['Data Science']", "['IA']", "['Data Science', 'Python']", "['Marketing', 'Data Science']", "['IA']", "['Blockchain']", "['Électronique']", "['Design', 'Data Science']", "['Data Science']", "['Design']", "['IA']", "['Blockchain', 'Marketing', 'Data Science']", "['Data Science', 'Blockchain']", "['Data Science', 'Blockchain']", "['IA', 'Blockchain', 'Data Science']"],
-        'Centres_d\'Intérêt': ["['Jeux vidéo', 'Musique']", "['Musique']", "['Jeux vidéo', 'Robotique']", "['Robotique']", "['Musique']", "['Entrepreneuriat', 'Musique']", "['Écologie', 'Jeux vidéo']", "['Écologie']", "['Jeux vidéo', 'Écologie', 'Robotique']", "['Jeux vidéo']", "['Musique']", "['Musique']", "['Robotique']", "['Hackathon', 'Entrepreneuriat']", "['Musique']", "['Robotique', 'Entrepreneuriat']", "['Écologie', 'Hackathon', 'Robotique']", "['Jeux vidéo', 'Musique']", "['Jeux vidéo']", "['Musique', 'Entrepreneuriat', 'Écologie']", "['Robotique']", "['Musique', 'Hackathon', 'Entrepreneuriat']", "['Hackathon', 'Entrepreneuriat']", "['Jeux vidéo']", "['Robotique', 'Hackathon']", "['Musique']", "['Entrepreneuriat']", "['Écologie', 'Musique']", "['Écologie', 'Jeux vidéo']", "['Musique', 'Robotique']", "['Hackathon', 'Robotique', 'Écologie']", "['Musique', 'Hackathon']", "['Jeux vidéo', 'Hackathon']", "['Musique', 'Robotique']", "['Robotique', 'Musique', 'Écologie']", "['Entrepreneuriat', 'Musique']", "['Jeux vidéo', 'Robotique']", "['Hackathon', 'Entrepreneuriat']", "['Hackathon', 'Jeux vidéo']", "['Entrepreneuriat', 'Musique', 'Hackathon']", "['Musique', 'Entrepreneuriat', 'Robotique']", "['Musique']", "['Entrepreneuriat']", "['Jeux vidéo', 'Entrepreneuriat', 'Robotique']", "['Musique', 'Jeux vidéo', 'Entrepreneuriat']", "['Hackathon', 'Écologie']", "['Écologie', 'Robotique']", "['Jeux vidéo', 'Robotique']", "['Jeux vidéo', 'Hackathon', 'Écologie']", "['Hackathon']"]
-    })
-    
-    # Save the dataset to CSV
-    data.to_csv(data_path, index=False)
-    print(f"Created dataset file at {data_path}")
-
-# Now try to load the dataset
-try:
-    data = pd.read_csv(data_path)
-    print(f"Successfully loaded dataset with {len(data)} students")
-except Exception as e:
-    print(f"Error loading dataset: {e}")
-    exit(1)
-
-# Convert string representations of lists to actual Python lists
-print("Converting string columns to Python lists...")
-try:
-    data['Coéquipiers'] = data['Coéquipiers'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    data['Communautés'] = data['Communautés'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    data['Compétences'] = data['Compétences'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    data['Centres_d\'Intérêt'] = data['Centres_d\'Intérêt'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    print("Dataset preprocessed successfully")
-except Exception as e:
-    print(f"Error preprocessing dataset: {e}. Attempting to fix the formatting...")
+def load_data(dataset_path='./Dataset/dataset_etudiants.csv'):
+    """Load student dataset and convert string representations of lists to actual lists."""
+    logging.info(f"Loading data from {dataset_path}")
     try:
-        # Manual fixing for common format issues
-        for col in ['Coéquipiers', 'Communautés', 'Compétences', 'Centres_d\'Intérêt']:
-            # Handle any potential formatting issues
-            data[col] = data[col].apply(lambda x: 
-                ast.literal_eval(x) if isinstance(x, str) else 
-                ([] if pd.isna(x) else x))
-        print("Dataset fixed and preprocessed successfully")
-    except Exception as e:
-        print(f"Failed to fix dataset: {e}")
-        exit(1)
-
-# Extract all unique communities, skills, and interests for cross-validation
-print("Extracting unique attributes...")
-all_communities = set()
-all_skills = set()
-all_interests = set()
-
-for _, row in data.iterrows():
-    all_communities.update(row['Communautés'])
-    all_skills.update(row['Compétences'])
-    all_interests.update(row['Centres_d\'Intérêt'])
-
-print(f"Found {len(all_communities)} unique communities, {len(all_skills)} unique skills, and {len(all_interests)} unique interests")
-
-# Create implicit ratings for collaborative filtering with weighted ratings
-print("Creating implicit ratings from student profiles...")
-ratings_data = []
-
-# Add some negative samples for better evaluation
-for idx, row in data.iterrows():
-    student_id = row['ID_Étudiant']
-    
-    # Add community affiliations as implicit ratings
-    for community in row['Communautés']:
-        # Positive rating with weight based on interaction count
-        weight = min(1.0, 0.5 + row['Nombre_Interactions'] / 200)
-        ratings_data.append({'user_id': student_id, 'item_id': f"comm_{community}", 'rating': weight})
-    
-    # Add negative samples for communities
-    other_communities = all_communities - set(row['Communautés'])
-    for community in list(other_communities)[:2]:  # Add 2 negative samples
-        ratings_data.append({'user_id': student_id, 'item_id': f"comm_{community}", 'rating': 0.1})
-    
-    # Add skills as implicit ratings
-    for skill in row['Compétences']:
-        # Weight by travaux_collaboratifs score
-        weight = min(1.0, 0.4 + row['Travaux_Collaboratifs'] / 20)
-        ratings_data.append({'user_id': student_id, 'item_id': f"skill_{skill}", 'rating': weight})
-    
-    # Add negative samples for skills
-    other_skills = all_skills - set(row['Compétences'])
-    for skill in list(other_skills)[:2]:  # Add 2 negative samples
-        ratings_data.append({'user_id': student_id, 'item_id': f"skill_{skill}", 'rating': 0.2})
-    
-    # Add interests as implicit ratings
-    for interest in row['Centres_d\'Intérêt']:
-        ratings_data.append({'user_id': student_id, 'item_id': f"int_{interest}", 'rating': 0.9})
-    
-    # Add negative samples for interests
-    other_interests = all_interests - set(row['Centres_d\'Intérêt'])
-    for interest in list(other_interests)[:2]:  # Add 2 negative samples
-        ratings_data.append({'user_id': student_id, 'item_id': f"int_{interest}", 'rating': 0.3})
-
-ratings_df = pd.DataFrame(ratings_data)
-print(f"Created {len(ratings_df)} implicit ratings from student profiles")
-
-# Define the reader for Surprise
-reader = Reader(rating_scale=(0, 1))
-dataset = Dataset.load_from_df(ratings_df[['user_id', 'item_id', 'rating']], reader)
-
-# Split data into training and test sets (80% train, 20% test)
-print("Splitting data into training and test sets...")
-trainset, testset = train_test_split(dataset, test_size=0.2, random_state=42)
-print(f"Data split into training set ({len(trainset.build_testset())}) and test set ({len(testset)})")
-
-# Train the KNNBasic model
-print("Training KNN model...")
-sim_options = {
-    'name': 'cosine',  # Use cosine similarity
-    'user_based': True,  # User-based collaborative filtering
-    'min_support': 3,   # Minimum number of common items
-}
-model = KNNBasic(k=10, sim_options=sim_options)
-model.fit(trainset)
-print("KNN model training complete")
-
-# Evaluate the model's accuracy on the test set
-print("Evaluating model accuracy on the test set...")
-predictions = model.test(testset)
-rmse = accuracy.rmse(predictions)
-mae = accuracy.mae(predictions)
-print(f"Model accuracy on test set: RMSE = {rmse:.4f}, MAE = {mae:.4f}")
-
-# Perform cross-validation to avoid overfitting
-print("Performing cross-validation...")
-cross_validation_results = cross_validate(
-    model, dataset, measures=['RMSE', 'MAE'], cv=5, verbose=True
-)
-print("Cross-validation results:")
-print(cross_validation_results)
-
-# Function to calculate precision and recall for recommendations
-def precision_recall_at_k(predictions, k=5, threshold=0.5):
-    user_est_true = {}
-    for uid, _, true_r, est, _ in predictions:
-        if uid not in user_est_true:
-            user_est_true[uid] = []
-        user_est_true[uid].append((est, true_r))
-    
-    precisions = {}
-    recalls = {}
-    for uid, user_ratings in user_est_true.items():
-        user_ratings.sort(key=lambda x: x[0], reverse=True)
-        n_rel = sum((true_r >= threshold) for (_, true_r) in user_ratings)
-        n_rec_k = min(k, len(user_ratings))
-        n_rel_and_rec_k = sum(((true_r >= threshold) and (est >= threshold)) 
-                              for (est, true_r) in user_ratings[:n_rec_k])
+        df = pd.read_csv(dataset_path)
         
-        precisions[uid] = n_rel_and_rec_k / n_rec_k if n_rec_k != 0 else 0
-        recalls[uid] = n_rel_and_rec_k / n_rel if n_rel != 0 else 0
+        # Convert string representations of lists to actual lists
+        for column in ['Coéquipiers', 'Communautés', 'Compétences', "Centres_d'Intérêt"]:
+            df[column] = df[column].apply(ast.literal_eval)
+            
+        logging.info(f"Successfully loaded data with {df.shape[0]} students")
+        return df
+    except Exception as e:
+        logging.error(f"Error loading data: {str(e)}")
+        raise
+
+def create_interaction_matrix(df):
+    """
+    Create a matrix of student-to-student interactions for collaborative filtering.
     
-    return precisions, recalls
-
-# Calculate precision and recall
-precisions, recalls = precision_recall_at_k(predictions, k=5, threshold=0.5)
-
-# Average precision and recall
-avg_precision = sum(prec for prec in precisions.values()) / len(precisions) if precisions else 0
-avg_recall = sum(rec for rec in recalls.values()) / len(recalls) if recalls else 0
-print(f"Recommendation metrics: Precision@5 = {avg_precision:.4f}, Recall@5 = {avg_recall:.4f}")
-
-# Function to recommend items (communities, skills, interests) for a given student
-def recommend_items(model, student_id, all_items, rated_items, top_n=5):
-    """Recommend top-N items for a student based on the trained model."""
-    print(f"\nGenerating recommendations for Student {student_id}...")
-    recommendations = []
+    This creates synthetic ratings based on:
+    1. Existing teammate relationships
+    2. Shared communities
+    3. Skill complementarity
+    4. Interest overlap
+    """
+    logging.info("Creating interaction matrix")
     
-    # Predict ratings for all unrated items
-    for item in all_items:
-        if item not in rated_items:
-            try:
-                predicted_rating = model.predict(student_id, item).est
-                recommendations.append((item, predicted_rating))
-            except Exception as e:
-                print(f"Error predicting rating for {student_id}, {item}: {e}")
+    # Generate all possible student pairs
+    student_ids = df['ID_Étudiant'].unique()
+    ratings_data = []
+    
+    # Process each student
+    for student_id in student_ids:
+        student = df[df['ID_Étudiant'] == student_id].iloc[0]
+        
+        # Create synthetic interactions with other students
+        for other_id in student_ids:
+            if student_id == other_id:
                 continue
+                
+            other_student = df[df['ID_Étudiant'] == other_id].iloc[0]
+            
+            # Base rating - neutral
+            rating = 3.0
+            
+            # Factor 1: Existing teammates get a boost
+            if other_id in student['Coéquipiers']:
+                rating += 1.5
+                
+            # Factor 2: Shared communities
+            shared_communities = set(student['Communautés']).intersection(set(other_student['Communautés']))
+            rating += len(shared_communities) * 0.5
+            
+            # Factor 3: Skill complementarity (skills the other has that I don't)
+            complementary_skills = set(other_student['Compétences']).difference(set(student['Compétences']))
+            rating += len(complementary_skills) * 0.3
+            
+            # Factor 4: Shared interests
+            shared_interests = set(student["Centres_d'Intérêt"]).intersection(set(other_student["Centres_d'Intérêt"]))
+            rating += len(shared_interests) * 0.4
+            
+            # Factor 5: Other student's collaboration score
+            rating += (other_student['Travaux_Collaboratifs'] / 10) * 0.5
+            
+            # Normalize to 1-5 scale
+            rating = min(max(rating, 1.0), 5.0)
+            
+            # Add to ratings data
+            ratings_data.append((student_id, other_id, rating))
     
-    # Sort recommendations by predicted rating
-    recommendations.sort(key=lambda x: x[1], reverse=True)
+    # Create DataFrame with ratings
+    ratings_df = pd.DataFrame(ratings_data, columns=['studentId', 'partnerId', 'rating'])
+    logging.info(f"Created interaction matrix with {len(ratings_df)} ratings")
     
-    # Return the top-N recommendations
-    top_recommendations = recommendations[:top_n]
-    print(f"Top {top_n} recommendations for Student {student_id}:")
-    for item, score in top_recommendations:
-        print(f"  - {item} (Predicted Rating: {score:.4f})")
+    return ratings_df
+
+def train_surprise_models(ratings_df):
+    """Train SVD and KNN models using Surprise library."""
+    logging.info("Training recommendation models")
     
-    return top_recommendations
-
-# Get all unique items (communities, skills, interests)
-all_items = set(ratings_df['item_id'])
-
-# Example: Recommend items for a specific student (e.g., Student 1)
-student_id = 1
-try:
-    rated_items = ratings_df[ratings_df['user_id'] == student_id]['item_id'].unique()
-    recommend_items(model, student_id, all_items, rated_items, top_n=5)
-except Exception as e:
-    print(f"Error generating recommendations for student {student_id}: {e}")
-
-# Add student feature vectors for cold-start recommendations
-print("\nCreating feature vectors for students...")
-student_features = {}
-
-for idx, row in data.iterrows():
-    student_id = row['ID_Étudiant']
+    # Create Surprise dataset
+    reader = Reader(rating_scale=(1, 5))
+    data = Dataset.load_from_df(ratings_df, reader)
     
-    # Create a feature vector for the student
-    feature_vector = {
-        'travaux_collaboratifs': row['Travaux_Collaboratifs'] / 10.0,  # Normalize to [0,1]
-        'nombre_interactions': row['Nombre_Interactions'] / 100.0,  # Normalize to [0,1]
-        'communautes': {comm: 1.0 for comm in row['Communautés']},
-        'competences': {skill: 1.0 for skill in row['Compétences']},
-        'interets': {interest: 1.0 for interest in row['Centres_d\'Intérêt']}
+    # Split data
+    trainset, testset = train_test_split(data, test_size=0.2, random_state=42)
+    
+    # Train SVD model (matrix factorization)
+    svd_model = SVD(n_factors=20, lr_all=0.005, reg_all=0.02, n_epochs=50, verbose=False)
+    svd_model.fit(trainset)
+    
+    # Train KNN model (item-based collaborative filtering)
+    # Compute similarities between items (partners)
+    sim_options = {
+        'name': 'cosine',
+        'user_based': False  # Item-based similarity
     }
+    knn_model = KNNBasic(sim_options=sim_options, k=10, min_k=1, verbose=False)
+    knn_model.fit(trainset)
     
-    student_features[student_id] = feature_vector
+    # Evaluate models
+    svd_predictions = svd_model.test(testset)
+    knn_predictions = knn_model.test(testset)
+    
+    logging.info(f"SVD model RMSE: {accuracy.rmse(svd_predictions):.4f}")
+    logging.info(f"KNN model RMSE: {accuracy.rmse(knn_predictions):.4f}")
+    
+    # Return better model and both predictions
+    if accuracy.rmse(svd_predictions) < accuracy.rmse(knn_predictions):
+        logging.info("SVD model performed better, using it as primary model")
+        primary_model = svd_model
+        primary_model_name = "SVD"
+    else:
+        logging.info("KNN model performed better, using it as primary model")
+        primary_model = knn_model
+        primary_model_name = "KNN"
+    
+    return {
+        'primary_model': primary_model,
+        'primary_model_name': primary_model_name,
+        'svd_model': svd_model,
+        'knn_model': knn_model,
+        'trainset': trainset
+    }
 
-# Save the model, data, and feature vectors for later use
-print("\nSaving model and data...")
-with open('model.pkl', 'wb') as f:
-    pickle.dump(model, f)
+def compute_student_similarities(df):
+    """Compute student similarities based on profile attributes."""
+    logging.info("Computing student similarities")
+    
+    similarities = {}
+    student_ids = df['ID_Étudiant'].unique()
+    
+    for student_id in student_ids:
+        student = df[df['ID_Étudiant'] == student_id].iloc[0]
+        student_similarities = {}
+        
+        for other_id in student_ids:
+            if student_id == other_id:
+                continue
+                
+            other_student = df[df['ID_Étudiant'] == other_id].iloc[0]
+            
+            # Compute similarity components
+            # 1. Skill similarity (Jaccard)
+            skills_a = set(student['Compétences'])
+            skills_b = set(other_student['Compétences'])
+            skill_similarity = len(skills_a.intersection(skills_b)) / len(skills_a.union(skills_b)) if skills_a.union(skills_b) else 0
+            
+            # 2. Interest similarity (Jaccard)
+            interests_a = set(student["Centres_d'Intérêt"])
+            interests_b = set(other_student["Centres_d'Intérêt"])
+            interest_similarity = len(interests_a.intersection(interests_b)) / len(interests_a.union(interests_b)) if interests_a.union(interests_b) else 0
+            
+            # 3. Community similarity (Jaccard)
+            communities_a = set(student['Communautés'])
+            communities_b = set(other_student['Communautés'])
+            community_similarity = len(communities_a.intersection(communities_b)) / len(communities_a.union(communities_b)) if communities_a.union(communities_b) else 0
+            
+            # 4. Collaboration score similarity
+            collab_similarity = 1 - (abs(student['Travaux_Collaboratifs'] - other_student['Travaux_Collaboratifs']) / 10)
+            
+            # 5. Interaction count similarity
+            max_interactions = df['Nombre_Interactions'].max()
+            interaction_similarity = 1 - (abs(student['Nombre_Interactions'] - other_student['Nombre_Interactions']) / max_interactions) if max_interactions > 0 else 0
+            
+            # Combine similarities
+            combined_similarity = (
+                skill_similarity * 0.25 +
+                interest_similarity * 0.25 +
+                community_similarity * 0.2 +
+                collab_similarity * 0.15 +
+                interaction_similarity * 0.15
+            )
+            
+            student_similarities[other_id] = {
+                'combined': combined_similarity,
+                'skill': skill_similarity,
+                'interest': interest_similarity,
+                'community': community_similarity,
+                'collaboration': collab_similarity,
+                'interaction': interaction_similarity
+            }
+            
+        similarities[student_id] = student_similarities
+    
+    return similarities
 
-with open('data.pkl', 'wb') as f:
-    pickle.dump(data, f)
+def create_feature_matrix(df):
+    """Create a feature matrix for KNN model."""
+    logging.info("Creating feature matrix for KNN model")
+    
+    # Extract skill names, interests, and communities
+    all_skills = set()
+    all_interests = set()
+    all_communities = set()
+    
+    for _, row in df.iterrows():
+        all_skills.update(row['Compétences'])
+        all_interests.update(row["Centres_d'Intérêt"])
+        all_communities.update(row['Communautés'])
+    
+    feature_columns = []
+    
+    # Create one-hot encoding for categorical features
+    for skill in sorted(all_skills):
+        df[f'skill_{skill}'] = df['Compétences'].apply(lambda x: 1 if skill in x else 0)
+        feature_columns.append(f'skill_{skill}')
+        
+    for interest in sorted(all_interests):
+        df[f'interest_{interest}'] = df["Centres_d'Intérêt"].apply(lambda x: 1 if interest in x else 0)
+        feature_columns.append(f'interest_{interest}')
+        
+    for community in sorted(all_communities):
+        df[f'community_{community}'] = df['Communautés'].apply(lambda x: 1 if community in x else 0)
+        feature_columns.append(f'community_{community}')
+    
+    # Add numerical features
+    df['collaboration_score'] = df['Travaux_Collaboratifs'] / 10  # Normalize to 0-1
+    feature_columns.append('collaboration_score')
+    
+    if df['Nombre_Interactions'].max() > 0:
+        df['interaction_normalized'] = df['Nombre_Interactions'] / df['Nombre_Interactions'].max()
+    else:
+        df['interaction_normalized'] = 0
+    feature_columns.append('interaction_normalized')
+    
+    logging.info(f"Created feature matrix with {len(feature_columns)} features")
+    return df, feature_columns
 
-with open('student_features.pkl', 'wb') as f:
-    pickle.dump(student_features, f)
+def train_knn_model(df, feature_columns):
+    """Train a KNN model for finding similar students."""
+    logging.info("Training KNN model for similar students")
+    
+    X = df[feature_columns].values
+    
+    # Create and train the KNN model
+    knn = NearestNeighbors(n_neighbors=11, algorithm='auto', metric='cosine')
+    knn.fit(X)
+    
+    # Create a pipeline with the KNN model
+    pipeline = Pipeline([
+        ('knn', knn)
+    ])
+    
+    return pipeline
 
-# Save metadata about all possible categories
-metadata = {
-    'all_communities': list(all_communities),
-    'all_skills': list(all_skills),
-    'all_interests': list(all_interests)
-}
+def save_models(surprise_models, similarities, df, knn_model, feature_columns, output_dir='./model'):
+    """Save all trained models and data."""
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        
+    # Save Surprise models
+    surprise_models_path = os.path.join(output_dir, 'surprise_models.pkl')
+    with open(surprise_models_path, 'wb') as f:
+        pickle.dump(surprise_models, f)
+    logging.info(f"Surprise models saved to {surprise_models_path}")
+    
+    # Save similarities
+    similarities_path = os.path.join(output_dir, 'student_similarities.pkl')
+    with open(similarities_path, 'wb') as f:
+        pickle.dump(similarities, f)
+    logging.info(f"Similarities saved to {similarities_path}")
+    
+    # Save KNN model
+    knn_model_path = os.path.join(output_dir, 'knn_model.pkl')
+    with open(knn_model_path, 'wb') as f:
+        pickle.dump(knn_model, f)
+    logging.info(f"KNN model saved to {knn_model_path}")
+    
+    # Save feature columns
+    feature_columns_path = os.path.join(output_dir, 'feature_columns.pkl')
+    with open(feature_columns_path, 'wb') as f:
+        pickle.dump(feature_columns, f)
+    logging.info(f"Feature columns saved to {feature_columns_path}")
+    
+    # Save original dataframe
+    df_path = os.path.join(output_dir, 'processed_df.pkl')
+    with open(df_path, 'wb') as f:
+        pickle.dump(df, f)
+    logging.info(f"Processed dataframe saved to {df_path}")
 
-with open('metadata.pkl', 'wb') as f:
-    pickle.dump(metadata, f)
+def generate_recommendations(models, student_id, n=5):
+    """Generate recommendations for a student using the trained model."""
+    primary_model = models['primary_model']
+    trainset = models['trainset']
+    
+    # Get inner user id
+    try:
+        inner_user_id = trainset.to_inner_uid(student_id)
+    except ValueError:
+        logging.error(f"Student {student_id} not found in training set")
+        return []
+    
+    # Get all items (partners) the user has not interacted with
+    user_items = set([j for (j, _) in trainset.ur[inner_user_id]])
+    all_items = set(range(trainset.n_items))
+    missing = list(all_items - user_items)
+    
+    # Predict ratings for all missing items
+    predictions = []
+    for item_id in missing:
+        try:
+            partner_id = trainset.to_raw_iid(item_id)
+            pred = primary_model.predict(student_id, partner_id).est
+            predictions.append((partner_id, pred))
+        except ValueError:
+            continue
+    
+    # Sort predictions by estimated rating
+    predictions.sort(key=lambda x: x[1], reverse=True)
+    
+    # Return top N recommendations
+    return predictions[:n]
 
-# Save accuracy metrics for reference
-accuracy_metrics = {
-    'rmse': rmse,
-    'mae': mae,
-    'precision@5': avg_precision,
-    'recall@5': avg_recall
-}
+def main():
+    logging.info("Starting model training")
+    
+    # Define paths
+    dataset_path = './Dataset/dataset_etudiants.csv'
+    output_dir = './model'
+    
+    # Load data
+    df = load_data(dataset_path)
+    
+    # Create interaction matrix
+    ratings_df = create_interaction_matrix(df)
+    
+    # Train surprise models
+    surprise_models = train_surprise_models(ratings_df)
+    
+    # Compute student similarities
+    similarities = compute_student_similarities(df)
+    
+    # Create feature matrix and train KNN model
+    df_features, feature_columns = create_feature_matrix(df)
+    knn_model = train_knn_model(df_features, feature_columns)
+    
+    # Save models and data
+    save_models(surprise_models, similarities, df_features, knn_model, feature_columns, output_dir)
+    
+    # Test model with a sample student
+    student_id = 1
+    recommendations = generate_recommendations(surprise_models, student_id, n=5)
+    
+    logging.info(f"Sample recommendations for student {student_id}:")
+    for partner_id, score in recommendations:
+        partner_name = df[df['ID_Étudiant'] == partner_id].iloc[0]['Nom']
+        logging.info(f"  {partner_name} (ID: {partner_id}) - Score: {score:.4f}")
+    
+    logging.info("Model training completed successfully")
 
-with open('accuracy_metrics.pkl', 'wb') as f:
-    pickle.dump(accuracy_metrics, f)
-
-# Verify the files were created and show their sizes
-try:
-    model_size = os.path.getsize('model.pkl') / 1024  # KB
-    data_size = os.path.getsize('data.pkl') / 1024  # KB
-    metrics_size = os.path.getsize('accuracy_metrics.pkl') / 1024  # KB
-    features_size = os.path.getsize('student_features.pkl') / 1024  # KB
-    metadata_size = os.path.getsize('metadata.pkl') / 1024  # KB
-
-    print(f"\nModel saved: model.pkl ({model_size:.2f} KB)")
-    print(f"Data saved: data.pkl ({data_size:.2f} KB)")
-    print(f"Student features saved: student_features.pkl ({features_size:.2f} KB)")
-    print(f"Metadata saved: metadata.pkl ({metadata_size:.2f} KB)")
-    print(f"Accuracy metrics saved: accuracy_metrics.pkl ({metrics_size:.2f} KB)")
-except Exception as e:
-    print(f"Error checking file sizes: {e}")
-
-print("Model training and evaluation complete!")
+if __name__ == "__main__":
+    main()
