@@ -1,6 +1,12 @@
 # Étape 1 : image de base
 FROM python:3.10-slim
 
+# Étape : installation des dépendances système nécessaires pour scikit-surprise
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libatlas-base-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Étape 2 : définir le dossier de travail
 WORKDIR /app
 
