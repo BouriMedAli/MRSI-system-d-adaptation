@@ -3,10 +3,10 @@ name: Build and Test Docker
 on:
   push:
     branches:
-      - eya-surpriseknn
+      - eya-supriseknn
   pull_request:
     branches:
-      - eya-surpriseknn
+      - eya-supriseknn
 
 jobs:
   build:
