@@ -31,13 +31,14 @@ def load_all_resources():
     print("Loading model and student data...")
     model = load_pickle_file('model.pkl', 'model')
     data = load_pickle_file('data.pkl', 'data')
-    student_features = load_pickle_file('student_features.pkl', 'student features')
-    metadata = load_pickle_file('metadata.pkl', 'metadata')
+    #student_features = load_pickle_file('student_features.pkl', 'student features')
+    #metadata = load_pickle_file('metadata.pkl', 'metadata')
     print("Loaded all resources successfully.")
-    return model, data, student_features, metadata
+    # return model, data, student_features, metadata
+    return model, data
 
-model, data, student_features, metadata = load_all_resources()
-
+#model, data, student_features, metadata = load_all_resources()
+model, data = load_all_resources()
 # Preprocessed sets for fast lookup
 student_communities = {row['ID_Étudiant']: set(row['Communautés']) for _, row in data.iterrows()}
 student_skills = {row['ID_Étudiant']: set(row['Compétences']) for _, row in data.iterrows()}
