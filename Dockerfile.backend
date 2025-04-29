@@ -6,6 +6,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY recommendation_system.py .
-COPY dataset_etudiants.csv .
+COPY Dataset/dataset_etudiants.csv .
 
 CMD ["python", "recommendation_system.py"]
