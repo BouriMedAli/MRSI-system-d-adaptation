@@ -21,26 +21,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Log in to DockerHub
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-  
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # Step 2: Build all Docker images
       - name: Build and push backend image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/student-recommender-backend:latest -f Dockerfile.backend .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/student-recommender-backend:latest
-  
+
       - name: Build and push api image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/student-recommender-api:latest -f Dockerfile.api .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/student-recommender-api:latest
-          echo "Successfully pushed images to DockerHub"  
-          
+          echo "Successfully pushed images to DockerHub"
+
       - name: Build and push frontend image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/student-recommender-frontend:latest -f Dockerfile.frontend .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/student-recommender-frontend:latest
-          
-          echo "Successfully pushed images to DockerHub"
