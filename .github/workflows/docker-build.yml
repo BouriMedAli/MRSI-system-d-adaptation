@@ -21,34 +21,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      # Step 2: Build the Docker image and run KNN.py inside a container
-      - name: Build and train model
-        run: |
-          # First, build a temporary container to run KNN.py
-          docker build -t knn-temp -f Dockerfile.train .
-          
-          # Run the training container to generate model files
-          docker run --name knn-trainer knn-temp
-          
-          # Copy the generated model files from the container
-          docker cp knn-trainer:/app/model/. ./model/
-          
-          # Verify model files were created
-          ls -la model/
-          
-          # Remove temporary container
-          docker rm knn-trainer
-      
-      # Step 3: Build all Docker images
+      # Step 2: Build all Docker images
       - name: Build Docker images
         run: |
           # Build API image
-          docker build -t knn-recommendation-api -f Dockerfile.app .
+          docker build -t recommendation-api -f Dockerfile.app .
           
           # Build frontend image
-          docker build -t knn-recommendation-frontend -f Dockerfile.front .
+          docker build -t recommendation-frontend -f Dockerfile.front .
 
-      # Step 4: Log in to Docker Hub
+      # Step 3: Log in to Docker Hub
       - name: Log in to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         uses: docker/login-action@v2
@@ -61,11 +43,11 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/KNN-bouri'
         run: |
           # Tag and push API image
-          docker tag knn-recommendation-api ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-api:latest
+          docker tag recommendation-api ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-api:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-api:latest
           
           # Tag and push frontend image
-          docker tag knn-recommendation-frontend ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-frontend:latest
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/knn-recommendation-frontend:latest
+          docker tag knn-recommendation-frontend ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-frontend:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-frontend:latest
           
           echo "Successfully pushed images to DockerHub"

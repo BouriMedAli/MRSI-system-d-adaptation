@@ -19,12 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code into the container
 COPY app.py .
+COPY Dataset/dataset_etudiants.csv .
 
 # Expose the port FastAPI will run on
 EXPOSE 8000
-
-# Create model directory
-RUN mkdir -p model
 
 # Start the FastAPI app
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

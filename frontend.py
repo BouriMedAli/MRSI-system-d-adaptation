@@ -1,291 +1,383 @@
 import streamlit as st
+import pandas as pd
 import requests
 import json
-import pandas as pd
-import time
+import networkx as nx
+import matplotlib.pyplot as plt
+import numpy as np
+import base64
+from io import BytesIO
+import plotly.graph_objects as go
+import plotly.express as px
+from PIL import Image
 
-# Streamlit app configuration
-st.set_page_config(page_title="Student Recommendation System", layout="wide")
+# Set page config
+st.set_page_config(
+    page_title="Student Collaboration System",
+    page_icon="🎓",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# API endpoints
-API_URL = "http://localhost:8000/recommend/"
-REGISTER_URL = "http://localhost:8000/register/"
-CATEGORIES_URL = "http://localhost:8000/categories/"
-HEALTH_URL = "http://localhost:8000/health/"
+# Define the API URL (either local or from docker-compose)
+API_URL = "http://localhost:8000"  # Use backend service name from docker-compose
 
-# Check API connection
-@st.cache_data(ttl=60)  # Cache for 60 seconds
-def check_api_connection():
+# Function to load data from API
+@st.cache_data(ttl=600)
+def load_data():
     try:
-        response = requests.get(HEALTH_URL, timeout=2)
-        return response.status_code == 200
-    except:
-        return False
-
-# Initialize session state
-if 'categories' not in st.session_state:
-    api_available = check_api_connection()
-    if api_available:
-        try:
-            response = requests.get(CATEGORIES_URL)
-            if response.status_code == 200:
-                st.session_state.categories = response.json()
-            else:
-                st.session_state.categories = {
-                    "communities": ["Club Robotique", "Groupe IA", "Club Entrepreneurs", "Association Écologie", "Club Data Science"],
-                    "skills": ["Blockchain", "IA", "Data Science", "Python", "Design", "Électronique", "Marketing"],
-                    "interests": ["Jeux vidéo", "Musique", "Robotique", "Entrepreneuriat", "Écologie", "Hackathon"]
-                }
-        except Exception as e:
-            st.error(f"Failed to connect to API: {str(e)}")
-            st.session_state.categories = {
-                "communities": ["Club Robotique", "Groupe IA", "Club Entrepreneurs", "Association Écologie", "Club Data Science"],
-                "skills": ["Blockchain", "IA", "Data Science", "Python", "Design", "Électronique", "Marketing"],
-                "interests": ["Jeux vidéo", "Musique", "Robotique", "Entrepreneuriat", "Écologie", "Hackathon"]
-            }
-    else:
-        st.session_state.categories = {
-            "communities": ["Club Robotique", "Groupe IA", "Club Entrepreneurs", "Association Écologie", "Club Data Science"],
-            "skills": ["Blockchain", "IA", "Data Science", "Python", "Design", "Électronique", "Marketing"],
-            "interests": ["Jeux vidéo", "Musique", "Robotique", "Entrepreneuriat", "Écologie", "Hackathon"]
-        }
-
-# Display connection status
-api_status = check_api_connection()
-if not api_status:
-    st.warning("⚠️ API connection not available. Some features may not work.")
-
-# Create tabs
-recommend_tab, register_tab, about_tab = st.tabs(["Get Recommendations", "Register New Student", "About"])
-
-# --- Recommendation Tab ---
-with recommend_tab:
-    st.title("Student Recommendation System")
-
-    with st.form(key="recommendation_form"):
-        st.subheader("Enter Student Profile")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            travaux_collaboratifs = st.slider("Travaux Collaboratifs", 0, 10, 7)
-            nombre_interactions = st.slider("Nombre Interactions", 0, 100, 50)
-            is_existing = st.checkbox("Existing Student")
-            student_id = None
-            if is_existing:
-                student_id = st.number_input("Student ID", min_value=1, value=1)
-            num_recommendations = st.slider("Number of Recommendations", 1, 10, 5)
-
-        with col2:
-            categories = st.session_state.categories
-            communautes = st.multiselect("Communautés", categories.get("communities", []))
-            competences = st.multiselect("Compétences", categories.get("skills", []))
-            interets = st.multiselect("Centres d'Intérêt", categories.get("interests", []))
-
-        submit_button = st.form_submit_button(label="Get Recommendations")
-
-    if submit_button:
-        # Ensure at least one option is selected from each category
-        if not communautes:
-            communautes = categories.get("communities", [])[:1]  # Select first option as default
-        if not competences:
-            competences = categories.get("skills", [])[:1]  # Select first option as default
-        if not interets:
-            interets = categories.get("interests", [])[:1]  # Select first option as default
-            
-        query_profile = {
-            "numeric": [float(travaux_collaboratifs), float(nombre_interactions)],
-            "communautés": communautes,
-            "compétences": competences,
-            "centres_d_intérêt": interets,
-            "num_recommendations": num_recommendations
-        }
-        if is_existing and student_id:
-            query_profile["student_id"] = student_id
-
-        try:
-            with st.spinner("Getting recommendations..."):
-                start_time = time.time()
-                response = requests.post(API_URL, json=query_profile)
-                request_time = time.time() - start_time
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    recommendations = data["recommended_students"]
-                    api_time = data["metadata"]["processing_time_ms"]
-                    total_time = request_time * 1000  # Convert to ms
-                    
-                    st.success(f"Recommendations retrieved in {api_time:.1f} ms (API) / {total_time:.1f} ms (total)")
-
-                    if not recommendations:
-                        st.info("No recommendations found matching your criteria.")
-                    else:
-                        st.subheader(f"{len(recommendations)} Recommended Students")
-                        for i, student in enumerate(recommendations, 1):
-                            # Ensure we have lists for all student attributes (not None)
-                            student_communities = student.get("Communautés", []) or []
-                            student_skills = student.get("Compétences", []) or []
-                            student_interests = student.get("Centres_d_Intérêt", []) or []
-                            
-                            common_communities = set(communautes).intersection(set(student_communities))
-                            common_skills = set(competences).intersection(set(student_skills))
-                            common_interests = set(interets).intersection(set(student_interests))
-                            
-                            # Get numerical attributes with defaults
-                            student_collab = student.get("Travaux_Collaboratifs", 5)
-                            student_interact = student.get("Nombre_Interactions", 50)
-                            
-                            collab_diff = abs(travaux_collaboratifs - student_collab)
-                            interact_diff = abs(nombre_interactions - student_interact)
-
-                            st.markdown(f"---")
-                            col1, col2 = st.columns([1, 3])
-                            with col1:
-                                st.write(f"### {i}. {student['Nom']}")
-                                st.write(f"ID: {student['ID_Étudiant']}")
-                            with col2:
-                                # Ensure similarity score is between 0 and 1 for progress bar
-                                normalized_score = min(max(student.get('similarity_score', 0.5), 0), 1.0)
-                                st.progress(normalized_score)
-                                st.write(f"Similarity: {normalized_score:.2f}")
-
-                            with st.expander(f"Details for {student['Nom']}"):
-                                st.write(f"**Collaborative Work Score:** {student_collab}")
-                                st.write(f"**Number of Interactions:** {student_interact}")
-                                
-                                # Display communities, skills, and interests (ensure we never show "None")
-                                st.write("**Communities:**", ", ".join(student_communities) if student_communities else "No communities")
-                                st.write("**Skills:**", ", ".join(student_skills) if student_skills else "No skills")
-                                st.write("**Interests:**", ", ".join(student_interests) if student_interests else "No interests")
-                                
-                                st.write("**Why this student is recommended:**")
-                                summary_parts = []
-                                if common_communities:
-                                    summary_parts.append(f"shares {len(common_communities)} community(ies): {', '.join(common_communities)}")
-                                if common_skills:
-                                    summary_parts.append(f"has {len(common_skills)} skill(s) in common: {', '.join(common_skills)}")
-                                if common_interests:
-                                    summary_parts.append(f"shares {len(common_interests)} interest(s): {', '.join(common_interests)}")
-                                if collab_diff <= 2:
-                                    summary_parts.append("has a similar collaborative work style")
-                                if interact_diff <= 10:
-                                    summary_parts.append("has a similar level of interaction")
-                                    
-                                # Ensure we always have something to say about the recommendation
-                                if not summary_parts:
-                                    if len(student_communities) > 0:
-                                        summary_parts.append(f"is part of the {student_communities[0]} community")
-                                    elif len(student_skills) > 0:
-                                        summary_parts.append(f"has {student_skills[0]} skills")
-                                    elif len(student_interests) > 0:
-                                        summary_parts.append(f"is interested in {student_interests[0]}")
-                                    else:
-                                        summary_parts.append("has a complementary profile")
-                                        
-                                st.write("This student " + (", ".join(summary_parts) + "."))
-
-                                st.write("**Similarity Breakdown:**")
-                                st.write(f"- Common Communities: {len(common_communities)} ({', '.join(common_communities) if common_communities else 'Different communities'})")
-                                st.write(f"- Common Skills: {len(common_skills)} ({', '.join(common_skills) if common_skills else 'Different skills'})")
-                                st.write(f"- Common Interests: {len(common_interests)} ({', '.join(common_interests) if common_interests else 'Different interests'})")
-                                st.write(f"- Collaborative Work Difference: {collab_diff}")
-                                st.write(f"- Interactions Difference: {interact_diff}")
-
-                else:
-                    st.error(f"Error: {response.status_code} - {response.text}")
-        except Exception as e:
-            st.error(f"Connection failed: {str(e)}")
-            if not api_status:
-                st.info("The API service appears to be offline. Please check the backend service.")
-
-# --- Registration Tab ---
-with register_tab:
-    st.title("Register New Student")
-    with st.form(key="registration_form"):
-        col1, col2 = st.columns(2)
-
-        with col1:
-            nom = st.text_input("Student Name")
-            travaux_collaboratifs = st.slider("Travaux Collaboratifs", 0, 10, 5, key="reg_tc")
-            nombre_interactions = st.slider("Nombre Interactions", 0, 100, 50, key="reg_ni")
-
-        with col2:
-            communautes = st.multiselect("Communautés", st.session_state.categories.get("communities", []), key="reg_comm")
-            competences = st.multiselect("Compétences", st.session_state.categories.get("skills", []), key="reg_comp")
-            interets = st.multiselect("Centres d'Intérêt", st.session_state.categories.get("interests", []), key="reg_int")
-
-        submit_registration = st.form_submit_button(label="Register Student")
-
-    if submit_registration:
-        if not nom:
-            st.error("Student name is required")
-        elif not api_status:
-            st.error("Cannot register student: API service is unavailable")
+        # Get all student data
+        response = requests.get(f"{API_URL}/student_network")
+        if response.status_code == 200:
+            return response.json()
         else:
-            # Ensure at least one option is selected from each category for new students
-            if not communautes:
-                communautes = st.session_state.categories.get("communities", [])[:1]
-            if not competences:
-                competences = st.session_state.categories.get("skills", [])[:1]
-            if not interets:
-                interets = st.session_state.categories.get("interests", [])[:1]
-                
-            student_data = {
-                "nom": nom,
-                "travaux_collaboratifs": travaux_collaboratifs,
-                "nombre_interactions": nombre_interactions,
-                "communautés": communautes,
-                "compétences": competences,
-                "centres_d_intérêt": interets
-            }
-            try:
-                with st.spinner("Registering student..."):
-                    response = requests.post(REGISTER_URL, json=student_data)
-                    if response.status_code == 200:
-                        data = response.json()
-                        st.success(f"Student registered! ID: {data['student_id']}")
-                        st.balloons()
-                    else:
-                        st.error(f"Error: {response.status_code} - {response.text}")
-            except Exception as e:
-                st.error(f"Registration failed: {str(e)}")
+            st.error(f"Error loading data: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Error connecting to API: {e}")
+        return None
 
-# --- About Tab ---
-with about_tab:
-    st.title("About the Student Recommendation System")
-    st.markdown("""
-    ## How it Works
-    This system uses a hybrid recommendation approach:
-    - **Collaborative Filtering**: Based on shared attributes and past interactions
-    - **Content-Based Filtering**: Based on similarity of profile attributes
-    - **Cold-Start Handling**: Supports new users without prior history
+@st.cache_data(ttl=600)
+def get_metrics():
+    try:
+        response = requests.get(f"{API_URL}/metrics")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Error loading metrics: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Error connecting to API: {e}")
+        return None
 
-    ## Features
-    - Get personalized student recommendations
-    - Register new students into the system
-    - Detailed explanation of why students are recommended
-    - View common attributes and differences between profiles
+def get_student_recommendations(student_id, top_n=5):
+    try:
+        response = requests.get(f"{API_URL}/recommend_students/{student_id}?top_n={top_n}")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Error loading recommendations: {response.status_code}")
+            return []
+    except Exception as e:
+        st.error(f"Error connecting to API: {e}")
+        return []
 
-    ## Data Used for Matching
-    - **Collaborative Work Style**: How well students work in teams (0-10)
-    - **Interaction Level**: How socially active they are (0-100)
-    - **Communities**: Clubs and groups they belong to
-    - **Skills**: Technical and soft skills they possess
-    - **Interests**: Personal and academic interests
+def get_community_recommendations(student_id, top_n=3):
+    try:
+        response = requests.get(f"{API_URL}/recommend_communities/{student_id}?top_n={top_n}")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Error loading community recommendations: {response.status_code}")
+            return []
+    except Exception as e:
+        st.error(f"Error connecting to API: {e}")
+        return []
 
-    ## Technologies
-    - FastAPI backend with Scikit-Surprise recommendation algorithms 
-    - Streamlit interactive frontend
-    - Docker containerization for easy deployment
-    """)
+def get_student_details(student_id):
+    try:
+        response = requests.get(f"{API_URL}/student/{student_id}")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Error loading student details: {response.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Error connecting to API: {e}")
+        return None
+
+# Custom CSS for better styling
+st.markdown("""
+<style>
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1E88E5;
+        margin-bottom: 1rem;
+    }
+    .sub-header {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-top: 1rem;
+    }
+    .metric-card {
+        background-color: #f0f2f6;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 10px;
+    }
+    .recommendation-card {
+        background-color: #f7f7f7;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-left: 4px solid #1E88E5;
+    }
+    .student-info {
+        padding: 10px;
+        background-color: #e9f5fe;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .badge {
+        background-color: #1E88E5;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+        display: inline-block;
+    }
+    .interest-badge {
+        background-color: #4CAF50;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+        display: inline-block;
+    }
+    .community-badge {
+        background-color: #FF9800;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+        display: inline-block;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Create main header
+st.markdown('<div class="main-header">🎓 Student Collaboration Recommendation System</div>', unsafe_allow_html=True)
+
+# Load data
+network_data = load_data()
+metrics_data = get_metrics()
+
+# Create sidebar for student selection
+st.sidebar.markdown('<div class="sub-header">Student Selection</div>', unsafe_allow_html=True)
+
+if network_data:
+    # Extract student IDs and names
+    student_nodes = network_data["nodes"]
+    student_options = {node["id"]: f"{node['name']} (ID: {node['id']})" for node in student_nodes}
     
-    # Add system info
-    if api_status:
-        try:
-            response = requests.get("http://localhost:8000/")
-            if response.status_code == 200:
-                with st.expander("System Status"):
-                    st.success("✅ API is online and responding")
-                    st.json(response.json())
-        except:
-            pass
+    # Create a dropdown for student selection
+    selected_student_id = st.sidebar.selectbox(
+        "Select a student:",
+        options=list(student_options.keys()),
+        format_func=lambda x: student_options[x]
+    )
+    
+    # Get student details for the selected student
+    student_details = get_student_details(selected_student_id)
+    
+    # Sidebar - Model Metrics
+    st.sidebar.markdown('<div class="sub-header">Model Performance</div>', unsafe_allow_html=True)
+    
+    if metrics_data:
+        student_model = metrics_data["student_collaboration_model"]
+        community_model = metrics_data["community_recommendation_model"]
+        
+        with st.sidebar.expander("Student Collaboration Model Metrics", expanded=False):
+            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+            col1, col2 = st.columns(2)
+            col1.metric("RMSE", f"{student_model['rmse']:.3f}")
+            col2.metric("MAE", f"{student_model['mae']:.3f}")
+            
+            col3, col4 = st.columns(2)
+            col3.metric("Precision", f"{student_model['precision']:.3f}")
+            col4.metric("Recall", f"{student_model['recall']:.3f}")
+            
+            st.metric("F1 Score", f"{student_model['f1_score']:.3f}")
+            
+            # Display confusion matrix image if available
+            if "confusion_matrix_img" in student_model and student_model["confusion_matrix_img"]:
+                st.markdown("### Confusion Matrix")
+                st.image(
+                    Image.open(BytesIO(base64.b64decode(student_model["confusion_matrix_img"]))), 
+                    caption="Collaboration Compatibility Confusion Matrix"
+                )
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with st.sidebar.expander("Community Recommendation Model Metrics", expanded=False):
+            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+            col1, col2 = st.columns(2)
+            col1.metric("RMSE", f"{community_model['rmse']:.3f}")
+            col2.metric("MAE", f"{community_model['mae']:.3f}")
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Main content
+    tab1, tab2, tab3 = st.tabs(["Student Dashboard", "Recommendations", "Network Visualization"])
+    
+    with tab1:
+        if student_details:
+            col1, col2 = st.columns([1, 2])
+            
+            with col1:
+                st.markdown('<div class="sub-header">Student Profile</div>', unsafe_allow_html=True)
+                st.markdown('<div class="student-info">', unsafe_allow_html=True)
+                st.markdown(f"### {student_details['Nom']}")
+                st.markdown(f"**ID:** {student_details['ID_Étudiant']}")
+                st.markdown(f"**Collaboration Score:** {student_details['Travaux_Collaboratifs']}/10")
+                st.markdown(f"**Interaction Count:** {student_details['Nombre_Interactions']}")
+                
+                st.markdown("#### Skills")
+                skills_html = ' '.join([f'<span class="badge">{skill}</span>' for skill in student_details['Compétences']])
+                st.markdown(skills_html, unsafe_allow_html=True)
+                
+                st.markdown("#### Interests")
+                interests_html = ' '.join([f'<span class="interest-badge">{interest}</span>' for interest in student_details["Centres_d'Intérêt"]])
+                st.markdown(interests_html, unsafe_allow_html=True)
+                
+                st.markdown("#### Communities")
+                communities_html = ' '.join([f'<span class="community-badge">{community}</span>' for community in student_details['Communautés']])
+                st.markdown(communities_html, unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            with col2:
+            st.markdown('<div class="sub-header">🌐 Recommended Communities</div>', unsafe_allow_html=True)
+            community_recommendations = get_community_recommendations(selected_student_id, top_n=top_n_communities)
+            
+            if community_recommendations:
+                for i, rec in enumerate(community_recommendations):
+                    st.markdown(f'<div class="recommendation-card">', unsafe_allow_html=True)
+                    
+                    st.markdown(f"### {i+1}. {rec['recommended_community']}")
+                    
+                    # Show compatibility score
+                    compatibility = min(100, round(rec['compatibility_score'] * 20))
+                    st.progress(compatibility/100)
+                    st.markdown(f"**Compatibility Score:** {compatibility}%")
+                    
+                    # Show skills to be gained
+                    if rec['related_skills']:
+                        st.markdown("**Skills You Can Develop:**")
+                        skills_html = ' '.join([f'<span class="badge">{skill}</span>' for skill in rec['related_skills']])
+                        st.markdown(skills_html, unsafe_allow_html=True)
+                        
+                    # Show members of this community
+                    community_members = [node for node in network_data["nodes"] 
+                                       if rec['recommended_community'] in node['communities']]
+                    
+                    if community_members:
+                        with st.expander(f"View {len(community_members)} community members"):
+                            for member in community_members[:5]:  # Limit to 5 to keep it clean
+                                st.markdown(f"- **{member['name']}** (ID: {member['id']})")
+                            if len(community_members) > 5:
+                                st.markdown(f"...and {len(community_members) - 5} more")
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                st.info("No community recommendations available")
+                st.markdown('<div class="sub-header">Current Collaborations</div>', unsafe_allow_html=True)
+                
+                if student_details['Coéquipiers']:
+                    # Create a radar chart showing skills distribution
+                    fig = go.Figure()
+                    
+                    # Get all unique skills
+                    all_skills = set()
+                    teammates_data = []
+                    
+                    # Add student skills
+                    all_skills.update(student_details['Compétences'])
+                    
+                    # Add teammates skills
+                    for teammate in student_details['Coéquipiers']:
+                        teammate_detail = get_student_details(teammate['id'])
+                        if teammate_detail:
+                            teammates_data.append(teammate_detail)
+                            all_skills.update(teammate_detail['Compétences'])
+                    
+                    all_skills = list(all_skills)
+                    
+                    # Create radar chart with student and teammates
+                    # Add main student data
+                    student_skill_values = [1 if skill in student_details['Compétences'] else 0 for skill in all_skills]
+                    fig.add_trace(go.Scatterpolar(
+                        r=student_skill_values,
+                        theta=all_skills,
+                        fill='toself',
+                        name=f"{student_details['Nom']} (You)"
+                    ))
+                    
+                    # Add teammate data
+                    for teammate in teammates_data:
+                        teammate_skill_values = [1 if skill in teammate['Compétences'] else 0 for skill in all_skills]
+                        fig.add_trace(go.Scatterpolar(
+                            r=teammate_skill_values,
+                            theta=all_skills,
+                            fill='toself',
+                            name=f"{teammate['Nom']}"
+                        ))
+                    
+                    fig.update_layout(
+                        polar=dict(
+                            radialaxis=dict(
+                                visible=True,
+                                range=[0, 1]
+                            )
+                        ),
+                        title="Skills Distribution Among Collaborators",
+                        showlegend=True
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # List teammates
+                    st.markdown("#### Current Teammates")
+                    for teammate in student_details['Coéquipiers']:
+                        st.markdown(f"- **{teammate['name']}** (ID: {teammate['id']})")
+                else:
+                    st.info("This student has no current collaborators.")
+    
+    with tab2:
+        col1, col2 = st.columns(2)
+        
+        # Set number of recommendations to display
+        top_n_students = st.slider("Number of student recommendations to display", 3, 10, 5)
+        top_n_communities = st.slider("Number of community recommendations to display", 2, 5, 3)
+        
+        with col1:
+            st.markdown('<div class="sub-header">🤝 Recommended Study Partners</div>', unsafe_allow_html=True)
+            student_recommendations = get_student_recommendations(selected_student_id, top_n=top_n_students)
+            
+            if student_recommendations:
+                for i, rec in enumerate(student_recommendations):
+                    st.markdown(f'<div class="recommendation-card">', unsafe_allow_html=True)
+                    
+                    # Get recommended student details
+                    rec_student = get_student_details(rec['recommended_student_id'])
+                    if rec_student:
+                        st.markdown(f"### {i+1}. {rec_student['Nom']}")
+                        
+                        # Show compatibility metric
+                        compatibility = min(100, round(rec['compatibility_score'] * 10))
+                        st.progress(compatibility/100)
+                        st.markdown(f"**Compatibility Score:** {compatibility}%")
+                        
+                        # Show what they have in common
+                        if rec['shared_skills']:
+                            st.markdown("**Shared Skills:**")
+                            skills_html = ' '.join([f'<span class="badge">{skill}</span>' for skill in rec['shared_skills']])
+                            st.markdown(skills_html, unsafe_allow_html=True)
+                        
+                        if rec['shared_interests']:
+                            st.markdown("**Shared Interests:**")
+                            interests_html = ' '.join([f'<span class="interest-badge">{interest}</span>' for interest in rec['shared_interests']])
+                            st.markdown(interests_html, unsafe_allow_html=True)
+                            
+                        # Show complementary skills
+                        complementary_skills = set(rec_student['Compétences']) - set(student_details['Compétences'])
+                        if complementary_skills:
+                            st.markdown("**Complementary Skills You Can Learn:**")
+                            comp_skills_html = ' '.join([f'<span class="badge">{skill}</span>' for skill in complementary_skills])
+                            st.markdown(comp_skills_html, unsafe_allow_html=True)
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                st.info("No student recommendations available")

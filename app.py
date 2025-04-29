@@ -1,224 +1,356 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import pandas as pd
 import numpy as np
-import pickle
+import json
 import os
-import ast
-from typing import List, Dict, Any, Optional, Union
-import logging
-import time
+from typing import List, Dict, Optional, Any
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
+from surprise import Dataset, Reader, SVD, accuracy, KNNBasic
+from surprise.model_selection import train_test_split, cross_validate
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+from io import BytesIO
+import base64
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+app = FastAPI(title="Student Collaboration Recommendation System")
 
-app = FastAPI(title="Student Collaboration Recommender API",
-              description="API for recommending potential student collaborators")
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Load model and data
-MODEL_DIR = "./model"
-
-try:
-    with open(os.path.join(MODEL_DIR, 'knn_model.pkl'), 'rb') as f:
-        model = pickle.load(f)
+# Load and preprocess the data
+@app.on_event("startup")
+async def startup_event():
+    global student_df, model_student, model_community
     
-    with open(os.path.join(MODEL_DIR, 'feature_columns.pkl'), 'rb') as f:
-        feature_columns = pickle.load(f)
-    
-    with open(os.path.join(MODEL_DIR, 'processed_df.pkl'), 'rb') as f:
-        df = pickle.load(f)
-        
-    logger.info("Model and data loaded successfully")
-except Exception as e:
-    logger.error(f"Error loading model and data: {str(e)}")
-    model = None
-    feature_columns = None
-    df = None
-
-class Student(BaseModel):
-    id: int
-
-class RecommendationRequest(BaseModel):
-    numeric: List[float] = [7, 50]  # [travaux_collaboratifs, nombre_interactions]
-    communautés: List[str] = []
-    compétences: List[str] = []
-    centres_d_intérêt: List[str] = []  # Using underscore instead of apostrophe
-    student_id: Optional[int] = None
-    num_recommendations: int = 5
-
-class RegistrationRequest(BaseModel):
-    nom: str
-    travaux_collaboratifs: int
-    nombre_interactions: int
-    communautés: List[str]
-    compétences: List[str]
-    centres_d_intérêt: List[str]  # Using underscore instead of apostrophe
-
-class CategoryResponse(BaseModel):
-    communities: List[str]
-    skills: List[str]
-    interests: List[str]
-
-@app.get("/")
-def read_root():
-    return {"message": "Student Collaboration Recommender API is running"}
-
-@app.get("/health")
-def health_check():
-    if model is None or feature_columns is None or df is None:
-        raise HTTPException(status_code=500, detail="Model or data not loaded properly")
-    return {"status": "healthy"}
-
-@app.get("/categories")
-def get_categories():
-    """Get all categories for dropdown menus."""
-    all_communities = set()
-    all_skills = set()
-    all_interests = set()
-    
-    for _, row in df.iterrows():
-        all_communities.update(row["Communautés"])
-        all_skills.update(row["Compétences"])
-        all_interests.update(row["Centres_d'Intérêt"])
-    
-    return {
-        "communities": sorted(list(all_communities)),
-        "skills": sorted(list(all_skills)),
-        "interests": sorted(list(all_interests))
-    }
-
-@app.post("/register")
-def register_student(request: RegistrationRequest):
-    """Register a new student."""
-    global df
-    
-    if df is None:
-        raise HTTPException(status_code=500, detail="Database not available")
-    
-    # Generate a new student ID
-    new_id = int(df["ID_Étudiant"].max() + 1)
-    
-    # Create a new student record
-    new_student = {
-        "ID_Étudiant": new_id,
-        "Nom": request.nom,
-        "Travaux_Collaboratifs": request.travaux_collaboratifs,
-        "Nombre_Interactions": request.nombre_interactions,
-        "Coéquipiers": [],  # New student has no teammates yet
-        "Communautés": request.communautés,
-        "Compétences": request.compétences,
-        "Centres_d'Intérêt": request.centres_d_intérêt
-    }
-    
-    # Add to dataframe
-    df = pd.concat([df, pd.DataFrame([new_student])], ignore_index=True)
-    
-    logger.info(f"Registered new student: {request.nom} with ID {new_id}")
-    
-    return {"student_id": new_id, "message": "Student registered successfully"}
-
-@app.post("/recommend")
-def recommend_collaborators(request: RecommendationRequest):
-    """Recommend potential collaborators based on input profile."""
-    start_time = time.time()
-    
-    if model is None or feature_columns is None or df is None:
-        raise HTTPException(status_code=500, detail="Model or data not loaded properly")
-    
-    # Process either existing student or temporary profile
-    if request.student_id is not None:
-        # Check if student exists
-        student = df[df["ID_Étudiant"] == request.student_id]
-        if student.empty:
-            raise HTTPException(status_code=404, detail=f"Student with ID {request.student_id} not found")
-        
-        travaux_collaboratifs = student.iloc[0]["Travaux_Collaboratifs"]
-        nombre_interactions = student.iloc[0]["Nombre_Interactions"]
-        communautes = student.iloc[0]["Communautés"]
-        competences = student.iloc[0]["Compétences"]
-        interets = student.iloc[0]["Centres_d'Intérêt"]
-        exclude_id = request.student_id
+    # Load the CSV file
+    if os.path.exists('/app/data/dataset_etudiants.csv'):
+        file_path = '/app/data/dataset_etudiants.csv'
     else:
-        # Use provided profile data
-        travaux_collaboratifs = request.numeric[0]
-        nombre_interactions = request.numeric[1]
-        communautes = request.communautés
-        competences = request.compétences
-        interets = request.centres_d_intérêt
-        exclude_id = None
-    
-    # Create feature vector for input profile
-    feature_vector = []
-    
-    # Generate features in the same order as model expects
-    for col in feature_columns:
-        if col.startswith('skill_'):
-            skill = col[6:]  # Remove 'skill_' prefix
-            feature_vector.append(1 if skill in competences else 0)
-        elif col.startswith('interest_'):
-            interest = col[9:]  # Remove 'interest_' prefix
-            feature_vector.append(1 if interest in interets else 0)
-        elif col.startswith('community_'):
-            community = col[10:]  # Remove 'community_' prefix
-            feature_vector.append(1 if community in communautes else 0)
-        elif col == 'collaboration_score':
-            feature_vector.append(travaux_collaboratifs / 10)  # Normalize to 0-1
-        elif col == 'interaction_normalized':
-            max_interactions = df['Nombre_Interactions'].max()
-            if max_interactions > 0:
-                feature_vector.append(nombre_interactions / max_interactions)
-            else:
-                feature_vector.append(0)
-    
-    # Find nearest neighbors
-    input_vector = np.array(feature_vector).reshape(1, -1)
-    distances, indices = model.named_steps['knn'].kneighbors(input_vector)
-    
-    # Process recommendations
-    recommendations = []
-    processed_count = 0
-    
-    for i, idx in enumerate(indices[0]):
-        if processed_count >= request.num_recommendations:
-            break
-            
-        recommended_student = df.iloc[idx]
-        recommended_id = int(recommended_student["ID_Étudiant"])
+        file_path = 'dataset_etudiants.csv'  # For local development
         
-        # Skip the querying student if using an existing ID
-        if exclude_id is not None and recommended_id == exclude_id:
-            continue
-        
-        # Calculate similarities
-        common_communities = set(communautes).intersection(set(recommended_student["Communautés"]))
-        common_skills = set(competences).intersection(set(recommended_student["Compétences"]))
-        common_interests = set(interets).intersection(set(recommended_student["Centres_d'Intérêt"]))
-        
-        recommendations.append({
-            "ID_Étudiant": recommended_id,
-            "Nom": recommended_student["Nom"],
-            "Travaux_Collaboratifs": int(recommended_student["Travaux_Collaboratifs"]),
-            "Nombre_Interactions": int(recommended_student["Nombre_Interactions"]),
-            "Communautés": recommended_student["Communautés"],
-            "Compétences": recommended_student["Compétences"],
-            "Centres_d_Intérêt": recommended_student["Centres_d'Intérêt"],
-            "similarity_score": float(1.0 - distances[0][i])  # Convert distance to similarity score
-        })
-        processed_count += 1
+    student_df = pd.read_csv(file_path)
     
-    # Calculate processing time
-    processing_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+    # Process the string representations of lists
+    student_df['Coéquipiers'] = student_df['Coéquipiers'].apply(eval)
+    student_df['Communautés'] = student_df['Communautés'].apply(eval)
+    student_df['Compétences'] = student_df['Compétences'].apply(eval)
+    student_df["Centres_d'Intérêt"] = student_df["Centres_d'Intérêt"].apply(eval)
+    
+    # Create models
+    prepare_models()
+
+def prepare_models():
+    global model_student, model_community, metrics_student, metrics_community
+    
+    # Create student-student collaboration data
+    collab_data = []
+    for _, student in student_df.iterrows():
+        student_id = student['ID_Étudiant']
+        for teammate_id in student['Coéquipiers']:
+            # Add this collaboration with a score based on quality of collaboration
+            collab_data.append((student_id, teammate_id, student['Travaux_Collaboratifs']))
+    
+    # Convert to DataFrame for Surprise
+    collab_df = pd.DataFrame(collab_data, columns=['userID', 'itemID', 'rating'])
+    
+    # Create community participation data
+    community_data = []
+    for _, student in student_df.iterrows():
+        student_id = student['ID_Étudiant']
+        for community in student['Communautés']:
+            # We rate the participation based on interaction count (scaled)
+            rating = min(5, student['Nombre_Interactions'] / 20)
+            community_data.append((student_id, community, rating))
+    
+    # Convert to DataFrame for Surprise
+    community_df = pd.DataFrame(community_data, columns=['userID', 'itemID', 'rating'])
+    
+    # Create reader and datasets
+    reader = Reader(rating_scale=(1, 10))
+    data_collab = Dataset.load_from_df(collab_df, reader)
+    
+    reader_community = Reader(rating_scale=(0, 5))
+    data_community = Dataset.load_from_df(community_df, reader_community)
+    
+    # Split the data for evaluation
+    trainset_collab, testset_collab = train_test_split(data_collab, test_size=0.2)
+    trainset_community, testset_community = train_test_split(data_community, test_size=0.2)
+    
+    # Train the models
+    model_student = SVD(n_factors=5, n_epochs=20, lr_all=0.005, reg_all=0.02)
+    model_student.fit(trainset_collab)
+    
+    # For community recommendations, let's use KNN
+    sim_options = {'name': 'pearson_baseline', 'min_support': 1}
+    model_community = KNNBasic(sim_options=sim_options)
+    model_community.fit(trainset_community)
+    
+    # Evaluate the models
+    predictions_student = model_student.test(testset_collab)
+    rmse_student = accuracy.rmse(predictions_student)
+    mae_student = accuracy.mae(predictions_student)
+    
+    predictions_community = model_community.test(testset_community)
+    rmse_community = accuracy.rmse(predictions_community)
+    mae_community = accuracy.mae(predictions_community)
+    
+    # Create binary predictions for classification metrics
+    actual_ratings = [pred.r_ui for pred in predictions_student]
+    predicted_ratings = [pred.est for pred in predictions_student]
+    
+    # Convert to binary for classification metrics (above/below average)
+    avg_rating = np.mean(actual_ratings)
+    actual_binary = [1 if rating > avg_rating else 0 for rating in actual_ratings]
+    predicted_binary = [1 if rating > avg_rating else 0 for rating in predicted_ratings]
+    
+    # Create confusion matrix
+    cm = confusion_matrix(actual_binary, predicted_binary)
+    precision = precision_score(actual_binary, predicted_binary)
+    recall = recall_score(actual_binary, predicted_binary)
+    f1 = f1_score(actual_binary, predicted_binary)
+    
+    # Store all metrics
+    metrics_student = {
+        "rmse": rmse_student,
+        "mae": mae_student,
+        "precision": precision,
+        "recall": recall,
+        "f1_score": f1,
+        "confusion_matrix": cm.tolist()
+    }
+    
+    metrics_community = {
+        "rmse": rmse_community,
+        "mae": mae_community
+    }
+    
+    # Also create the confusion matrix plot for visualization
+    create_confusion_matrix_plot(cm)
+
+def create_confusion_matrix_plot(cm):
+    global confusion_matrix_img
+    
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=['Low Compatibility', 'High Compatibility'],
+                yticklabels=['Low Compatibility', 'High Compatibility'])
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix for Student Collaboration Compatibility')
+    
+    # Save the plot to a BytesIO object
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    
+    # Convert the image to base64 for easy transport
+    confusion_matrix_img = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close()
+
+# Define the response models
+class StudentRecommendation(BaseModel):
+    student_id: int
+    recommended_student_id: int
+    compatibility_score: float
+    shared_skills: List[str]
+    shared_interests: List[str]
+
+class CommunityRecommendation(BaseModel):
+    student_id: int
+    recommended_community: str
+    compatibility_score: float
+    related_skills: List[str]
+
+class ModelMetrics(BaseModel):
+    rmse: float
+    mae: float
+    precision: Optional[float] = None
+    recall: Optional[float] = None
+    f1_score: Optional[float] = None
+    confusion_matrix: Optional[List[List[int]]] = None
+    confusion_matrix_img: Optional[str] = None
+
+# API endpoints
+@app.get("/", response_model=Dict[str, str])
+async def root():
+    return {"message": "Welcome to the Student Collaboration Recommendation System API"}
+
+@app.get("/metrics", response_model=Dict[str, ModelMetrics])
+async def get_metrics():
+    # Add the confusion matrix image to the student metrics
+    student_metrics = metrics_student.copy()
+    student_metrics["confusion_matrix_img"] = confusion_matrix_img
     
     return {
-        "recommended_students": recommendations,
-        "metadata": {
-            "processing_time_ms": round(processing_time, 2),
-            "total_students": len(df),
-            "query_type": "existing_student" if request.student_id is not None else "profile_match"
-        }
+        "student_collaboration_model": ModelMetrics(**student_metrics),
+        "community_recommendation_model": ModelMetrics(**metrics_community)
     }
+
+@app.get("/recommend_students/{student_id}", response_model=List[StudentRecommendation])
+async def recommend_students(student_id: int, top_n: int = Query(5, ge=1, le=20)):
+    if student_id not in student_df['ID_Étudiant'].values:
+        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} not found")
+    
+    # Get all possible teammates
+    potential_teammates = student_df[student_df['ID_Étudiant'] != student_id]['ID_Étudiant'].tolist()
+    
+    # Predict compatibility scores
+    predictions = []
+    student_data = student_df[student_df['ID_Étudiant'] == student_id].iloc[0]
+    student_skills = set(student_data['Compétences'])
+    student_interests = set(student_data["Centres_d'Intérêt"])
+    
+    for teammate_id in potential_teammates:
+        # Skip existing teammates
+        if teammate_id in student_data['Coéquipiers']:
+            continue
+            
+        # Get predicted score from model
+        score = model_student.predict(student_id, teammate_id).est
+        
+        # Get teammate data
+        teammate_data = student_df[student_df['ID_Étudiant'] == teammate_id].iloc[0]
+        
+        # Find shared skills and interests to explain recommendation
+        teammate_skills = set(teammate_data['Compétences'])
+        teammate_interests = set(teammate_data["Centres_d'Intérêt"])
+        
+        shared_skills = list(student_skills.intersection(teammate_skills))
+        shared_interests = list(student_interests.intersection(teammate_interests))
+        
+        # Add complementary skills factor - more unique skills means more potential for learning
+        complementary_skills = len(teammate_skills - student_skills) / max(1, len(student_skills))
+        
+        # Adjust score based on skill complementarity
+        adjusted_score = score * (1 + 0.2 * complementary_skills)
+        
+        predictions.append({
+            "student_id": student_id,
+            "recommended_student_id": teammate_id,
+            "compatibility_score": adjusted_score,
+            "shared_skills": shared_skills,
+            "shared_interests": shared_interests
+        })
+    
+    # Sort by score and take top_n
+    predictions.sort(key=lambda x: x["compatibility_score"], reverse=True)
+    return predictions[:top_n]
+
+@app.get("/recommend_communities/{student_id}", response_model=List[CommunityRecommendation])
+async def recommend_communities(student_id: int, top_n: int = Query(3, ge=1, le=10)):
+    if student_id not in student_df['ID_Étudiant'].values:
+        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} not found")
+    
+    # Get student data
+    student_data = student_df[student_df['ID_Étudiant'] == student_id].iloc[0]
+    student_communities = set(student_data['Communautés'])
+    student_skills = set(student_data['Compétences'])
+    
+    # Get all unique communities
+    all_communities = set()
+    for communities in student_df['Communautés']:
+        all_communities.update(communities)
+    
+    # Predict community compatibility for ones the student is not already in
+    predictions = []
+    for community in all_communities:
+        if community in student_communities:
+            continue
+            
+        # Use the model to predict compatibility
+        try:
+            score = model_community.predict(student_id, community).est
+        except:
+            # If no data available, estimate based on skills match
+            score = 0
+            
+            # Find students in this community
+            community_members = student_df[student_df['Communautés'].apply(lambda x: community in x)]
+            
+            # Calculate skill overlap with community members
+            for _, member in community_members.iterrows():
+                member_skills = set(member['Compétences'])
+                skill_overlap = len(student_skills.intersection(member_skills)) / max(1, len(student_skills))
+                score += skill_overlap
+                
+            # Normalize score
+            score = min(5, score / max(1, len(community_members)))
+        
+        # Find skills related to this community
+        community_members = student_df[student_df['Communautés'].apply(lambda x: community in x)]
+        community_skills = set()
+        for _, member in community_members.iterrows():
+            community_skills.update(member['Compétences'])
+        
+        # Find skills that would be relevant for the student
+        related_skills = list(community_skills - student_skills)
+        
+        predictions.append({
+            "student_id": student_id,
+            "recommended_community": community,
+            "compatibility_score": score,
+            "related_skills": related_skills[:3]  # Just show top 3 most relevant skills
+        })
+    
+    # Sort by score and take top_n
+    predictions.sort(key=lambda x: x["compatibility_score"], reverse=True)
+    return predictions[:top_n]
+
+@app.get("/student_network")
+async def get_student_network():
+    """Get a representation of the student collaboration network for visualization"""
+    # Create nodes (students)
+    nodes = []
+    for _, student in student_df.iterrows():
+        nodes.append({
+            "id": int(student['ID_Étudiant']),
+            "name": student['Nom'],
+            "skills": student['Compétences'],
+            "interests": student["Centres_d'Intérêt"],
+            "communities": student['Communautés'],
+            "interaction_count": student['Nombre_Interactions']
+        })
+    
+    # Create links (collaborations between students)
+    links = []
+    for _, student in student_df.iterrows():
+        student_id = student['ID_Étudiant']
+        for teammate_id in student['Coéquipiers']:
+            # Add this collaboration
+            links.append({
+                "source": int(student_id),
+                "target": int(teammate_id),
+                "value": student['Travaux_Collaboratifs'] / 2  # Normalize a bit
+            })
+    
+    return {"nodes": nodes, "links": links}
+
+@app.get("/student/{student_id}")
+async def get_student(student_id: int):
+    """Get detailed information about a specific student"""
+    if student_id not in student_df['ID_Étudiant'].values:
+        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} not found")
+    
+    student = student_df[student_df['ID_Étudiant'] == student_id].iloc[0].to_dict()
+    
+    # Get teammates' names
+    teammates = []
+    for teammate_id in student['Coéquipiers']:
+        if teammate_id in student_df['ID_Étudiant'].values:
+            teammate_name = student_df[student_df['ID_Étudiant'] == teammate_id].iloc[0]['Nom']
+            teammates.append({"id": int(teammate_id), "name": teammate_name})
+    
+    student['Coéquipiers'] = teammates
+    return student
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
