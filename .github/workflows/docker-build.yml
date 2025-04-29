@@ -49,7 +49,7 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-api:latest
           
           # Tag and push frontend image
-          docker tag knn-recommendation-frontend ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-frontend:latest
+          docker tag recommendation-frontend ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-frontend:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/recommendation-frontend:latest
           
           echo "Successfully pushed images to DockerHub"
