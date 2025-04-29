@@ -22,11 +22,13 @@ jobs:
         uses: actions/checkout@v3
       
       # Step 2: Build all Docker images
-      - name: Build Docker images
+      - name: Build backend inmage
         run: |
           # Build API image
           docker build -t recommendation-api -f Dockerfile.app .
-          
+
+      - name: Build fonrtend image
+        run: |
           # Build frontend image
           docker build -t recommendation-frontend -f Dockerfile.front .
 

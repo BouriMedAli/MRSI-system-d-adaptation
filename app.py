@@ -133,6 +133,19 @@ def prepare_models():
         "mae": mae_community
     }
     
+    # Print model metrics
+    print("=== Student Collaboration Model Metrics ===")
+    print(f"RMSE: {rmse_student:.3f}")
+    print(f"MAE: {mae_student:.3f}")
+    print(f"Precision: {precision:.3f}")
+    print(f"Recall: {recall:.3f}")
+    print(f"F1 Score: {f1:.3f}")
+    print("Confusion Matrix:")
+    print(f"[[{cm[0][0]}, {cm[0][1]}], [{cm[1][0]}, {cm[1][1]}]]")
+    print("\n=== Community Recommendation Model Metrics ===")
+    print(f"RMSE: {rmse_community:.3f}")
+    print(f"MAE: {mae_community:.3f}")
+    
     # Also create the confusion matrix plot for visualization
     create_confusion_matrix_plot(cm)
 
