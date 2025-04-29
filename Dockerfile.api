@@ -10,14 +10,19 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Create models directory
+RUN mkdir -p /app/models
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application files
 COPY fastapi_app.py .
 COPY recommendation_system.py .
+COPY Dataset/dataset_etudiants.csv .
 
 EXPOSE 5000
 

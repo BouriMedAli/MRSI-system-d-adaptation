@@ -7,6 +7,7 @@ import json
 import ast
 import pickle
 import re
+import os
 
 # Load and preprocess data
 def load_data(file_path):
@@ -173,6 +174,10 @@ def train_model(interaction_df, model_file):
     trainset = data.build_full_trainset()
     model.fit(trainset)
     
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(model_file), exist_ok=True)
+    
+    # Save the model
     with open(model_file, 'wb') as f:
         pickle.dump(model, f)
     
@@ -297,7 +302,7 @@ if __name__ == '__main__':
         print(f"Created {len(student_interaction_df)} student interactions")
         
         print("Training student recommendation model...")
-        student_model, student_results = train_model(student_interaction_df, 'svd_student_model.pkl')
+        student_model, student_results = train_model(student_interaction_df, 'models/svd_student_model.pkl')
         student_cm = compute_confusion_matrix(student_model, student_interaction_df, is_student=True)
         
         # Community/project recommendations
@@ -306,7 +311,7 @@ if __name__ == '__main__':
         print(f"Created {len(community_interaction_df)} community interactions across {len(all_communities)} communities")
         
         print("Training community recommendation model...")
-        community_model, community_results = train_model(community_interaction_df, 'svd_community_model.pkl')
+        community_model, community_results = train_model(community_interaction_df, 'models/svd_community_model.pkl')
         community_cm = compute_confusion_matrix(community_model, community_interaction_df, is_student=False)
         
         # Print results
