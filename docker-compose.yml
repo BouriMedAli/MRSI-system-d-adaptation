@@ -1,20 +1,9 @@
 version: '3.8'
 services:
-  backend:
-    image: mohamedalibouri/student-recommender-backend:latest
-    volumes:
-      - ./svd_student_model.pkl:/app/svd_student_model.pkl
-      - ./svd_community_model.pkl:/app/svd_community_model.pkl
-      - ./dataset_etudiants.csv:/app/dataset_etudiants.csv
-    environment:
-      - PYTHONUNBUFFERED=1
-
   api:
     image: mohamedalibouri/student-recommender-backend:latest
     ports:
       - "5000:5000"
-    depends_on:
-      - backend
     volumes:
       - ./svd_student_model.pkl:/app/svd_student_model.pkl
       - ./svd_community_model.pkl:/app/svd_community_model.pkl
