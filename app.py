@@ -1,4 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
@@ -60,19 +63,44 @@ class CategoryResponse(BaseModel):
     skills: List[str]
     interests: List[str]
 
-@app.get("/")
+@app.get("/", response_class=JSONResponse)
 def read_root():
-    return {"message": "Student Collaboration Recommender API is running"}
+    """Root endpoint that returns API information"""
+    return {
+        "message": "Student Collaboration Recommender API is running",
+        "version": "1.0.0",
+        "endpoints": {
+            "/": "This information page",
+            "/health": "API health check",
+            "/docs": "API documentation (Swagger UI)",
+            "/redoc": "API documentation (ReDoc)",
+            "/categories": "Get all available categories",
+            "/register": "Register a new student (POST)",
+            "/recommend": "Get student recommendations (POST)"
+        }
+    }
 
 @app.get("/health")
 def health_check():
+    """Check if the API and its components are healthy"""
     if model is None or feature_columns is None or df is None:
         raise HTTPException(status_code=500, detail="Model or data not loaded properly")
-    return {"status": "healthy"}
+    
+    # Additional information about the system
+    return {
+        "status": "healthy",
+        "model_loaded": model is not None,
+        "data_loaded": df is not None,
+        "students_count": len(df) if df is not None else 0,
+        "features_count": len(feature_columns) if feature_columns is not None else 0
+    }
 
 @app.get("/categories")
 def get_categories():
     """Get all categories for dropdown menus."""
+    if df is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+        
     all_communities = set()
     all_skills = set()
     all_interests = set()
@@ -96,6 +124,13 @@ def register_student(request: RegistrationRequest):
     if df is None:
         raise HTTPException(status_code=500, detail="Database not available")
     
+    # Input validation
+    if request.travaux_collaboratifs < 0 or request.travaux_collaboratifs > 10:
+        raise HTTPException(status_code=400, detail="Travaux collaboratifs must be between 0 and 10")
+    
+    if request.nombre_interactions < 0:
+        raise HTTPException(status_code=400, detail="Nombre d'interactions cannot be negative")
+    
     # Generate a new student ID
     new_id = int(df["ID_Étudiant"].max() + 1)
     
@@ -116,6 +151,10 @@ def register_student(request: RegistrationRequest):
     
     logger.info(f"Registered new student: {request.nom} with ID {new_id}")
     
+    # Save updated dataframe (optional - uncomment if you want to persist changes)
+    # with open(os.path.join(MODEL_DIR, 'processed_df.pkl'), 'wb') as f:
+    #     pickle.dump(df, f)
+    
     return {"student_id": new_id, "message": "Student registered successfully"}
 
 @app.post("/recommend")
@@ -125,6 +164,19 @@ def recommend_collaborators(request: RecommendationRequest):
     
     if model is None or feature_columns is None or df is None:
         raise HTTPException(status_code=500, detail="Model or data not loaded properly")
+    
+    # Input validation
+    if request.num_recommendations <= 0:
+        raise HTTPException(status_code=400, detail="Number of recommendations must be positive")
+    
+    if len(request.numeric) != 2:
+        raise HTTPException(status_code=400, detail="Numeric values must contain exactly 2 elements")
+    
+    if request.numeric[0] < 0 or request.numeric[0] > 10:
+        raise HTTPException(status_code=400, detail="Collaboration score must be between 0 and 10")
+    
+    if request.numeric[1] < 0:
+        raise HTTPException(status_code=400, detail="Number of interactions cannot be negative")
     
     # Process either existing student or temporary profile
     if request.student_id is not None:
@@ -203,7 +255,12 @@ def recommend_collaborators(request: RecommendationRequest):
             "Communautés": recommended_student["Communautés"],
             "Compétences": recommended_student["Compétences"],
             "Centres_d_Intérêt": recommended_student["Centres_d'Intérêt"],
-            "similarity_score": float(1.0 - distances[0][i])  # Convert distance to similarity score
+            "similarity_score": float(1.0 - distances[0][i]),  # Convert distance to similarity score
+            "common_elements": {
+                "communities": list(common_communities),
+                "skills": list(common_skills),
+                "interests": list(common_interests)
+            }
         })
         processed_count += 1
     
@@ -218,6 +275,36 @@ def recommend_collaborators(request: RecommendationRequest):
             "query_type": "existing_student" if request.student_id is not None else "profile_match"
         }
     }
+
+@app.get("/student/{student_id}")
+def get_student(student_id: int):
+    """Get information about a specific student."""
+    if df is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+    
+    student = df[df["ID_Étudiant"] == student_id]
+    if student.empty:
+        raise HTTPException(status_code=404, detail=f"Student with ID {student_id} not found")
+    
+    student_data = student.iloc[0]
+    return {
+        "ID_Étudiant": int(student_data["ID_Étudiant"]),
+        "Nom": student_data["Nom"],
+        "Travaux_Collaboratifs": int(student_data["Travaux_Collaboratifs"]),
+        "Nombre_Interactions": int(student_data["Nombre_Interactions"]),
+        "Communautés": student_data["Communautés"],
+        "Compétences": student_data["Compétences"],
+        "Centres_d_Intérêt": student_data["Centres_d'Intérêt"]
+    }
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler for all unhandled exceptions."""
+    logger.error(f"Unhandled exception: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal server error occurred. Please try again later."}
+    )
 
 if __name__ == "__main__":
     import uvicorn
