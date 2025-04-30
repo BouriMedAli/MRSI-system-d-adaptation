@@ -5,17 +5,20 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Install build dependencies required for scikit-surprise
+# Make sure to update before installing and ensure installation completes properly
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     python3-dev \
+    build-essential \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies - add verbose output to debug any issues
+RUN pip install --no-cache-dir --verbose -r requirements.txt
 
 # Copy the application code into the container
 COPY app.py .
