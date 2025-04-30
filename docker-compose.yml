@@ -1,15 +1,46 @@
-version: '3.8'
-services: 
-  api:
-    image: mohamedalibouri/student-recommender-api:latest
-    ports:
-      - "5000:5000"
-    environment:
-      - PYTHONUNBUFFERED=1
+version: '3'
 
+services:
+  # Model training service
+  train:
+    image: ${DOCKER_USERNAME:-student-recommender}/student-recommender-train:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.train
+    volumes:
+      - ./model:/app/model
+      - ./Dataset:/app/Dataset
+    networks:
+      - recommender-network
+
+  # FastAPI application service
+  app:
+    image: ${DOCKER_USERNAME:-student-recommender}/student-recommender-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model:/app/model
+    depends_on:
+      - train
+    networks:
+      - recommender-network
+
+  # Streamlit frontend service
   frontend:
-    image: mohamedalibouri/student-recommender-backend:latest
+    image: ${DOCKER_USERNAME:-student-recommender}/student-recommender-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     ports:
       - "8501:8501"
     depends_on:
-      - api
+      - app
+    networks:
+      - recommender-network
+
+networks:
+  recommender-network:
+    driver: bridge
