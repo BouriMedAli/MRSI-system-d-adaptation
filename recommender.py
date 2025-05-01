@@ -590,7 +590,7 @@ class InterestCompetenceGraphRecommender:
 
 # Example usage
 if __name__ == "__main__":
-    recommender = InterestCompetenceGraphRecommender("dataset_etudiants.csv")
+    recommender = InterestCompetenceGraphRecommender("Dataset/dataset_etudiants.csv")
     recommender.train()
     
     # Print summary statistics

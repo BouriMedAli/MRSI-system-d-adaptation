@@ -31,6 +31,7 @@ jobs:
           python recommender.py
 
   Build-api-image:
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
 
