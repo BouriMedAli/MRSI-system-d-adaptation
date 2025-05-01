@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements-api.txt
 # Copy application code
 COPY recommender.py .
 COPY app.py .
-COPY dataset_etudiants.csv .
+COPY Dataset/dataset_etudiants.csv .
 
 # Expose the port
 EXPOSE 8000
