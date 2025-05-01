@@ -1,0 +1,53 @@
+name: Docker Build and Push
+
+# Trigger this workflow only on push or pull request to the KNN-bouri branch
+on:
+  push:
+    branches:
+      - Bouri-project
+  pull_request:
+    branches:
+      - Bouri-project
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+    
+      - name: Run training code
+        run: |
+          echo "Run python code"
+          python -m pip install --upgrade pip
+          python recommender.py
+
+  Build-api-image:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Setup Docker
+        uses: docker/build-push-action@v4
+  
+      - name: Build code
+        run: |
+          # First, build a temporary container to run app.py
+          docker build -t Recommender-api -f Dockerfile.api .
+         
+          # Remove temporary container
+          docker rm Recommender-api
+      
+      # Step 3: Build all Docker images
+      - name: Build Frontend docker image
+        run: |
+          # Build Frontend image
+          docker build -t recommendation -f Dockerfile.frontend .
+          echo "Successufuly finish process"
+          
