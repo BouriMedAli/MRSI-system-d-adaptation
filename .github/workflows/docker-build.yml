@@ -44,7 +44,7 @@ jobs:
       - name: Build code
         run: |
           # First, build a temporary container to run app.py
-          docker build -t Recommender-api -f Dockerfile.api .
+          docker build -t recommendation-api -f Dockerfile.api .
       
       # Step 3: Build all Docker images
       - name: Build Frontend docker image
