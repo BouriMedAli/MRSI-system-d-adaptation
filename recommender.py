@@ -208,37 +208,43 @@ class InterestCompetenceGraphRecommender:
             other_embedding = self.embeddings[other_id]
             
             # Calculate similarity scores between the students
-            similarity_scores = {}
+            similarity_scores = {
+                'interest': 0.0,
+                'competence': 0.0,
+                'community': 0.0,
+                'network': 0.0,
+                'collab': 0.0
+            }
             
             # Interest similarity (higher weight)
             interest_sim = np.dot(student_embedding['interest_sim'], other_embedding['interest_sim'])
-            similarity_scores['interest'] = interest_sim * 0.35
+            similarity_scores['interest'] = float(interest_sim * 0.35)
             
             # Competence complementarity (look for complementary skills)
             competence_sim = np.dot(student_embedding['competence_sim'], other_embedding['competence_sim'])
-            similarity_scores['competence'] = competence_sim * 0.25
+            similarity_scores['competence'] = float(competence_sim * 0.25)
             
             # Community overlap
             community_sim = np.dot(student_embedding['community_sim'], other_embedding['community_sim'])
-            similarity_scores['community'] = community_sim * 0.2
+            similarity_scores['community'] = float(community_sim * 0.2)
             
             # Network proximity (if they're close in the graph)
             if self.graph.has_edge(student_id, other_id):
-                similarity_scores['network'] = self.graph[student_id][other_id]['weight'] * 0.1
+                similarity_scores['network'] = float(self.graph[student_id][other_id]['weight'] * 0.1)
             else:
                 try:
                     # Find shortest path if they're not directly connected
                     path_length = nx.shortest_path_length(self.graph, student_id, other_id)
-                    similarity_scores['network'] = max(0, (5 - path_length) / 5) * 0.1
+                    similarity_scores['network'] = float(max(0, (5 - path_length) / 5) * 0.1)
                 except nx.NetworkXNoPath:
-                    similarity_scores['network'] = 0
+                    similarity_scores['network'] = 0.0
             
             # Collaborative work score similarity
             collab_diff = abs(student_embedding['collab_score'] - other_embedding['collab_score'])
-            similarity_scores['collab'] = (1 - collab_diff) * 0.1
+            similarity_scores['collab'] = float((1 - collab_diff) * 0.1)
             
             # Calculate overall similarity
-            overall_similarity = sum(similarity_scores.values())
+            overall_similarity = float(sum(similarity_scores.values()))
             
             # Get explanation for recommendation
             reasons = self._generate_recommendation_reasons(student_id, other_id, similarity_scores)

@@ -4,11 +4,11 @@ services:
   api:
     build:
       context: .
-      dockerfile: api/Dockerfile
+      dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
     volumes:
-      - ./dataset_etudiants.csv:/app/dataset_etudiants.csv
+      - ./Dataset/dataset_etudiants.csv:/app/dataset_etudiants.csv
     environment:
       - DATA_PATH=/app/dataset_etudiants.csv
     restart: always
@@ -22,7 +22,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
+      dockerfile: Dockerfile.frontend
     ports:
       - "8501:8501"
     environment:
