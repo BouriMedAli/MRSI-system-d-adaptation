@@ -1,0 +1,157 @@
+/*
+body {
+    /* Using the optional Google Font - make sure to link it in the HTML head */
+    font-family: 'Inter', sans-serif;
+    /* Tailwind handles background and text colors via utility classes on body */
+    /* e.g., class="bg-surface-light dark:bg-surface-dark text-text-primary dark:text-text-primary" */
+}
+
+/* Ensure icons transition color smoothly */
+.fa-solid,
+.fa-regular,
+.fab {
+    transition: color 0.3s ease-in-out;
+}
+
+/* Add a slight upward lift on hover for cards */
+/* This can be applied to any card-like element */
+.hover\:translate-y-1:hover {
+    transform: translateY(-4px);
+}
+
+/* --- Custom Animations (Moved from HTML script tag) --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+}
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+}
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleUp {
+    0% {
+        transform: scale(1);
+}
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+}
+}
+
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Note: slideIn animation for profile sidebar is controlled by JS adding/removing Tailwind classes like translate-x-full */
+/* If you prefer a pure CSS approach or need fine-tuning, you could define .sidebar-open */
+/* .sidebar-open { animation: slideIn 0.5s ease-out forwards; } */
+
+
+.animate-scale-up {
+    /* Used for button click animation, e.g., theme toggle */
+    animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- Smooth Dark Mode Transitions --- */
+/* Add this class to the body or html tag when toggling theme with JS */
+.theme-transition,
+.theme-transition * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* default-ease */
+    transition-duration: 300ms; /* default-duration */
+}
+
+
+/* --- Specific Styles from User Input --- */
+
+/* Style for recommendation cards (if used) */
+.recommendation-card {
+    transition: transform 0.2s;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-3px);
+    /* Uses a standard Tailwind shadow class */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    /* Dark mode variant is handled by Tailwind's dark:shadow-lg or custom shadow class */
+}
+
+
+/* --- Profile Page Specific Styles (for active navigation) --- */
+
+/* Style for the active horizontal profile tab (if using tab layout) */
+.profile-tab.active-tab {
+    /* Uses Tailwind's primary color for consistency */
+    color: var(--tw-colors-primary-light); /* Fallback */
+    border-bottom-color: var(--tw-colors-primary-light); /* Fallback */
+}
+
+/* Dark mode styles for the active horizontal tab */
+.dark .profile-tab.active-tab {
+    /* Uses Tailwind's primary color dark variant */
+    color: var(--tw-colors-primary-dark); /* Fallback */
+    border-bottom-color: var(--tw-colors-primary-dark); /* Fallback */
+}
+
+/* Base styles for sidebar links (if using sidebar layout) */
+.sidebar-link {
+    font-weight: 500;
+    /* Tailwind classes handle default text color and hover */
+    /* e.g., text-text-secondary hover:text-primary */
+}
+
+/* Style for the active sidebar link */
+.sidebar-link.active-link {
+    /* Uses Tailwind's primary color with opacity for the background */
+    background-color: rgba(79, 70, 229, 0.1);
+    /* Uses Tailwind's primary color for text */
+    color: var(--tw-colors-primary-light); /* Fallback */
+    font-weight: 600;
+    /* Tailwind handles rounded corners and padding */
+}
+
+/* Dark mode styles for the active sidebar link */
+.dark .sidebar-link.active-link {
+    /* Uses Tailwind's primary-dark color with opacity for the background */
+    background-color: rgba(99, 102, 241, 0.2);
+    /* Uses Tailwind's primary-dark color for text */
+    color: var(--tw-colors-primary-dark); /* Fallback */
+}
+
+/* Ensure icon color matches link color for active state */
+.sidebar-link.active-link i {
+    color: inherit;
+}
+
+/* Ensure icon color matches link color on hover */
+.sidebar-link:hover i {
+    color: inherit;
+}
+
+/* Restore default display for active content blocks after JS hides others */
+/* This ensures grid, flex, etc. work correctly */
+.profile-content-block:not(.hidden) {
+    display: grid; /* Default to grid, adjust in JS or use specific classes */
+    /* The JS now handles setting the correct display property */
+}
+
+/* You might need specific overrides if display: grid/flex causes issues for non-grid/flex content blocks */
+/* Example: */
+/* #activity-content:not(.hidden) { display: block; } */
+/* #settings-content:not(.hidden) { display: block; } */
+/* The JS was updated to handle this, but keep this in mind for debugging */

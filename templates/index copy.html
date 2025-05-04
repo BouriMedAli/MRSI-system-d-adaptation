@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Home - Recommendation System{% endblock %}
+{% block content %}
+<section class="mb-12">
+  <h1 class="text-3xl font-bold mb-6 text-center">Top Students</h1>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for rec in recommendations %}
+    <div class="bg-white shadow-xl rounded-lg p-6 hover:shadow-2xl transition duration-300">
+      <h2 class="text-xl font-semibold mb-2">{{ rec["Nom"] }}</h2>
+      <p class="mb-2">Interactions: {{ rec["Nombre_Interactions"] }}</p>
+      <a href="/user/{{ rec['ID'] }}" class="inline-block mt-4 text-blue-600 hover:underline">
+        View Profile
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

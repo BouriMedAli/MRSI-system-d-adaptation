@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RecSys-MRI{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        // Tailwind dark mode configuration (place in head to avoid FOUC)
+        tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
+            theme: {
+                extend: {
+                    // Custom color palette (matching your theme)
+                    colors: {
+                        primary: { // Indigo-like vibrant color
+                            light: '#4f46e5', // Indigo-600 (for light mode)
+                            DEFAULT: '#4f46e5', // Default
+                            dark: '#6366f1' // Indigo-500 (for dark mode hover/active)
+                        },
+                         secondary: { // A contrasting accent color (added for consistency)
+                             light: '#a78bfa', // Purple-400
+                             DEFAULT: '#a78bfa',
+                             dark: '#c084fc' // Purple-300
+                        },
+                        surface: { // Background colors
+                            light: '#ffffff', // White
+                            DEFAULT: '#ffffff',
+                            dark: '#111827' // Gray-900
+                        },
+                        'surface-secondary': { // Section background colors
+                             light: '#f9fafb', // Gray-50
+                             DEFAULT: '#f9fafb',
+                             dark: '#1f2937' // Gray-800
+                        },
+                        text: { // Text colors
+                            primary: { light: '#1f2937', dark: '#f9fafb' }, // Gray-800 vs Gray-50
+                            secondary: { light: '#6b7280', dark: '#9ca3af' }, // Gray-500 vs Gray-400
+                            gradient: { start: '#8b5cf6', end: '#3b82f6' } // Violet-500 vs Blue-500
+                        }
+                    },
+                    // Add some subtle shadows (matching your theme)
+                    boxShadow: {
+                        'custom-light': '0 4px 6px rgba(0, 0, 0, 0.05)',
+                        'custom-dark': '0 4px 6px rgba(255, 255, 255, 0.05)',
+                        'card-light': '0px 4px 15px 0px rgba(0,0,0,0.05)',
+                        'card-dark': '0px 4px 15px 0px rgba(0,0,0,0.15)',
+                        'hero-border-light': '0px 0px 15px 0px rgba(99, 102, 241, 0.2)',
+                        'hero-border-dark': '0px 0px 15px 0px rgba(99, 102, 241, 0.3)',
+                    }
+                    // Add custom animations here if needed, or define in style.css
+                    // keyframes: { ... },
+                    // animation: { ... }
+                }
+            }
+        }
+    </script>
+    <style>
+         .theme-transition,
+         .theme-transition * {
+             transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* default-ease */
+             transition-duration: 300ms; /* default-duration */
+         }
+    </style>
+</head>
+<body class="bg-surface-light dark:bg-surface-dark text-text-primary dark:text-text-primary antialiased font-sans theme-transition min-h-screen flex flex-col">
+
+    <nav class="bg-surface-light dark:bg-gray-900 shadow-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-primary dark:text-primary-dark">RecSys-MRI</a>
+
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="/" class="text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors text-base font-medium">Home</a>
+                <a href="/test-reco" class="text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors text-base font-medium">test</a>
+                <a href="/add_user" class="text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors text-base font-medium">Add User</a>
+                 {% if user %}
+                     <a href="/profile" class="text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors text-base font-medium">Profile</a>
+                     <a href="/auth/logout" class="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors text-base font-medium">Logout</a>
+                 {% else %}
+                     <a href="/auth/login" class="text-sm px-4 py-2 leading-none border rounded-full text-primary dark:text-primary border-primary dark:border-primary-dark hover:border-transparent hover:text-white hover:bg-primary dark:hover:bg-primary transition-colors duration-200">Login</a>
+                     <a href="/auth/register" class="text-sm px-4 py-2 leading-none rounded-full text-white bg-primary dark:bg-primary hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200 shadow-md">Sign Up</a>
+                 {% endif %}
+      </div>
+    
+            <div class="flex items-center space-x-4">
+                <button
+                    id="theme-toggle"
+                    type="button"
+                    class="flex items-center justify-center p-2 rounded-full text-text-secondary dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 transition-colors duration-300"
+                    aria-label="Toggle dark mode"
+                >
+                    <svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+
+                <form action="/search" method="get" class="hidden sm:block">
+      <div class="relative">
+                        <input type="text" name="query" placeholder="Search Student..."
+                               class="pl-10 pr-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors">
+                        <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary dark:text-gray-400"></i>
+                    </div>
+                </form>
+
+                <button id="mobile-menu-button" class="md:hidden text-text-secondary dark:text-text-secondary focus:outline-none p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="md:hidden hidden fixed inset-x-0 top-[57px] bg-surface-light dark:bg-gray-900 px-6 pb-4 space-y-3 transition-all duration-300 ease-in-out shadow-md z-40">
+             <div class="relative w-full">
+        <form action="/search" method="get">
+                    <input type="text" name="query" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary dark:text-gray-400"></i>
+        </form>
+             </div>
+            <a href="/" class="block text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors font-medium py-1">Home</a>
+            <a href="/test-reco" class="block text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors font-medium py-1">test</a>
+            <a href="/add_user" class="block text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors font-medium py-1">Add User</a>
+             <hr class="border-gray-200 dark:border-gray-700 my-2"/>
+             {% if user %}
+                 <a href="/profile" class="block text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors font-medium py-1">Profile</a>
+                 <a href="/auth/logout" class="block text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors font-medium py-1">Logout</a>
+             {% else %}
+                 <a href="/auth/login" class="block text-sm px-4 py-2 leading-none border rounded-full text-primary dark:text-primary border-primary dark:border-primary-dark hover:border-transparent hover:text-white hover:bg-primary dark:hover:bg-primary transition-colors duration-200 text-center">Login</a>
+                 <a href="/auth/register" class="block text-sm px-4 py-2 leading-none rounded-full text-white bg-primary dark:bg-primary hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200 text-center mt-2 shadow-md">Sign Up</a>
+             {% endif %}
+      </div>
+    </nav>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow"> {# flex-grow makes main content fill available space #}
+    {% block content %}{% endblock %}
+  </main>
+
+    <footer class="bg-surface-secondary-light dark:bg-gray-900 text-text-secondary dark:text-text-secondary py-8 mt-12"> {# mt-12 adds space above footer #}
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">&copy; 2025 Recommendation System MRI. All rights reserved.</p>
+             </div>
+  </footer>
+
+    <script src="../static/js/script.js"></script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

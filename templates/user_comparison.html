@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}User Recommendations & Comparison{% endblock %}
+{% block content %}
+<section class="max-w-6xl mx-auto">
+
+
+
+  <h1 class="text-3xl font-bold mb-6">Profil de l'Étudiant {{ user_id }}</h1>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Recommandation Cosine -->
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-xl font-bold mb-4 border-b pb-2">
+        <span class="text-blue-600">●</span> Similarité de Contenu
+      </h2>
+      <div class="space-y-3">
+        {% for rec in cosine_recs %}
+        <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+          <span>{{ rec.Nom }}</span>
+          <span class="text-sm text-gray-500">{{ rec.Similarity|round(2) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+    <!-- Pour KNN -->
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-xl font-bold mb-4 border-b pb-2">
+        <span class="text-green-600">●</span> Modèle KNN (Compétences recommandées)
+      </h2>
+      <div class="space-y-3">
+        {% for rec in knn_recs %}
+        <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+          <div>
+            <span class="font-medium">{{ rec.Compétence }}</span>
+            <p class="text-sm text-gray-500">Maîtrisé par: {{ rec.Nom }}</p>
+          </div>
+          <span class="text-sm text-gray-500">{{ rec.Score|round(2) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+    <!-- Recommandation SVD -->
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h2 class="text-xl font-bold mb-4 border-b pb-2">
+        <span class="text-purple-600">●</span> Modèle SVD
+      </h2>
+      <div class="space-y-3">
+        {% for rec in svd_recs %}
+        <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+          <span>{{ rec.Nom }}</span>
+          <span class="text-sm text-gray-500">{{ rec.Score|round(2) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Comparaison des Modèles -->
+  <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
+    {% include "comparison_table.html" %}
+  </div>
+
+
+  
+  <div class="mt-8 text-center">
+    <a href="/" class="text-blue-600 hover:text-blue-800 underline">Return to Home</a>
+  </div>
+</section>
+{% endblock %}

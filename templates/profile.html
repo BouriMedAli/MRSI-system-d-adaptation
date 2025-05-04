@@ -1,0 +1,805 @@
+{% extends "base.html" %}
+{% block title %}Profile - RecSys-MRI{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:hidden flex items-center justify-between">
+    <h2 class="text-xl font-bold text-text-primary dark:text-white">My Profile</h2>
+    <button id="profile-sidebar-toggle" class="text-text-primary dark:text-white focus:outline-none">
+        <i class="fa-solid fa-bars text-xl"></i>
+    </button>
+</div>
+
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-0 md:py-6 flex-grow">
+    <section class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 md:p-8 mb-8 flex flex-col md:flex-row items-center md:items-start">
+        <div class="relative mb-6 md:mb-0 md:mr-8">
+            <img src="{{ profile.photo_url or 'https://tableconvert.com/images/avatar.png' }}"
+                 alt="Profile" class="w-32 h-32 rounded-full object-cover object-center border-4 border-primary dark:border-primary-dark shadow-md">
+            <span class="absolute bottom-0 right-0 h-6 w-6 rounded-full ring-4 ring-surface-light dark:ring-gray-800 bg-green-500"></span>
+        </div>
+        <div class="flex-grow text-center md:text-left">
+            <h1 class="text-2xl md:text-3xl font-bold text-text-primary dark:text-white">
+                {{ profile.Nom if profile.Nom is not none else user.name or user.email }}
+            </h1>
+            <p class="text-text-secondary dark:text-text-secondary text-md mt-1">
+                {{ profile.title or "Your role or title here" }}
+            </p>
+            <p class="text-text-secondary dark:text-text-secondary italic mt-3 max-w-xl mx-auto md:mx-0">
+                {{ profile.bio or "Tell us something about yourself..." }}
+            </p>
+            <div class="mt-4 space-x-4">
+                {% if user.email %}
+                <a href="mailto:{{ user.email }}" class="text-primary dark:text-primary-dark hover:underline text-sm">
+                    <i class="fa-solid fa-envelope mr-1"></i> {{ user.email }}
+                </a>
+                {% endif %}
+                {% if profile.linkedin %}
+                <a href="{{ profile.linkedin }}" target="_blank" class="text-primary dark:text-primary-dark hover:underline text-sm">
+                    <i class="fa-brands fa-linkedin mr-1"></i> LinkedIn
+                </a>
+                {% endif %}
+                {% if profile.website %}
+                 <a href="{{ profile.website }}" target="_blank" class="text-primary dark:text-primary-dark hover:underline text-sm">
+                    <i class="fa-solid fa-globe mr-1"></i> Website
+                </a>
+                {% endif %}
+            </div>
+            <div class="mt-6 flex justify-center md:justify-start gap-4">
+                <button class="bg-primary dark:bg-primary text-white py-2.5 px-6 rounded-full shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200 active:scale-95 sidebar-link" data-tab="settings">Edit Profile</button>
+                 <a href="/messages" class="bg-transparent text-text-secondary dark:text-text-secondary border border-gray-300 dark:border-gray-600 py-2.5 px-6 rounded-full hover:bg-surface-secondary-light dark:hover:bg-gray-700 transition-colors duration-200">Message</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="relative grid grid-cols-1 md:grid-cols-profile-layout gap-8">
+
+        <div id="profile-sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
+
+        <aside id="profile-sidebar" class="fixed md:static inset-y-0 left-0 w-64 md:w-auto bg-surface-light dark:bg-gray-800 md:bg-transparent md:dark:bg-transparent rounded-r-xl md:rounded-xl shadow-lg md:shadow-none transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-50 md:z-auto p-6 md:p-0 h-full md:h-fit overflow-y-auto scroll-animate">
+            <div class="md:bg-surface-light md:dark:bg-gray-800 md:rounded-xl md:shadow-card-light md:dark:shadow-card-dark md:p-6 h-full">
+                <button id="profile-sidebar-close" class="md:hidden absolute top-4 right-4 text-text-secondary dark:text-gray-400 text-xl focus:outline-none">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                <h3 class="text-lg font-semibold text-text-primary dark:text-white mb-4 md:block hidden">Navigation</h3>
+                <ul class="space-y-3">
+                    <li>
+                        <button class="sidebar-link active-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="overview">
+                            <i class="fa-solid fa-user w-5 mr-3"></i> Overview
+                        </button>
+                    </li>
+                    <li>
+                        <button class="sidebar-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="courses">
+                            <i class="fa-solid fa-book-open w-5 mr-3"></i> Interacted Courses
+                        </button>
+                    </li>
+                    <li>
+                        <button class="sidebar-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="clubs">
+                            <i class="fa-solid fa-users w-5 mr-3"></i> Joined Communities
+                        </button>
+                    </li>
+                     <li>
+                        <button class="sidebar-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="user-recommendations">
+                             <i class="fa-solid fa-user-group w-5 mr-3"></i> Recommended Users
+                         </button>
+                     </li>
+                    <li>
+                        <button class="sidebar-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="activity">
+                            <i class="fa-solid fa-chart-line w-5 mr-3"></i> Activity
+                        </button>
+                    </li>
+                    <li>
+                        <button class="sidebar-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="wishlist">
+                            <i class="fa-solid fa-heart w-5 mr-3"></i> Wishlist
+                        </button>
+                    </li>
+                    <li class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3"></li>
+                    <li>
+                        <button class="sidebar-link w-full text-left flex items-center text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors p-2 rounded-md text-sm md:text-base" data-tab="settings">
+                            <i class="fa-solid fa-cog w-5 mr-3"></i> Settings
+                        </button>
+                    </li>
+                    <li>
+                        <button id="logout-button" class="w-full text-left flex items-center text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors p-2 rounded-md text-sm md:text-base">
+                            <i class="fa-solid fa-sign-out-alt w-5 mr-3"></i> Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <div id="profile-content" class="flex-grow">
+
+            <div id="overview-content" class="profile-content-block">
+                 <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 md:p-8 space-y-8 scroll-animate">
+                      <h3 class="text-2xl font-extrabold text-text-primary dark:text-white text-center">
+                         Edit Your Profile
+                      </h3>
+                      <p class="mt-2 text-sm text-text-secondary dark:text-text-secondary text-center">Update your personal details, interests, and skills.</p>
+                      {% if error %}
+                          <div id="backend-error" class="mt-4 text-sm text-red-600 dark:text-red-400 text-center">{{ error }}</div>
+                      {% endif %}
+
+                     <form id="profileForm" class="mt-8 space-y-6">
+                         <div>
+                             <label for="name" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Full Name</label>
+                             <input id="name" name="Nom" type="text" required value="{{ profile.Nom if profile.Nom is not none else user.name }}"
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary">
+                         </div>
+
+                          <div>
+                             <label for="title" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Title / Role</label>
+                             <input id="title" name="title" type="text" value="{{ profile.title if profile.title is not none else '' }}"
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                    placeholder="e.g., Student, Developer, Designer">
+                         </div>
+
+                          <div>
+                             <label for="bio" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Bio</label>
+                             <textarea id="bio" name="bio" rows="3"
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                    placeholder="Tell us something about yourself...">{{ profile.bio if profile.bio is not none else '' }}</textarea>
+                         </div>
+
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                 <label for="linkedin" class="block text-sm font-medium text-text-primary dark:text-text-secondary">LinkedIn Profile URL</label>
+                                 <input id="linkedin" name="linkedin" type="url" value="{{ profile.linkedin if profile.linkedin is not none else '' }}"
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                        placeholder="https://linkedin.com/in/yourprofile">
+                             </div>
+                             <div>
+                                 <label for="website" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Website / Portfolio URL</label>
+                                 <input id="website" name="website" type="url" value="{{ profile.website if profile.website is not none else '' }}"
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                        placeholder="https://yourwebsite.com">
+                             </div>
+                         </div>
+
+
+                         <div>
+                             <label for="communautes" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Communautés (comma-separated)</label>
+                             <input id="communautes" name="Communautés" type="text" value="{{ profile.Communautés | join(', ') if profile.Communautés is iterable else '' }}"
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                    placeholder="e.g., Club Robotique, Groupe IA">
+                         </div>
+
+                         <div>
+                             <label for="competences" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Compétences (comma-separated)</label>
+                             <input id="competences" name="Compétences" type="text" value="{{ profile.Compétences | join(', ') if profile.Compétences is iterable else '' }}"
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                    placeholder="e.g., Python, IA, Blockchain">
+                         </div>
+
+                         <div>
+                             <label for="centres_interet" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Centres d'Intérêt (comma-separated)</label>
+                             <input id="centres_interet" name="Centres_d'Intérêt" type="text" value="{{ profile['Centres_d\'Intérêt'] | join(', ') if profile['Centres_d\'Intérêt'] is iterable else '' }}"
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                    placeholder="e.g., Jeux vidéo, Musique">
+                         </div>
+
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                  <label class="block text-sm font-medium text-text-primary dark:text-text-secondary">Travaux Collaboratifs</label>
+                                  <p class="mt-1 text-text-primary dark:text-white">{{ profile.Travaux_Collaboratifs if profile.Travaux_Collaboratifs is not none else 'N/A' }}</p>
+                              </div>
+                              <div>
+                                  <label class="block text-sm font-medium text-text-primary dark:text-text-secondary">Nombre d'Interactions</label>
+                                  <p class="mt-1 text-text-primary dark:text-white">{{ profile.Nombre_Interactions if profile.Nombre_Interactions is not none else 'N/A' }}</p>
+                              </div>
+                         </div>
+
+                         <div>
+                             <label class="block text-sm font-medium text-text-primary dark:text-text-secondary">Coéquipiers</label>
+                             <ul class="mt-1 text-text-primary dark:text-white list-disc list-inside">
+                                 {% if coequipiers %}
+                                     {% for coequipier in coequipiers %}
+                                         <li>{{ coequipier.Nom if coequipier.Nom is not none else 'Unknown User' }} (ID: {{ coequipier.ID_Étudiant }})</li>
+                                     {% endfor %}
+                                 {% else %}
+                                     <li>No coéquipiers listed.</li>
+                                 {% endif %}
+                             </ul>
+                         </div>
+
+                         {# Moved to a dedicated tab #}
+
+
+                         <button type="submit"
+                                 class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary dark:bg-primary hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-primary-dark transition-colors active:scale-95">
+                             Update Profile
+                         </button>
+                     </form>
+
+                      <div id="profile-status" class="mt-4 text-sm text-green-600 dark:text-green-400 hidden text-center"></div>
+                      <div id="profile-error" class="mt-4 text-sm text-red-600 dark:text-red-400 hidden text-center"></div>
+
+
+                     {#
+                     <div class="mt-10 pt-8 border-t border-gray-300 dark:border-gray-600">
+                         <h3 class="text-2xl font-extrabold text-text-primary dark:text-white mb-4 text-center">Recommended Content</h3>
+                         <div class="space-y-4">
+                             {% if recommendations %}
+                                 {% for rec in recommendations %}
+                                     <div class="bg-surface-secondary-light dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+                                         <h4 class="text-lg font-semibold text-text-primary dark:text-white">
+                                             <a href="{{ rec.Link if rec.Link is not none else '#' }}" class="text-primary dark:text-primary-dark hover:underline" target="_blank">
+                                                 {{ rec.Title if rec.Title is not none else 'Recommended Item' }}
+                                             </a>
+                                         </h4>
+                                         <p class="text-sm text-text-secondary dark:text-text-secondary mt-1">Category: {{ rec.Category if rec.Category is not none else 'N/A' }}</p>
+                                         <p class="text-sm text-text-secondary dark:text-text-secondary mt-1">{{ rec.Description if rec.Description is not none else 'No description available.' }}</p>
+                                     </div>
+                                 {% endfor %}
+                             {% else %}
+                                 <p class="text-center text-text-secondary dark:text-text-secondary">No content recommendations available at this time.</p>
+                             {% endif %}
+                         </div>
+                     </div>
+                     #}
+                 </div>
+            </div>
+
+            <div id="courses-content" class="profile-content-block hidden">
+                 <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 md:p-8 space-y-6 scroll-animate">
+                     <h3 class="text-2xl font-extrabold text-text-primary dark:text-white text-center">Interacted Courses</h3>
+                     <p class="mt-2 text-sm text-text-secondary dark:text-text-secondary text-center">Courses you have recently interacted with.</p>
+                     <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                         {% if interacted_courses %}
+                             {% for course in interacted_courses %}
+                                 <li class="py-3">
+                                     <p class="text-text-primary dark:text-white text-md font-medium">
+                                         <a href="{{ course.Link if course.Link is not none else '#' }}" class="text-primary dark:text-primary-dark hover:underline" target="_blank">
+                                             {{ course.Title if course.Title is not none else 'Unknown Course' }}
+                                         </a>
+                                     </p>
+                                     <p class="text-text-secondary dark:text-text-secondary text-sm mt-1">ID: {{ course.ID_Étudiant }}</p>
+                                 </li>
+                             {% endfor %}
+                         {% else %}
+                             <li class="py-3 text-center text-text-secondary dark:text-text-secondary">No recent courses interacted with.</li>
+                         {% endif %}
+                     </ul>
+                 </div>
+             </div>
+
+
+            <div id="clubs-content" class="profile-content-block hidden">
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 md:p-8 space-y-6 scroll-animate">
+                     <h3 class="text-2xl font-extrabold text-text-primary dark:text-white text-center">Joined Communities</h3>
+                     <p class="mt-2 text-sm text-text-secondary dark:text-text-secondary text-center">Communities you are a part of.</p>
+                      <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                          {% if profile.Communautés %}
+                              {% for community in profile.Communautés %}
+                                  <li class="py-3">
+                                      <p class="text-text-primary dark:text-white text-md font-medium">{{ community }}</p>
+                                  </li>
+                              {% endfor %}
+                          {% else %}
+                              <li class="py-3 text-center text-text-secondary dark:text-text-secondary">No communities joined yet.</li>
+                          {% endif %}
+                      </ul>
+                </div>
+            </div>
+
+            <div id="user-recommendations-content" class="profile-content-block hidden">
+                 <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 md:p-8 space-y-6 scroll-animate">
+                     <h3 class="text-2xl font-extrabold text-text-primary dark:text-white text-center">Recommended Users</h3>
+                     <p class="mt-2 text-sm text-text-secondary dark:text-text-secondary text-center">Find other users with similar interests and skills.</p>
+
+                     <div class="flex justify-center items-center mb-6">
+                         <label for="user-rec-method-select" class="block text-sm font-medium text-text-primary dark:text-text-secondary mr-3">Method:</label>
+                         <select id="user-rec-method-select" class="mt-1 block w-auto pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary/50 focus:border-primary/50 dark:focus:ring-primary-dark/50 dark:focus:border-primary-dark/50 sm:text-sm rounded-md bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white">
+                             <option value="knn" {% if user_rec_method == 'knn' %}selected{% endif %}>KNN Similarity</option>
+                             <option value="llm_placeholder" {% if user_rec_method == 'llm_placeholder' %}selected{% endif %}>LLM (Placeholder)</option>
+                         </select>
+                     </div>
+
+
+                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                         {% if user_recommendations %}
+                             {% for rec_user in user_recommendations %}
+                                 <div class="bg-surface-secondary-light dark:bg-gray-700 rounded-xl p-4 shadow-sm flex flex-col items-center text-center">
+                                     <img src="{{ rec_user.Photo_URL or '/static/default-avatar.png' }}"
+                                          alt="{{ rec_user.Nom if rec_user.Nom is not none else 'Recommended User' }}"
+                                          class="w-16 h-16 rounded-full object-cover object-center mb-3 border-2 border-primary dark:border-primary-dark">
+                                     <h4 class="font-semibold text-md text-text-primary dark:text-white mb-1">{{ rec_user.Nom if rec_user.Nom is not none else 'Recommended User' }}</h4>
+                                     <p class="text-text-secondary dark:text-text-secondary text-xs italic mb-3">{{ rec_user.Bio | truncate(50) }}</p>
+                                      <div class="text-xs text-text-secondary dark:text-text-secondary mb-2">
+                                          {% if rec_user.Skills %}
+                                              Skills: {{ rec_user.Skills | join(', ') | truncate(40) }}<br>
+                                          {% endif %}
+                                           {% if rec_user.Interests %}
+                                              Interests: {{ rec_user.Interests | join(', ') | truncate(40) }}
+                                          {% endif %}
+                                      </div>
+                                     <a href="/user/{{ rec_user.ID_Étudiant }}"
+                                        class="mt-auto w-full inline-block px-4 py-2 text-center text-xs font-medium text-primary dark:text-primary-dark border border-primary dark:border-primary-dark rounded-full hover:bg-primary/10 transition-colors">
+                                         View Profile
+                                     </a>
+                                 </div>
+                             {% endfor %}
+                         {% else %}
+                             <p class="col-span-full text-center text-text-secondary dark:text-text-secondary">No user recommendations available at this time.</p>
+                         {% endif %}
+                     </div>
+                 </div>
+            </div>
+
+
+            <div id="activity-content" class="profile-content-block hidden">
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 scroll-animate">
+                    <h3 class="text-xl font-semibold text-text-primary dark:text-white mb-4">Recent Activity (Coming Soon)</h3>
+                    <p class="text-text-secondary dark:text-text-secondary">This section will show your recent activities like course progress and club interactions.</p>
+                </div>
+            </div>
+
+            <div id="wishlist-content" class="profile-content-block hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {# Static example content from previous version #}
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-card-light dark:shadow-card-dark flex flex-col h-full scroll-animate">
+                    <img class="w-full h-40 object-cover object-center lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="https://images.unsplash.com/photo-1522071820081-009f0129c7c5?q=80&w=400&auto=format&fit=crop" alt="Data Science Course">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-semibold text-md text-text-primary dark:text-white mb-2">Introduction to Data Science</h3>
+                         <p class="text-text-secondary dark:text-text-secondary text-sm mb-3 flex-grow">Expert-led course covering basics of data analysis and visualization.</p>
+                        <div class="flex justify-between items-center mt-auto">
+                             <span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-300/20">Course</span>
+                             <button class="text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors">
+                                 <i class="fa-solid fa-trash"></i> Remove
+                             </button>
+                         </div>
+                    </div>
+                </div>
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-card-light dark:shadow-card-dark flex flex-col h-full scroll-animate">
+                    <img class="w-full h-40 object-cover object-center lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="https://images.unsplash.com/photo-1497633765062-f44e6f9a5c99?q=80&w=400&auto=format&fit=crop" alt="Writing Club">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-semibold text-md text-text-primary dark:text-white mb-2">Creative Writing Circle</h3>
+                         <p class="text-text-secondary dark:text-text-secondary text-sm mb-3 flex-grow">Join fellow writers to share work and get feedback.</p>
+                         <div class="flex justify-between items-center mt-auto">
+                             <span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-300/20">Club</span>
+                             <button class="text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors">
+                                 <i class="fa-solid fa-trash"></i> Remove
+                             </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-content" class="profile-content-block hidden">
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 md:p-8 scroll-animate">
+                    <h3 class="text-2xl font-semibold text-text-primary dark:text-white mb-6">Account Settings</h3>
+
+                    <form id="settingsForm" class="space-y-6">
+                        <div class="space-y-4 text-sm text-text-secondary dark:text-text-secondary mb-8">
+                            <div>
+                                <label for="settings-name" class="block font-medium text-text-primary dark:text-white mb-1">Full Name</label>
+                                <input type="text" id="settings-name" name="Nom" value="{{ profile.Nom if profile.Nom is not none else user.name }}" class="w-full border border-gray-300 dark:border-gray-600 bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors shadow-sm dark:shadow-custom-dark" placeholder="Enter your full name">
+                            </div>
+                            <div>
+                                <label for="settings-title" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Title / Role</label>
+                                <input id="settings-title" name="title" type="text" value="{{ profile.title if profile.title is not none else '' }}"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                       placeholder="e.g., Student, Developer, Designer">
+                            </div>
+                            <div>
+                                <label for="settings-email" class="block font-medium text-text-primary dark:text-white mb-1">Email Address</label>
+                                <input type="email" id="settings-email" value="{{ user.email }}" class="w-full border border-gray-300 dark:border-gray-600 bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white rounded-md py-2 px-3 cursor-not-allowed" disabled>
+                            </div>
+                            <div>
+                                <label for="settings-bio" class="block font-medium text-text-primary dark:text-white mb-1">Bio</label>
+                                <textarea id="settings-bio" name="bio" rows="4" class="w-full border border-gray-300 dark:border-gray-600 bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors shadow-sm dark:shadow-custom-dark" placeholder="Tell us about yourself...">{{ profile.bio if profile.bio is not none else '' }}</textarea>
+                            </div>
+                            <div>
+                                <label for="settings-location" class="block font-medium text-text-primary dark:text-white mb-1">Location</label>
+                                <input type="text" id="settings-location" name="location" value="{{ profile.location if profile.location is not none else '' }}" class="w-full border border-gray-300 dark:border-gray-600 bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors shadow-sm dark:shadow-custom-dark" placeholder="Enter your location">
+                            </div>
+                            <div>
+                                <label for="settings-linkedin" class="block text-sm font-medium text-text-primary dark:text-text-secondary">LinkedIn Profile URL</label>
+                                <input id="settings-linkedin" name="linkedin" type="url" value="{{ profile.linkedin if profile.linkedin is not none else '' }}"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                       placeholder="https://linkedin.com/in/yourprofile">
+                            </div>
+                            <div>
+                                <label for="settings-website" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Website / Portfolio URL</label>
+                                <input id="settings-website" name="website" type="url" value="{{ profile.website if profile.website is not none else '' }}"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                       placeholder="https://yourwebsite.com">
+                            </div>
+
+                             <div>
+                                 <label for="settings-communautes" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Communautés (comma-separated)</label>
+                                 <input id="settings-communautes" name="Communautés" type="text" value="{{ profile.Communautés | join(', ') if profile.Communautés is iterable else '' }}"
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                        placeholder="e.g., Club Robotique, Groupe IA">
+                             </div>
+
+                             <div>
+                                 <label for="settings-competences" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Compétences (comma-separated)</label>
+                                 <input id="settings-competences" name="Compétences" type="text" value="{{ profile.Compétences | join(', ') if profile.Compétences is iterable else '' }}"
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                        placeholder="e.g., Python, IA, Blockchain">
+                             </div>
+
+                             <div>
+                                 <label for="settings-centres_interet" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Centres d'Intérêt (comma-separated)</label>
+                                 <input id="settings-centres_interet" name="Centres_d'Intérêt" type="text" value="{{ profile['Centres_d\'Intérêt'] | join(', ') if profile['Centres_d\'Intérêt'] is iterable else '' }}"
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                                        placeholder="e.g., Jeux vidéo, Musique">
+                             </div>
+
+
+                            <div class="mb-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <h3 class="text-xl font-semibold text-text-primary dark:text-white mb-4">Notification Preferences</h3>
+                                <div class="space-y-3 text-sm text-text-secondary dark:text-text-secondary">
+                                    <div class="flex items-center">
+                                        <input id="notify-email" name="notify_email" type="checkbox" class="form-checkbox h-4 w-4 text-primary dark:text-primary-dark border-gray-300 dark:border-gray-600 rounded focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700" {% if profile.notify_email %}checked{% endif %}>
+                                        <label for="notify-email" class="ml-2 text-text-primary dark:text-white">Email notifications</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input id="notify-push" name="notify_push" type="checkbox" class="form-checkbox h-4 w-4 text-primary dark:text-primary-dark border-gray-300 dark:border-gray-600 rounded focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700" {% if profile.notify_push %}checked{% endif %}>
+                                        <label for="notify-push" class="ml-2 text-text-primary dark:text-white">Push notifications (in-app)</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input id="notify-club" name="notify_club" type="checkbox" class="form-checkbox h-4 w-4 text-primary dark:text-primary-dark border-gray-300 dark:border-gray-600 rounded focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700" {% if profile.notify_club %}checked{% endif %}>
+                                        <label for="notify-club" class="ml-2 text-text-primary dark:text-white">Notify me about activity in my clubs</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end gap-4">
+                            <button type="button" class="bg-transparent text-text-secondary dark:text-text-secondary hover:text-primary dark:hover:text-primary-dark transition-colors py-2.5 px-6 rounded-full border border-gray-300 dark:border-gray-600 text-sm" id="cancelSettings">
+                                Cancel
+                            </button>
+                            <button type="submit" class="bg-primary dark:bg-primary hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all active:scale-95 py-2.5 px-6 rounded-full text-white font-semibold text-sm shadow-md">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                     <div id="settings-status" class="mt-4 text-sm text-green-600 dark:text-green-400 hidden text-center"></div>
+                     <div id="settings-error" class="mt-4 text-sm text-red-600 dark:text-red-400 hidden text-center"></div>
+                </div>
+            </div>
+
+            <div id="logout-content" class="profile-content-block hidden">
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6 text-center scroll-animate">
+                    <h3 class="text-xl font-semibold text-text-primary dark:text-white mb-4">Logging Out</h3>
+                    <p class="text-text-secondary dark:text-text-secondary mb-6">You will be logged out of your account. Are you sure you want to proceed?</p>
+                    <button id="confirm-logout-button" class="bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 transition-all active:scale-95 py-2.5 px-6 rounded-full text-white font-semibold text-sm shadow-md">Confirm Logout</button>
+                </div>
+            </div>
+
+             <div id="activity-content" class="profile-content-block hidden">
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl shadow-card-light dark:shadow-card-dark p-6">
+                    <h3 class="text-xl font-semibold text-text-primary dark:text-white mb-4">Activity Log (Coming Soon)</h3>
+                    <p class="text-text-secondary dark:text-text-secondary">This section will show your recent activities like course progress and club interactions.</p>
+                </div>
+            </div>
+            <div id="wishlist-content" class="profile-content-block hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {# Static example content from previous version #}
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-card-light dark:shadow-card-dark flex flex-col h-full scroll-animate">
+                    <img class="w-full h-40 object-cover object-center lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="https://images.unsplash.com/photo-1522071820081-009f0129c7c5?q=80&w=400&auto=format&fit=crop" alt="Data Science Course">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-semibold text-md text-text-primary dark:text-white mb-2">Introduction to Data Science</h3>
+                         <p class="text-text-secondary dark:text-text-secondary text-sm mb-3 flex-grow">Expert-led course covering basics of data analysis and visualization.</p>
+                        <div class="flex justify-between items-center mt-auto">
+                             <span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-300/20">Course</span>
+                             <button class="text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors">
+                                 <i class="fa-solid fa-trash"></i> Remove
+                             </button>
+                         </div>
+                    </div>
+                </div>
+                <div class="bg-surface-light dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-card-light dark:shadow-card-dark flex flex-col h-full scroll-animate">
+                    <img class="w-full h-40 object-cover object-center lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="https://images.unsplash.com/photo-1497633765062-f44e6f9a5c99?q=80&w=400&auto=format&fit=crop" alt="Writing Club">
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-semibold text-md text-text-primary dark:text-white mb-2">Creative Writing Circle</h3>
+                         <p class="text-text-secondary dark:text-text-secondary text-sm mb-3 flex-grow">Join fellow writers to share work and get feedback.</p>
+                         <div class="flex justify-between items-center mt-auto">
+                             <span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-300/20">Club</span>
+                             <button class="text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors">
+                                 <i class="fa-solid fa-trash"></i> Remove
+                             </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<script>
+    // --- Sidebar Navigation Logic ---
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const profileContentBlocks = document.querySelectorAll('.profile-content-block');
+    const profileSidebar = document.getElementById('profile-sidebar');
+    const profileSidebarToggle = document.getElementById('profile-sidebar-toggle');
+    const profileSidebarClose = document.getElementById('profile-sidebar-close');
+    const profileSidebarOverlay = document.getElementById('profile-sidebar-overlay');
+
+
+    function showContent(tabId) {
+        profileContentBlocks.forEach(block => {
+            block.classList.add('hidden');
+        });
+        const activeBlock = document.getElementById(`${tabId}-content`);
+        if (activeBlock) {
+            activeBlock.classList.remove('hidden');
+             // Scroll to the top of the content block if needed
+             activeBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tabId = link.dataset.tab;
+            sidebarLinks.forEach(l => l.classList.remove('active-link'));
+            link.classList.add('active-link');
+            showContent(tabId);
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 768) { // Tailwind's md breakpoint
+                 profileSidebar.classList.add('-translate-x-full');
+                 profileSidebarOverlay.classList.add('hidden');
+            }
+        });
+    });
+
+    // Initial content display (show overview by default)
+    // Check URL hash to determine initial tab
+    const hash = window.location.hash.substring(1); // Remove the '#'
+    const initialTab = hash || 'overview'; // Default to 'overview' if no hash
+    showContent(initialTab);
+    // Also set the active class on the corresponding sidebar link
+    const initialLink = document.querySelector(`.sidebar-link[data-tab="${initialTab}"]`);
+    if(initialLink) {
+        sidebarLinks.forEach(l => l.classList.remove('active-link'));
+        initialLink.classList.add('active-link');
+    }
+
+
+     // Toggle sidebar on mobile
+    if (profileSidebarToggle && profileSidebarClose && profileSidebarOverlay) {
+        profileSidebarToggle.addEventListener('click', () => {
+            profileSidebar.classList.remove('-translate-x-full');
+            profileSidebarOverlay.classList.remove('hidden');
+        });
+
+        profileSidebarClose.addEventListener('click', () => {
+            profileSidebar.classList.add('-translate-x-full');
+            profileSidebarOverlay.classList.add('hidden');
+        });
+
+         profileSidebarOverlay.addEventListener('click', () => {
+            profileSidebar.classList.add('-translate-x-full');
+            profileSidebarOverlay.classList.add('hidden');
+        });
+    }
+
+
+    // --- Profile Update Form Logic (for the Overview tab) ---
+    const profileForm = document.getElementById('profileForm'); // Form in Overview tab
+    const profileStatus = document.getElementById('profile-status'); // Status for Overview form
+    const profileError = document.getElementById('profile-error'); // Error for Overview form
+
+     // Function to display status messages for Overview form
+    const showProfileStatus = (message) => {
+        profileStatus.textContent = message;
+        profileStatus.classList.remove('hidden', 'text-red-600', 'dark:text-red-400');
+        profileStatus.classList.add('text-green-600', 'dark:text-green-400');
+        profileError.classList.add('hidden'); // Hide error message
+    };
+
+    // Function to display error messages for Overview form
+    const showProfileError = (message) => {
+        profileError.textContent = message;
+        profileError.classList.remove('hidden', 'text-green-600', 'dark:text-green-400');
+         profileError.classList.add('text-red-600', 'dark:text-red-400');
+        profileStatus.classList.add('hidden'); // Hide status message
+    };
+
+    // Function to clear messages for Overview form
+    const clearProfileMessages = () => {
+        profileStatus.classList.add('hidden');
+        profileError.classList.add('hidden');
+         // Clear backend error message if it exists
+         const backendError = document.getElementById('backend-error');
+         if (backendError) {
+             backendError.classList.add('hidden');
+         }
+    };
+
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearProfileMessages(); // Clear previous messages
+
+            const formData = new FormData(profileForm);
+            const profileData = {};
+            formData.forEach((value, key) => {
+                // For fields that should be lists, split by comma
+                 if (['Communautés', 'Compétences', "Centres_d'Intérêt"].includes(key)) {
+                     profileData[key] = value.split(',').map(item => item.trim()).filter(item => item); // Split, trim, and filter empty strings
+                 } else {
+                     profileData[key] = value;
+                 }
+            });
+
+            console.log('Updating profile (Overview form) with:', profileData);
+
+            try {
+                showProfileStatus('Updating profile...');
+                const resp = await fetch('/profile/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Include the session cookie automatically by the browser
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                const result = await resp.json();
+
+                if (resp.ok) {
+                    showProfileStatus(result.message || 'Profile updated successfully!');
+                    // Optionally, reload the page or update UI elements with new data
+                     // window.location.reload(); // Reloading is simple but might be jarring
+                } else {
+                    showProfileError(result.detail || result.message || 'Failed to update profile.');
+                }
+
+            } catch (error) {
+                console.error('Profile update error (Overview form):', error);
+                showProfileError(`An error occurred: ${error.message}`);
+            }
+        });
+    }
+
+     // --- Settings Form Logic ---
+    const settingsForm = document.getElementById('settingsForm'); // Form in Settings tab
+    const settingsStatus = document.getElementById('settings-status'); // Status for Settings form
+    const settingsError = document.getElementById('settings-error'); // Error for Settings form
+    const cancelSettingsButton = document.getElementById('cancelSettings');
+
+
+    // Function to display status messages for Settings form
+    const showSettingsStatus = (message) => {
+        settingsStatus.textContent = message;
+        settingsStatus.classList.remove('hidden', 'text-red-600', 'dark:text-red-400');
+        settingsStatus.classList.add('text-green-600', 'dark:text-green-400');
+        settingsError.classList.add('hidden'); // Hide error message
+    };
+
+    // Function to display error messages for Settings form
+    const showSettingsError = (message) => {
+        settingsError.textContent = message;
+        settingsError.classList.remove('hidden', 'text-green-600', 'dark:text-green-400');
+        settingsError.classList.add('text-red-600', 'dark:text-red-400');
+        settingsStatus.classList.add('hidden'); // Hide status message
+    };
+
+     // Function to clear messages for Settings form
+    const clearSettingsMessages = () => {
+        settingsStatus.classList.add('hidden');
+        settingsError.classList.add('hidden');
+    };
+
+
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearSettingsMessages(); // Clear previous messages
+
+            const formData = new FormData(settingsForm);
+            const profileData = {};
+             // Collect data from settings form, including checkboxes
+             formData.forEach((value, key) => {
+                 // For fields that should be lists, split by comma
+                  if (['Communautés', 'Compétences', "Centres_d'Intérêt"].includes(key)) {
+                      profileData[key] = value.split(',').map(item => item.trim()).filter(item => item); // Split, trim, and filter empty strings
+                  } else if (key.startsWith('notify_')) {
+                      // Handle checkboxes: FormData will only include checked checkboxes
+                      profileData[key] = true; // Mark as true if present
+                  }
+                  else {
+                      profileData[key] = value;
+                  }
+             });
+
+             // Explicitly set unchecked checkboxes to false
+             ['notify_email', 'notify_push', 'notify_club'].forEach(checkboxName => {
+                 if (!(checkboxName in profileData)) {
+                     profileData[checkboxName] = false;
+                 }
+             });
+
+
+            console.log('Updating profile (Settings form) with:', profileData);
+
+            try {
+                showSettingsStatus('Updating settings...');
+                const resp = await fetch('/profile/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Include the session cookie automatically by the browser
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                const result = await resp.json();
+
+                if (resp.ok) {
+                    showSettingsStatus(result.message || 'Settings updated successfully!');
+                    // Optionally, update UI elements on the page without full reload
+                     // For example, update the name in the header if it was changed
+                     const nameElement = document.querySelector('h1');
+                     if (nameElement && profileData.Nom) {
+                         nameElement.textContent = profileData.Nom;
+                     }
+                } else {
+                    showSettingsError(result.detail || result.message || 'Failed to update settings.');
+                }
+
+            } catch (error) {
+                console.error('Profile update error (Settings form):', error);
+                showSettingsError(`An error occurred: ${error.message}`);
+            }
+        });
+
+         if(cancelSettingsButton){
+             cancelSettingsButton.addEventListener('click', () => {
+                 // Simple way to "cancel" is to reload the page to revert changes
+                 window.location.reload();
+             });
+         }
+    }
+
+
+    // --- Logout Logic ---
+    const logoutButton = document.getElementById('logout-button');
+    const confirmLogoutButton = document.getElementById('confirm-logout-button');
+
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            showContent('logout'); // Show the logout confirmation block
+        });
+    }
+
+     if (confirmLogoutButton) {
+         confirmLogoutButton.addEventListener('click', async () => {
+             try {
+                 // Redirect to the logout endpoint
+                 window.location.href = '/auth/logout';
+             } catch (error) {
+                 console.error('Logout failed:', error);
+                 // Optionally display an error message on the logout block
+                 const logoutErrorDiv = document.createElement('div');
+                 logoutErrorDiv.classList.add('mt-4', 'text-sm', 'text-red-600', 'dark:text-red-400');
+                 logoutErrorDiv.textContent = 'Logout failed. Please try again.';
+                 confirmLogoutButton.parentElement.appendChild(logoutErrorDiv);
+             }
+         });
+     }
+
+     // --- User Recommendation Method Selection Logic ---
+     const userRecMethodSelect = document.getElementById('user-rec-method-select');
+
+     if(userRecMethodSelect){
+         userRecMethodSelect.addEventListener('change', (event) => {
+             const selectedMethod = event.target.value;
+             // Redirect to the profile page with the selected method as a query parameter
+             window.location.href = `/profile?user_rec_method=${selectedMethod}#user-recommendations`; // Add hash to stay on the tab
+         });
+     }
+
+
+    // Clear messages on page load
+    clearProfileMessages(); // For the Overview form
+    if (settingsStatus && settingsError) { // Check if settings elements exist
+         clearSettingsMessages(); // For the Settings form
+    }
+
+
+</script>
+
+{% endblock %}

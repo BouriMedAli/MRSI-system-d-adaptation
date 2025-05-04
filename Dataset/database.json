@@ -1,0 +1,1220 @@
+{
+    "users": {
+      "1": {
+        "Nom": "Etudiant_1",
+        "Travaux_Collaboratifs": 8,
+        "Coéquipiers": [49, 36, 30],
+        "Communautés": ["Club Robotique", "Groupe IA"],
+        "Nombre_Interactions": 91,
+        "Compétences": ["Blockchain", "IA", "Data Science"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Musique"],
+        "Derniers_Cours_Interagis": [5, 23, 31, 0, 20]
+      },
+      "2": {
+        "Nom": "Etudiant_2",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [16, 5],
+        "Communautés": ["Club Entrepreneurs", "Groupe IA"],
+        "Nombre_Interactions": 63,
+        "Compétences": ["IA", "Blockchain", "Python"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [24, 30, 15, 2, 33]
+      },
+      "3": {
+        "Nom": "Etudiant_3",
+        "Travaux_Collaboratifs": 10,
+        "Coéquipiers": [22, 9, 41, 34],
+        "Communautés": ["Groupe IA", "Club Robotique"],
+        "Nombre_Interactions": 23,
+        "Compétences": ["Design", "Python", "Blockchain"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Robotique"],
+        "Derniers_Cours_Interagis": [60, 32, 26, 3, 62]
+      },
+      "4": {
+        "Nom": "Etudiant_4",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [36],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 23,
+        "Compétences": ["Blockchain", "Data Science"],
+        "Centres_d'Intérêt": ["Robotique"],
+        "Derniers_Cours_Interagis": [35, 7, 30, 4, 39]
+      },
+      "5": {
+        "Nom": "Etudiant_5",
+        "Travaux_Collaboratifs": 7,
+        "Coéquipiers": [10],
+        "Communautés": ["Association Écologie", "Club Entrepreneurs"],
+        "Nombre_Interactions": 64,
+        "Compétences": ["Électronique", "Design"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [61, 65, 18, 60, 62]
+      },
+      "6": {
+        "Nom": "Etudiant_6",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [47, 35, 30],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 9,
+        "Compétences": ["Blockchain"],
+        "Centres_d'Intérêt": ["Entrepreneuriat", "Musique"],
+        "Derniers_Cours_Interagis": [31, 34, 37, 39, 30]
+      },
+      "7": {
+        "Nom": "Etudiant_7",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [12, 35, 20, 43, 17],
+        "Communautés": ["Club Data Science"],
+        "Nombre_Interactions": 29,
+        "Compétences": ["Blockchain", "Marketing", "Électronique"],
+        "Centres_d'Intérêt": ["Écologie", "Jeux vidéo"],
+        "Derniers_Cours_Interagis": [70, 36, 47, 2, 31]
+      },
+      "8": {
+        "Nom": "Etudiant_8",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [19, 33, 24],
+        "Communautés": ["Club Robotique"],
+        "Nombre_Interactions": 82,
+        "Compétences": ["Électronique", "Marketing"],
+        "Centres_d'Intérêt": ["Écologie"],
+        "Derniers_Cours_Interagis": [71, 75, 51, 54, 70]
+      },
+      "9": {
+        "Nom": "Etudiant_9",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [3, 37, 28, 23, 43],
+        "Communautés": ["Club Data Science", "Association Écologie"],
+        "Nombre_Interactions": 8,
+        "Compétences": ["Blockchain", "Marketing", "IA"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Écologie", "Robotique"],
+        "Derniers_Cours_Interagis": [23, 30, 76, 9, 28]
+      },
+      "10": {
+        "Nom": "Etudiant_10",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [43, 14, 25],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 72,
+        "Compétences": ["Design", "IA"],
+        "Centres_d'Intérêt": ["Jeux vidéo"],
+        "Derniers_Cours_Interagis": [62, 24, 60, 20, 65]
+      },
+      "11": {
+        "Nom": "Etudiant_11",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [33, 46, 14, 37],
+        "Communautés": ["Club Data Science"],
+        "Nombre_Interactions": 88,
+        "Compétences": ["IA", "Électronique", "Data Science"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [0, 21, 5, 28, 23]
+      },
+      "12": {
+        "Nom": "Etudiant_12",
+        "Travaux_Collaboratifs": 8,
+        "Coéquipiers": [8, 26, 43],
+        "Communautés": ["Club Data Science", "Association Écologie"],
+        "Nombre_Interactions": 39,
+        "Compétences": ["Design", "Électronique"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [60, 65, 42, 61, 66]
+      },
+      "13": {
+        "Nom": "Etudiant_13",
+        "Travaux_Collaboratifs": 1,
+        "Coéquipiers": [41, 42, 47, 31, 12],
+        "Communautés": ["Club Entrepreneurs"],
+        "Nombre_Interactions": 89,
+        "Compétences": ["IA", "Électronique"],
+        "Centres_d'Intérêt": ["Robotique"],
+        "Derniers_Cours_Interagis": [20, 24, 29, 40, 43]
+      },
+      "14": {
+        "Nom": "Etudiant_14",
+        "Travaux_Collaboratifs": 7,
+        "Coéquipiers": [29, 28, 47, 50, 42],
+        "Communautés": ["Club Data Science"],
+        "Nombre_Interactions": 71,
+        "Compétences": ["IA"],
+        "Centres_d'Intérêt": ["Hackathon", "Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [23, 20, 24, 27, 29]
+      },
+      "15": {
+        "Nom": "Etudiant_15",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [9, 45, 29, 41, 16],
+        "Communautés": ["Association Écologie", "Groupe IA"],
+        "Nombre_Interactions": 83,
+        "Compétences": ["Python"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [7, 8, 2, 15, 26]
+      },
+      "16": {
+        "Nom": "Etudiant_16",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [3],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 7,
+        "Compétences": ["Blockchain"],
+        "Centres_d'Intérêt": ["Robotique", "Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [30, 31, 36, 38, 34]
+      },
+      "17": {
+        "Nom": "Etudiant_17",
+        "Travaux_Collaboratifs": 4,
+        "Coéquipiers": [7],
+        "Communautés": ["Groupe IA", "Club Robotique"],
+        "Nombre_Interactions": 80,
+        "Compétences": ["Électronique"],
+        "Centres_d'Intérêt": ["Écologie", "Hackathon", "Robotique"],
+        "Derniers_Cours_Interagis": [43, 51, 56, 50, 54]
+      },
+      "18": {
+        "Nom": "Etudiant_18",
+        "Travaux_Collaboratifs": 7,
+        "Coéquipiers": [19, 10, 2, 41],
+        "Communautés": ["Club Entrepreneurs"],
+        "Nombre_Interactions": 45,
+        "Compétences": ["Blockchain", "Électronique", "Design"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Musique"],
+        "Derniers_Cours_Interagis": [30, 60, 62, 31, 40]
+      },
+      "19": {
+        "Nom": "Etudiant_19",
+        "Travaux_Collaboratifs": 10,
+        "Coéquipiers": [9, 27],
+        "Communautés": ["Club Data Science"],
+        "Nombre_Interactions": 48,
+        "Compétences": ["Marketing", "Blockchain", "Électronique"],
+        "Centres_d'Intérêt": ["Jeux vidéo"],
+        "Derniers_Cours_Interagis": [70, 36, 50, 75, 31]
+      },
+      "20": {
+        "Nom": "Etudiant_20",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [39, 10, 41, 6, 49],
+        "Communautés": ["Club Entrepreneurs"],
+        "Nombre_Interactions": 81,
+        "Compétences": ["IA", "Blockchain"],
+        "Centres_d'Intérêt": ["Musique", "Entrepreneuriat", "Écologie"],
+        "Derniers_Cours_Interagis": [23, 30, 31, 20, 36]
+      },
+      "21": {
+        "Nom": "Etudiant_21",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [50, 27, 44],
+        "Communautés": ["Club Robotique", "Groupe IA"],
+        "Nombre_Interactions": 100,
+        "Compétences": ["Data Science", "Électronique", "Marketing"],
+        "Centres_d'Intérêt": ["Robotique"],
+        "Derniers_Cours_Interagis": [2, 70, 8, 50, 53]
+      },
+      "22": {
+        "Nom": "Etudiant_22",
+        "Travaux_Collaboratifs": 7,
+        "Coéquipiers": [18, 14, 6, 30, 24],
+        "Communautés": ["Groupe IA", "Club Robotique"],
+        "Nombre_Interactions": 38,
+        "Compétences": ["IA", "Blockchain"],
+        "Centres_d'Intérêt": ["Musique", "Hackathon", "Entrepreneient"],
+        "Derniers_Cours_Interagis": [20, 31, 23, 30, 36]
+      },
+      "23": {
+        "Nom": "Etudiant_23",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [32, 49],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 34,
+        "Compétences": ["Blockchain"],
+        "Centres_d'Intérêt": ["Hackathon", "Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [31, 34, 38, 30, 36]
+      },
+      "24": {
+        "Nom": "Etudiant_24",
+        "Travaux_Collaboratifs": 8,
+        "Coéquipiers": [41],
+        "Communautés": ["Club Robotique", "Groupe IA"],
+        "Nombre_Interactions": 73,
+        "Compétences": ["Blockchain", "Design", "Marketing"],
+        "Centres_d'Intérêt": ["Jeux vidéo"],
+        "Derniers_Cours_Interagis": [32, 60, 70, 31, 62]
+      },
+      "25": {
+        "Nom": "Etudiant_25",
+        "Travaux_Collaboratifs": 6,
+        "Coéquipiers": [19, 8, 50, 49],
+        "Communautés": ["Club Robotique", "Club Entrepreneurs"],
+        "Nombre_Interactions": 89,
+        "Compétences": ["IA", "Design", "Python"],
+        "Centres_d'Intérêt": ["Robotique", "Hackathon"],
+        "Derniers_Cours_Interagis": [23, 62, 7, 2, 65]
+      },
+      "26": {
+        "Nom": "Etudiant_26",
+        "Travaux_Collaboratifs": 3,
+        "Coéquipiers": [48, 49, 14, 9],
+        "Communautés": ["Club Robotique", "Groupe IA"],
+        "Nombre_Interactions": 68,
+        "Compétences": ["Python", "Design"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [7, 60, 8, 62, 65]
+      },
+      "27": {
+        "Nom": "Etudiant_27",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [40, 43, 17],
+        "Communautés": ["Club Data Science", "Groupe IA"],
+        "Nombre_Interactions": 64,
+        "Compétences": ["Design"],
+        "Centres_d'Intérêt": ["Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [60, 62, 65, 63, 61]
+      },
+      "28": {
+        "Nom": "Etudiant_28",
+        "Travaux_Collaboratifs": 4,
+        "Coéquipiers": [10, 40, 3, 42, 9],
+        "Communautés": ["Groupe IA"],
+        "Nombre_Interactions": 70,
+        "Compétences": ["Data Science"],
+        "Centres_d'Intérêt": ["Écologie", "Musique"],
+        "Derniers_Cours_Interagis": [0, 5, 7, 2, 9]
+      },
+      "29": {
+        "Nom": "Etudiant_29",
+        "Travaux_Collaboratifs": 3,
+        "Coéquipiers": [50, 42, 27, 21],
+        "Communautés": ["Club Data Science"],
+        "Nombre_Interactions": 98,
+        "Compétences": ["Marketing", "Data Science", "IA"],
+        "Centres_d'Intérêt": ["Écologie", "Jeux vidéo"],
+        "Derniers_Cours_Interagis": [70, 2, 23, 5, 75]
+      },
+      "30": {
+        "Nom": "Etudiant_30",
+        "Travaux_Collaboratifs": 1,
+        "Coéquipiers": [25],
+        "Communautés": ["Club Robotique", "Club Data Science"],
+        "Nombre_Interactions": 93,
+        "Compétences": ["Blockchain"],
+        "Centres_d'Intérêt": ["Musique", "Robotique"],
+        "Derniers_Cours_Interagis": [30, 31, 36, 38, 32]
+      },
+      "31": {
+        "Nom": "Etudiant_31",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [17, 29, 24, 34],
+        "Communautés": ["Association Écologie", "Club Entrepreneurs"],
+        "Nombre_Interactions": 16,
+        "Compétences": ["Python", "Blockchain", "Marketing"],
+        "Centres_d'Intérêt": ["Hackathon", "Robotique", "Écologie"],
+        "Derniers_Cours_Interagis": [7, 31, 70, 36, 75]
+      },
+      "32": {
+        "Nom": "Etudiant_32",
+        "Travaux_Collaboratifs": 3,
+        "Coéquipiers": [31],
+        "Communautés": ["Club Data Science", "Club Robotique"],
+        "Nombre_Interactions": 88,
+        "Compétences": ["Blockchain", "Design"],
+        "Centres_d'Intérêt": ["Musique", "Hackathon"],
+        "Derniers_Cours_Interagis": [30, 60, 31, 62, 32]
+      },
+      "33": {
+        "Nom": "Etudiant_33",
+        "Travaux_Collaboratifs": 10,
+        "Coéquipiers": [25],
+        "Communautés": ["Association Écologie", "Club Robotique"],
+        "Nombre_Interactions": 26,
+        "Compétences": ["Blockchain"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Hackathon"],
+        "Derniers_Cours_Interagis": [31, 34, 38, 30, 36]
+      },
+      "34": {
+        "Nom": "Etudiant_34",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [44, 15, 28, 17],
+        "Communautés": ["Club Robotique", "Club Entrepreneurs"],
+        "Nombre_Interactions": 38,
+        "Compétences": ["Marketing", "Data Science", "Blockchain"],
+        "Centres_d'Intérêt": ["Musique", "Robotique"],
+        "Derniers_Cours_Interagis": [70, 2, 31, 75, 36]
+      },
+      "35": {
+        "Nom": "Etudiant_35",
+        "Travaux_Collaboratifs": 1,
+        "Coéquipiers": [34],
+        "Communautés": ["Club Entrepreneurs"],
+        "Nombre_Interactions": 90,
+        "Compétences": ["Python"],
+        "Centres_d'Intérêt": ["Robotique", "Musique", "Écologie"],
+        "Derniers_Cours_Interagis": [7, 8, 15, 2, 26]
+      },
+      "36": {
+        "Nom": "Etudiant_36",
+        "Travaux_Collaboratifs": 4,
+        "Coéquipiers": [7, 44, 1, 30],
+        "Communautés": ["Club Robotique"],
+        "Nombre_Interactions": 68,
+        "Compétences": ["Data Science"],
+        "Centres_d'Intérêt": ["Entrepreneuriat", "Musique"],
+        "Derniers_Cours_Interagis": [0, 5, 7, 2, 9]
+      },
+      "37": {
+        "Nom": "Etudiant_37",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [27],
+        "Communautés": ["Association Écologie", "Groupe IA"],
+        "Nombre_Interactions": 87,
+        "Compétences": ["IA"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Robotique"],
+        "Derniers_Cours_Interagis": [23, 20, 24, 27, 29]
+      },
+      "38": {
+        "Nom": "Etudiant_38",
+        "Travaux_Collaboratifs": 4,
+        "Coéquipiers": [14, 45, 12, 28, 2],
+        "Communautés": ["Club Robotique"],
+        "Nombre_Interactions": 20,
+        "Compétences": ["Data Science", "Python"],
+        "Centres_d'Intérêt": ["Hackathon", "Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [0, 7, 2, 8, 5]
+      },
+      "39": {
+        "Nom": "Etudiant_39",
+        "Travaux_Collaboratifs": 2,
+        "Coéquipiers": [43],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 32,
+        "Compétences": ["Marketing", "Data Science"],
+        "Centres_d'Intérêt": ["Hackathon", "Jeux vidéo"],
+        "Derniers_Cours_Interagis": [70, 2, 71, 5, 75]
+      },
+      "40": {
+        "Nom": "Etudiant_40",
+        "Travaux_Collaboratifs": 5,
+        "Coéquipiers": [15, 26, 9],
+        "Communautés": ["Club Entrepreneurs", "Association Écologie"],
+        "Nombre_Interactions": 53,
+        "Compétences": ["IA"],
+        "Centres_d'Intérêt": ["Entrepreneuriat", "Musique", "Hackathon"],
+        "Derniers_Cours_Interagis": [23, 20, 24, 27, 29]
+      },
+      "41": {
+        "Nom": "Etudiant_41",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [36, 17, 27],
+        "Communautés": ["Association Écologie", "Club Entrepreneurs"],
+        "Nombre_Interactions": 64,
+        "Compétences": ["Blockchain"],
+        "Centres_d'Intérêt": ["Musique", "Entrepreneuriat", "Robotique"],
+        "Derniers_Cours_Interagis": [31, 34, 38, 30, 36]
+      },
+      "42": {
+        "Nom": "Etudiant_42",
+        "Travaux_Collaboratifs": 8,
+        "Coéquipiers": [20, 35, 4],
+        "Communautés": ["Club Entrepreneurs", "Groupe IA"],
+        "Nombre_Interactions": 35,
+        "Compétences": ["Électronique"],
+        "Centres_d'Intérêt": ["Musique"],
+        "Derniers_Cours_Interagis": [43, 51, 56, 50, 54]
+      },
+      "43": {
+        "Nom": "Etudiant_43",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [14],
+        "Communautés": ["Groupe IA", "Club Data Science"],
+        "Nombre_Interactions": 57,
+        "Compétences": ["Design", "Data Science"],
+        "Centres_d'Intérêt": ["Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [60, 2, 62, 5, 65]
+      },
+      "44": {
+        "Nom": "Etudiant_44",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [46, 19, 43, 5],
+        "Communautés": ["Club Robotique", "Club Entrepreneurs"],
+        "Nombre_Interactions": 56,
+        "Compétences": ["Data Science"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Entrepreneuriat", "Robotique"],
+        "Derniers_Cours_Interagis": [0, 5, 7, 2, 9]
+      },
+      "45": {
+        "Nom": "Etudiant_45",
+        "Travaux_Collaboratifs": 9,
+        "Coéquipiers": [31, 44, 46, 39, 25],
+        "Communautés": ["Club Data Science"],
+        "Nombre_Interactions": 89,
+        "Compétences": ["Design"],
+        "Centres_d'Intérêt": ["Musique", "Jeux vidéo", "Entrepreneuriat"],
+        "Derniers_Cours_Interagis": [60, 62, 65, 63, 61]
+      },
+      "46": {
+        "Nom": "Etudiant_46",
+        "Travaux_Collaboratifs": 4,
+        "Coéquipiers": [4, 47, 49],
+        "Communautés": ["Club Entrepreneurs", "Groupe IA"],
+        "Nombre_Interactions": 68,
+        "Compétences": ["IA"],
+        "Centres_d'Intérêt": ["Hackathon", "Écologie"],
+        "Derniers_Cours_Interagis": [23, 20, 24, 27, 29]
+      },
+      "47": {
+        "Nom": "Etudiant_47",
+        "Travaux_Collaboratifs": 1,
+        "Coéquipiers": [46, 26, 31, 16],
+        "Communautés": ["Association Écologie"],
+        "Nombre_Interactions": 58,
+        "Compétences": ["Blockchain", "Marketing", "Data Science"],
+        "Centres_d'Intérêt": ["Écologie", "Robotique"],
+        "Derniers_Cours_Interagis": [31, 70, 2, 36, 5]
+      },
+      "48": {
+        "Nom": "Etudiant_48",
+        "Travaux_Collaboratifs": 7,
+        "Coéquipiers": [20, 29, 40],
+        "Communautés": ["Club Data Science", "Club Robotique"],
+        "Nombre_Interactions": 68,
+        "Compétences": ["Data Science", "Blockchain"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Robotique"],
+        "Derniers_Cours_Interagis": [0, 31, 5, 36, 2]
+      },
+      "49": {
+        "Nom": "Etudiant_49",
+        "Travaux_Collaboratifs": 1,
+        "Coéquipiers": [20, 37, 17],
+        "Communautés": ["Groupe IA", "Club Robotique"],
+        "Nombre_Interactions": 32,
+        "Compétences": ["Data Science", "Blockchain"],
+        "Centres_d'Intérêt": ["Jeux vidéo", "Hackathon", "Écologie"],
+        "Derniers_Cours_Interagis": [2, 30, 5, 31, 7]
+      },
+      "50": {
+        "Nom": "Etudiant_50",
+        "Travaux_Collaboratifs": 4,
+        "Coéquipiers": [36, 6, 18],
+        "Communautés": ["Association Écologie", "Groupe IA"],
+        "Nombre_Interactions": 11,
+        "Compétences": ["IA", "Blockchain", "Data Science"],
+        "Centres_d'Intérêt": ["Hackathon"],
+        "Derniers_Cours_Interagis": [23, 31, 2, 20, 30]
+      },
+      "51": {
+        "Nom": "AhmedouYahye",
+        "Travaux_Collaboratifs": 40,
+        "Coéquipiers": [36, 6, 18],
+        "Communautés": ["Groupe IA"],
+        "Nombre_Interactions": 20,
+        "Compétences": ["Design", "IA", "Python"],
+        "Centres_d'Intérêt": ["Hackathon", "Robotique"],
+        "Derniers_Cours_Interagis": [60, 23, 7, 62, 20]
+      }
+    },
+    "contents": {
+      "0": {
+        "Title": "Learn Data Science Tutorial - Full Course for Beginners",
+        "Link": "https://www.youtube.com/watch?v=ua-CiDNNj30",
+        "Category": "Data Science",
+        "Description": "A complete 6‑hour Data Science tutorial covering Python, statistics, and machine learning fundamentals",
+        "Rating": 8
+      },
+      "1": {
+        "Title": "Data Science Full Course 2023 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=6USOEP1d9HA",
+        "Category": "Data Science",
+        "Description": "An end‑to‑end 7‑hour course on data analysis, visualization, and model building",
+        "Rating": 7
+      },
+      "2": {
+        "Title": "Data Science Full Course for Beginners 2023 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=sqDLPxxErJI",
+        "Category": "Data Science",
+        "Description": "Hands‑on introduction to Python, pandas, NumPy, and ML pipelines",
+        "Rating": 9
+      },
+      "3": {
+        "Title": "Data Science Hands‑On Crash Course",
+        "Link": "https://www.youtube.com/watch?v=XU5pw3QRYjQ",
+        "Category": "Data Science",
+        "Description": "Practical crash course with real datasets and project walkthroughs",
+        "Rating": 6
+      },
+      "4": {
+        "Title": "Data Science For Beginners | Edureka",
+        "Link": "https://www.youtube.com/watch?v=-ETQ97mXXF0",
+        "Category": "Data Science",
+        "Description": "Foundational data science concepts, tools, and case studies",
+        "Rating": 8
+      },
+      "5": {
+        "Title": "Data Science Full Course For Beginners IBM",
+        "Link": "https://www.youtube.com/watch?v=WlLgysXJ0Ec",
+        "Category": "Data Science",
+        "Description": "Official IBM tutorial on analytics, data wrangling, and ML workflows",
+        "Rating": 7
+      },
+      "6": {
+        "Title": "Data Science Full Course For Beginners 2024 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=ZcaKgqXsEbA",
+        "Category": "Data Science",
+        "Description": "Updated curriculum with Python, R, and cloud deployment",
+        "Rating": 9
+      },
+      "7": {
+        "Title": "Python for Data Science Course – Hands‑on Projects",
+        "Link": "https://www.youtube.com/watch?v=FTpmwX94_Yo",
+        "Category": "Data Science",
+        "Description": "Project‑based learning covering EDA and regression modeling",
+        "Rating": 8
+      },
+      "8": {
+        "Title": "Python for Data Analytics - Full Course for Beginners",
+        "Link": "https://www.youtube.com/watch?v=wUSDVGivd-8",
+        "Category": "Data Science",
+        "Description": "Tutorial focused on pandas, Matplotlib, and real‑world datasets",
+        "Rating": 7
+      },
+      "9": {
+        "Title": "Learn Data Science Roadmap & Career Guide",
+        "Link": "https://www.youtube.com/watch?v=-ETQ97mXXF1",
+        "Category": "Data Science",
+        "Description": "Overview of career paths, skills roadmap, and resource recommendations",
+        "Rating": 6
+      },
+      "10": {
+        "Title": "HTML & CSS Full Course | Web Dev for Beginners",
+        "Link": "https://www.youtube.com/watch?v=Eb3lOiukwAQ",
+        "Category": "Web Development",
+        "Description": "Build modern responsive websites using HTML5 and CSS3",
+        "Rating": 9
+      },
+      "11": {
+        "Title": "Web Development with HTML & CSS – Full Course for Beginners",
+        "Link": "https://www.youtube.com/watch?v=dX8396ZmSPk",
+        "Category": "Web Development",
+        "Description": "Step‑by‑step web development from scratch",
+        "Rating": 8
+      },
+      "12": {
+        "Title": "Full Stack Web Development for Beginners",
+        "Link": "https://www.youtube.com/watch?v=nu_pCVPKzTk",
+        "Category": "Web Development",
+        "Description": "Complete overview of front‑end and back‑end technologies",
+        "Rating": 7
+      },
+      "13": {
+        "Title": "Learn Full Stack Web Development From Scratch",
+        "Link": "https://www.youtube.com/watch?v=ZxKM3DCV2kE",
+        "Category": "Web Development",
+        "Description": "Hands‑on projects using Node.js, React, and MongoDB",
+        "Rating": 8
+      },
+      "14": {
+        "Title": "The Complete Web Development Bootcamp Updated",
+        "Link": "https://www.youtube.com/watch?pp=0gcJCdgAo7VqN5tD&v=G10vMyRj8Aw",
+        "Category": "Web Development",
+        "Description": "65‑hour bootcamp covering HTML, CSS, JS, React, and more",
+        "Rating": 9
+      },
+      "15": {
+        "Title": "The Complete 2025 Web Development Bootcamp by Angela Yu",
+        "Link": "https://www.youtube.com/watch?v=5yHpfICfx_k",
+        "Category": "Web Development",
+        "Description": "Udemy course walkthrough and review",
+        "Rating": 6
+      },
+      "16": {
+        "Title": "Complete Web Development Bootcamp: 30+ Hours",
+        "Link": "https://www.youtube.com/watch?v=hw-5cz-0UHo",
+        "Category": "Web Development",
+        "Description": "Learn to build, deploy, and launch modern web apps",
+        "Rating": 8
+      },
+      "17": {
+        "Title": "Learn Web Development with Angela from the App Brewery",
+        "Link": "https://www.youtube.com/watch?v=SoQf8tLTODI",
+        "Category": "Web Development",
+        "Description": "Introductory course on web fundamentals and projects",
+        "Rating": 7
+      },
+      "18": {
+        "Title": "Colt Steele vs. Angela Yu Bootcamp Comparison",
+        "Link": "https://www.youtube.com/watch?v=3zOMllcQyeQ",
+        "Category": "Web Development",
+        "Description": "Side‑by‑side review of two top web development bootcamps",
+        "Rating": 6
+      },
+      "19": {
+        "Title": "The Complete Web Development Bootcamp Course by Angela Yu",
+        "Link": "https://www.youtube.com/watch?v=8uWvSNQvc2g",
+        "Category": "Web Development",
+        "Description": "Review and key takeaways from Angela Yu’s course",
+        "Rating": 7
+      },
+      "20": {
+        "Title": "Machine Learning with Python and Scikit‑Learn – Full Course",
+        "Link": "https://www.youtube.com/watch?v=hDKCxebp88A",
+        "Category": "Machine Learning",
+        "Description": "In‑depth ML tutorial using scikit‑learn for real data",
+        "Rating": 8
+      },
+      "21": {
+        "Title": "Machine Learning for Everybody – Full Course",
+        "Link": "https://www.youtube.com/watch?v=i_LwzRVP7bg",
+        "Category": "Machine Learning",
+        "Description": "Accessible ML basics and hands‑on examples",
+        "Rating": 7
+      },
+      "22": {
+        "Title": "Complete Machine Learning Course in 60 Hours - Part 1",
+        "Link": "https://www.youtube.com/watch?v=LcWFedjaR4Q",
+        "Category": "Machine Learning",
+        "Description": "Comprehensive 60‑hour ML training series",
+        "Rating": 6
+      },
+      "23": {
+        "Title": "Harvard CS50's AI with Python – Full University Course",
+        "Link": "https://www.youtube.com/watch?v=5NgNicANyqM",
+        "Category": "Machine Learning",
+        "Description": "University‑level AI and ML concepts with Python",
+        "Rating": 9
+      },
+      "24": {
+        "Title": "Artificial Intelligence Full Course With Python 2023",
+        "Link": "https://www.youtube.com/watch?v=ELv2jDvgYkA",
+        "Category": "Machine Learning",
+        "Description": "End‑to‑end AI engineer specialization overview",
+        "Rating": 7
+      },
+      "25": {
+        "Title": "PyTorch for Deep Learning & ML – Full Course",
+        "Link": "https://www.youtube.com/watch?v=V_xro1bcAuA",
+        "Category": "Machine Learning",
+        "Description": "Learn PyTorch framework for deep learning",
+        "Rating": 8
+      },
+      "26": {
+        "Title": "Introduction to Machine Learning for Beginners [Pt.1]",
+        "Link": "https://www.youtube.com/watch?v=6mSx_KJxcHI",
+        "Category": "Machine Learning",
+        "Description": "Part‑1 of a beginner‑friendly ML series",
+        "Rating": 6
+      },
+      "27": {
+        "Title": "TensorFlow 2.0 Complete Course - Python Neural Networks Tutorial",
+        "Link": "https://www.youtube.com/watch?v=tPYj3fFJGjk",
+        "Category": "Machine Learning",
+        "Description": "7‑hour TF2 course covering core algorithms",
+        "Rating": 7
+      },
+      "28": {
+        "Title": "TensorFlow 2.0 Full Course In 5 Hours | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=d9N0IGb5QP0",
+        "Category": "Machine Learning",
+        "Description": "Concise TF2 course with practical examples",
+        "Rating": 8
+      },
+      "29": {
+        "Title": "Tensorflow 2.0 Tutorial for Beginners (Code included)",
+        "Link": "https://www.youtube.com/watch?v=lDJ4ti6MfFU",
+        "Category": "Machine Learning",
+        "Description": "Hands‑on TF2 tutorial for neural networks",
+        "Rating": 7
+      },
+      "30": {
+        "Title": "BlockChain Developer Full Course - 8 Hours [2024]",
+        "Link": "https://www.youtube.com/watch?v=IPbmapxHKjw",
+        "Category": "Blockchain",
+        "Description": "Edureka’s 8‑hour blockchain developer tutorial",
+        "Rating": 8
+      },
+      "31": {
+        "Title": "Blockchain Technology Full Course for Beginners | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=3fUZENyWpB0",
+        "Category": "Blockchain",
+        "Description": "End‑to‑end blockchain fundamentals and DApps",
+        "Rating": 9
+      },
+      "32": {
+        "Title": "Learn Blockchain & Solidity Dev Full Course 2024",
+        "Link": "https://www.youtube.com/watch?v=jcgfQEbptdo",
+        "Category": "Blockchain",
+        "Description": "Hands‑on Solidity and smart contract projects",
+        "Rating": 8
+      },
+      "33": {
+        "Title": "Blockchain Tech Full Course – Detailed Overview",
+        "Link": "https://www.youtube.com/watch?v=9aXHQ98TMRY",
+        "Category": "Blockchain",
+        "Description": "Simplilearn’s detailed blockchain architecture course",
+        "Rating": 7
+      },
+      "34": {
+        "Title": "Introduction to Blockchain and Web3 | Bootcamp",
+        "Link": "https://www.youtube.com/watch?v=V6Yqr7prI2I",
+        "Category": "Blockchain",
+        "Description": "Beginner bootcamp on blockchain concepts and cryptography",
+        "Rating": 6
+      },
+      "35": {
+        "Title": "Blockchain In‑Depth Tutorial for Beginners",
+        "Link": "https://www.youtube.com/watch?v=AWPisuBx1Zo",
+        "Category": "Blockchain",
+        "Description": "Core principles of blockchain with examples",
+        "Rating": 7
+      },
+      "36": {
+        "Title": "Learn Blockchain, Solidity & Web3 Dev with JS",
+        "Link": "https://www.youtube.com/watch?v=gyMwXuJrbJQ",
+        "Category": "Blockchain",
+        "Description": "freeCodeCamp.org’s 32‑hour Web3 development series",
+        "Rating": 8
+      },
+      "37": {
+        "Title": "Solidity, Blockchain, & Smart Contract Course",
+        "Link": "https://www.youtube.com/watch?v=M576WGiDBdQ",
+        "Category": "Blockchain",
+        "Description": "freeCodeCamp’s Python‑based blockchain tutorial",
+        "Rating": 7
+      },
+      "38": {
+        "Title": "Learn Solidity, Blockchain Dev & Smart Contracts",
+        "Link": "https://www.youtube.com/watch?v=umepbfKp5rI",
+        "Category": "Blockchain",
+        "Description": "Guide to building and deploying smart contracts",
+        "Rating": 6
+      },
+      "39": {
+        "Title": "Welcome to Blockchain | freeCodeCamp — Lesson #0",
+        "Link": "https://www.youtube.com/watch?v=Qe-3FUxThso",
+        "Category": "Blockchain",
+        "Description": "freeCodeCamp’s introductory lesson on blockchain",
+        "Rating": 7
+      },
+      "40": {
+        "Title": "Cloud Computing Full Course In 11 Hours | Edureka",
+        "Link": "https://www.youtube.com/watch?v=2LaAJq1lB1Q",
+        "Category": "Cloud Computing",
+        "Description": "Comprehensive 11‑hour cloud fundamentals course",
+        "Rating": 9
+      },
+      "41": {
+        "Title": "Cloud Computing For Beginners | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=RWgW-CgdIk0",
+        "Category": "Cloud Computing",
+        "Description": "Simplilearn’s detailed cloud service overview",
+        "Rating": 8
+      },
+      "42": {
+        "Title": "Cloud Computing Full Course 2025",
+        "Link": "https://www.youtube.com/watch?v=q3m1AB9ECXo",
+        "Category": "Cloud Computing",
+        "Description": "Latest practices in cloud architecture and services",
+        "Rating": 7
+      },
+      "43": {
+        "Title": "AWS Cloud Engineer Full Course for Beginners",
+        "Link": "https://www.youtube.com/watch?v=j_StCjwpfmk",
+        "Category": "Cloud Computing",
+        "Description": "Practical AWS certification‑level walkthrough",
+        "Rating": 8
+      },
+      "44": {
+        "Title": "Cloud Computing Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=Eg11Y_6MeMU",
+        "Category": "Cloud Computing",
+        "Description": "Updated AWS, Azure, and GCP cloud technologies",
+        "Rating": 7
+      },
+      "45": {
+        "Title": "Cloud Architect Masters Program Overview",
+        "Link": "https://www.youtube.com/watch?v=L5Qqobx2vFI",
+        "Category": "Cloud Computing",
+        "Description": "Simplilearn’s AWS Cloud Architect masters training",
+        "Rating": 6
+      },
+      "46": {
+        "Title": "Azure Full Course – Learn MS Azure in 8 Hours | Edureka",
+        "Link": "https://www.youtube.com/watch?v=tDuruX7XSac",
+        "Category": "Cloud Computing",
+        "Description": "Edureka’s 8‑hour Microsoft Azure tutorial",
+        "Rating": 8
+      },
+      "47": {
+        "Title": "Microsoft Azure Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=nD9ehXK52GQ",
+        "Category": "Cloud Computing",
+        "Description": "Comprehensive Azure services and DevOps integration",
+        "Rating": 7
+      },
+      "48": {
+        "Title": "Microsoft Azure Tutorial for Beginners",
+        "Link": "https://www.youtube.com/watch?v=Ek9vwVRqiYk",
+        "Category": "Cloud Computing",
+        "Description": "Simplilearn’s step‑by‑step Azure essentials guide",
+        "Rating": 6
+      },
+      "49": {
+        "Title": "Azure Fundamentals Cert Course (AZ‑900)",
+        "Link": "https://www.youtube.com/watch?v=5abffC-K40c",
+        "Category": "Cloud Computing",
+        "Description": "Prep for Azure Fundamentals certification exam",
+        "Rating": 8
+      },
+      "50": {
+        "Title": "Cyber Security Course Training For Beginners 2024",
+        "Link": "https://www.youtube.com/watch?v=hXSFdwIOfnE",
+        "Category": "Cybersecurity",
+        "Description": "Simplilearn’s full cybersecurity fundamentals course",
+        "Rating": 8
+      },
+      "51": {
+        "Title": "Cybersecurity Mastery: Complete Course",
+        "Link": "https://www.youtube.com/watch?v=s19BxFpoSd0",
+        "Category": "Cybersecurity",
+        "Description": "All‑in‑one cybersecurity for beginners video",
+        "Rating": 7
+      },
+      "52": {
+        "Title": "FREE Cyber Security Training for Beginners",
+        "Link": "https://www.youtube.com/watch?v=aPKJvJIGpQM",
+        "Category": "Cybersecurity",
+        "Description": "High‑demand skills training series",
+        "Rating": 6
+      },
+      "53": {
+        "Title": "Cyber Security Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=xtnMQKpLgcc",
+        "Category": "Cybersecurity",
+        "Description": "Updated ethical hacking and defense techniques",
+        "Rating": 8
+      },
+      "54": {
+        "Title": "Cyber Security Full Course for Beginners 11h",
+        "Link": "https://www.youtube.com/watch?v=v3iUx2SNspY",
+        "Category": "Cybersecurity",
+        "Description": "2025 edition of an 11‑hour security bootcamp",
+        "Rating": 7
+      },
+      "55": {
+        "Title": "Cyber Security Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=QyxBuPEohao",
+        "Category": "Cybersecurity",
+        "Description": "Latest trends in cybersecurity for organizations",
+        "Rating": 6
+      },
+      "56": {
+        "Title": "Basics of Cyber security For Beginners Complete",
+        "Link": "https://www.youtube.com/watch?v=Ieegg45Pojw",
+        "Category": "Cybersecurity",
+        "Description": "Google’s tutorial covering core security practices",
+        "Rating": 7
+      },
+      "57": {
+        "Title": "Cyber Security Full Course for Beginner",
+        "Link": "https://www.youtube.com/watch?v=U_P23SqJaDc",
+        "Category": "Cybersecurity",
+        "Description": "Comprehensive security essentials for beginners",
+        "Rating": 6
+      },
+      "58": {
+        "Title": "Nmap Tutorial to find Network Vulnerabilities",
+        "Link": "https://www.youtube.com/watch?v=4t4kBkMsDbQ",
+        "Category": "Cybersecurity",
+        "Description": "Learn Nmap scanning and vulnerability enumeration",
+        "Rating": 7
+      },
+      "59": {
+        "Title": "Wireshark Tutorial for Beginners",
+        "Link": "https://www.youtube.com/watch?v=TkCSr30UojM",
+        "Category": "Cybersecurity",
+        "Description": "Packet‑level traffic analysis using Wireshark",
+        "Rating": 6
+      },
+      "60": {
+        "Title": "UI UX Design Full Course",
+        "Link": "https://www.youtube.com/watch?v=BU_afT-aIn0",
+        "Category": "UI/UX Design",
+        "Description": "Complete UI/UX design course with Intellipaat overview",
+        "Rating": 8
+      },
+      "61": {
+        "Title": "UI Design for Beginners | FREE COURSE",
+        "Link": "https://www.youtube.com/watch?v=N-xuqy6x1Bw",
+        "Category": "UI/UX Design",
+        "Description": "Adobe XD fundamentals for user interface design",
+        "Rating": 7
+      },
+      "62": {
+        "Title": "The 2025 UI/UX Crash Course for Beginners – Learn Figma",
+        "Link": "https://www.youtube.com/watch?v=cvm_ECH94x4",
+        "Category": "UI/UX Design",
+        "Description": "Hands‑on Figma tutorial for product design",
+        "Rating": 9
+      },
+      "63": {
+        "Title": "UI UX Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=55NvZjUZIO8",
+        "Category": "UI/UX Design",
+        "Description": "Simplilearn’s end‑to‑end UI/UX training",
+        "Rating": 8
+      },
+      "64": {
+        "Title": "The UI/UX Crash Course for 2023",
+        "Link": "https://www.youtube.com/watch?v=QwSN4n2sjR8",
+        "Category": "UI/UX Design",
+        "Description": "Annual UI/UX principles and best practices",
+        "Rating": 7
+      },
+      "65": {
+        "Title": "Learn UX/UI Design, Figma (6 HOURS!)",
+        "Link": "https://www.youtube.com/watch?v=cKZEgtQUxlU",
+        "Category": "UI/UX Design",
+        "Description": "Zero To Mastery’s Figma design fundamentals",
+        "Rating": 8
+      },
+      "66": {
+        "Title": "Adobe XD Masterclass for Beginners",
+        "Link": "https://www.youtube.com/watch?v=C-_pr1Hzlvg",
+        "Category": "UI/UX Design",
+        "Description": "Deep dive into Adobe XD prototyping and UI",
+        "Rating": 7
+      },
+      "67": {
+        "Title": "Free Adobe XD Tutorial 2023 for Beginners",
+        "Link": "https://www.youtube.com/watch?v=HMbj5B_QrYQ",
+        "Category": "UI/UX Design",
+        "Description": "Quick‑start guide with exercise files",
+        "Rating": 6
+      },
+      "68": {
+        "Title": "Adobe XD Tutorial for Beginners – 2022",
+        "Link": "https://www.youtube.com/watch?v=5VuMy5mmmi0",
+        "Category": "UI/UX Design",
+        "Description": "GraphDesk’s step‑by‑step Adobe XD course",
+        "Rating": 7
+      },
+      "69": {
+        "Title": "Adobe XD for Beginners | FREE COURSE",
+        "Link": "https://www.youtube.com/watch?v=WEljsc2jorI",
+        "Category": "UI/UX Design",
+        "Description": "4‑hour full Adobe XD workflow tutorial",
+        "Rating": 6
+      },
+      "70": {
+        "Title": "Digital Marketing Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=BZLUEKnMfIY",
+        "Category": "Digital Marketing",
+        "Description": "Latest digital marketing strategies and tools",
+        "Rating": 8
+      },
+      "71": {
+        "Title": "Digital Marketing Full Course 2024 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=IY8SPoyehxU",
+        "Category": "Digital Marketing",
+        "Description": "Comprehensive 2024 update on SEO and SEM",
+        "Rating": 7
+      },
+      "72": {
+        "Title": "A Complete Beginner's Guide to Marketing",
+        "Link": "https://www.youtube.com/watch?v=WUniTVTi_Jk",
+        "Category": "Digital Marketing",
+        "Description": "Explainer video on marketing fundamentals",
+        "Rating": 6
+      },
+      "73": {
+        "Title": "Digital Marketing Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=nU-IIXBWlS4",
+        "Category": "Digital Marketing",
+        "Description": "14‑hour deep dive into digital channels",
+        "Rating": 8
+      },
+      "74": {
+        "Title": "Digital Marketing Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=4TCWjbmiACg",
+        "Category": "Digital Marketing",
+        "Description": "Updated 2025 overview of inbound and content",
+        "Rating": 7
+      },
+      "75": {
+        "Title": "Digital Marketing Full Course 2023 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=rXtaM3x7kHA",
+        "Category": "Digital Marketing",
+        "Description": "Part‑2 of Simplilearn’s marketing series",
+        "Rating": 8
+      },
+      "76": {
+        "Title": "Free Digital Marketing Course with HubSpot Academy",
+        "Link": "https://www.youtube.com/watch?v=46ULbn2IDZM",
+        "Category": "Digital Marketing",
+        "Description": "HubSpot’s free inbound marketing certification",
+        "Rating": 9
+      },
+      "77": {
+        "Title": "Digital Marketing Free Certification Course by Hubspot",
+        "Link": "https://www.youtube.com/watch?v=8MZ8HUhih1M",
+        "Category": "Digital Marketing",
+        "Description": "HubSpot Academy’s core marketing course",
+        "Rating": 7
+      },
+      "78": {
+        "Title": "DIGITAL MARKETING CERTIFICATIONS & TRAINING",
+        "Link": "https://www.youtube.com/watch?v=1Np_gVaxZMg",
+        "Category": "Digital Marketing",
+        "Description": "Overview of top free marketing certifications",
+        "Rating": 6
+      },
+      "79": {
+        "Title": "The 5 Best Digital Marketing Courses You Can Take For FREE!",
+        "Link": "https://www.youtube.com/watch?v=_wUtsZb4ZbM",
+        "Category": "Digital Marketing",
+        "Description": "HubSpot’s guide to free marketing training",
+        "Rating": 7
+      },
+      "80": {
+        "Title": "Android Development for Beginners - Full Course",
+        "Link": "https://www.youtube.com/watch?v=fis26HvvDII",
+        "Category": "Mobile Development",
+        "Description": "Build Android apps from scratch—no prior code needed",
+        "Rating": 8
+      },
+      "81": {
+        "Title": "How to Make an App in 8 Days (2024)",
+        "Link": "https://www.youtube.com/watch?v=K0t-RCSlasE",
+        "Category": "Mobile Development",
+        "Description": "iOS app fundamentals in a rapid 8‑day tutorial",
+        "Rating": 7
+      },
+      "82": {
+        "Title": "The Complete App Development Roadmap",
+        "Link": "https://www.youtube.com/watch?v=yye7rSsiV6k",
+        "Category": "Mobile Development",
+        "Description": "Step‑by‑step guide from zero to professional",
+        "Rating": 6
+      },
+      "83": {
+        "Title": "Android APP Development Full Course (40 Hours)",
+        "Link": "https://www.youtube.com/watch?v=u64gyCdqawU",
+        "Category": "Mobile Development",
+        "Description": "40‑hour practical Android app dev bootcamp",
+        "Rating": 8
+      },
+      "84": {
+        "Title": "Mobile App Development Course with React Native",
+        "Link": "https://www.youtube.com/watch?v=2esQdKzRUCw",
+        "Category": "Mobile Development",
+        "Description": "React Native, Supabase, and Stripe integration",
+        "Rating": 7
+      },
+      "85": {
+        "Title": "Flutter Course for Beginners – 37‑hour Cross Platform",
+        "Link": "https://www.youtube.com/watch?v=VPvVD8t02U8",
+        "Category": "Mobile Development",
+        "Description": "Build cross‑platform apps with Flutter",
+        "Rating": 8
+      },
+      "86": {
+        "Title": "Android App Dev Tutorial for First App",
+        "Link": "https://www.youtube.com/watch?v=FjrKMcnKahY",
+        "Category": "Mobile Development",
+        "Description": "Create a tip calculator to learn Android basics",
+        "Rating": 6
+      },
+      "87": {
+        "Title": "FREE Mobile App Development Course",
+        "Link": "https://www.youtube.com/watch?v=6wJDIE2yjHY",
+        "Category": "Mobile Development",
+        "Description": "Flutter, Kotlin & Swift crash course",
+        "Rating": 7
+      },
+      "88": {
+        "Title": "Android Studio Tutorial (2024 Edition) - Part 1",
+        "Link": "https://www.youtube.com/watch?v=saKrGCWlJDs",
+        "Category": "Mobile Development",
+        "Description": "Latest Android development tools and setup",
+        "Rating": 7
+      },
+      "89": {
+        "Title": "Build Your FIRST iOS App For Beginners (2024)",
+        "Link": "https://www.youtube.com/watch?v=nqTcAzPS3oc",
+        "Category": "Mobile Development",
+        "Description": "Hands‑on iOS app tutorial using Swift",
+        "Rating": 8
+      },
+      "90": {
+        "Title": "DevOps Tutorial for Beginners - Full Course | Edureka",
+        "Link": "https://www.youtube.com/watch?v=hQcFE0RD0cQ",
+        "Category": "DevOps",
+        "Description": "Edureka’s in‑depth DevOps concepts and tools course",
+        "Rating": 8
+      },
+      "91": {
+        "Title": "DevOps Full Course | DevOps Tutorials For Beginners | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=uxA9ugIhu0s",
+        "Category": "DevOps",
+        "Description": "Simplilearn’s 7‑hour DevOps practices and CI/CD",
+        "Rating": 7
+      },
+      "92": {
+        "Title": "DevOps Full Course For 2024 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=ISqFq7SHPQI",
+        "Category": "DevOps",
+        "Description": "Updated DevOps tooling, pipelines, and monitoring",
+        "Rating": 8
+      },
+      "93": {
+        "Title": "Free DevOps Course | 45 days",
+        "Link": "https://www.youtube.com/watch?v=Ou9j73aWgyE",
+        "Category": "DevOps",
+        "Description": "45‑day free DevOps fundamentals series",
+        "Rating": 6
+      },
+      "94": {
+        "Title": "Free Azure DevOps Zero to Hero Course",
+        "Link": "https://www.youtube.com/watch?v=A_N5oHwwmTQ",
+        "Category": "DevOps",
+        "Description": "Azure DevOps project walkthroughs and demos",
+        "Rating": 7
+      },
+      "95": {
+        "Title": "DevOps Full Course in 10 hours | Edureka Live",
+        "Link": "https://www.youtube.com/watch?v=Bd0N2iQ8gCc",
+        "Category": "DevOps",
+        "Description": "Live 10‑hour session on CI/CD, Docker, Kubernetes",
+        "Rating": 8
+      },
+      "96": {
+        "Title": "DevOps Full Course 2025 | Simplilearn",
+        "Link": "https://www.youtube.com/watch?v=jpWj2kKcen4",
+        "Category": "DevOps",
+        "Description": "Latest DevOps strategies, tools, and practices",
+        "Rating": 7
+      },
+      "97": {
+        "Title": "DevOps Tutorial For Beginners - Intellipaat",
+        "Link": "https://www.youtube.com/watch?v=2vO0rUJ6RKI",
+        "Category": "DevOps",
+        "Description": "Intellipaat’s complete DevOps certification overview",
+        "Rating": 6
+      },
+      "98": {
+        "Title": "Azure DevOps Full Course 2024 | Intellipaat",
+        "Link": "https://www.youtube.com/watch?v=7Hww8PPHHE0",
+        "Category": "DevOps",
+        "Description": "Comprehensive Azure DevOps pipeline and YAML",
+        "Rating": 8
+      },
+      "99": {
+        "Title": "DevOps/SRE Live Projects 2024",
+        "Link": "https://www.youtube.com/watch?v=6WvX2XDwG5c",
+        "Category": "DevOps",
+        "Description": "Hands‑on SRE and DevOps live project tutorials",
+        "Rating": 7
+      }
+    },
+    "clubs": {
+
+    }
+  }
+  

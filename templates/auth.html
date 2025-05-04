@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% block title %}Authentication - RecSys-MRI{% endblock %}
+
+{% block content %}
+<section class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-surface-secondary-light dark:bg-surface-secondary-dark">
+    <div class="max-w-md w-full space-y-8 p-10 bg-surface-light dark:bg-gray-800 rounded-2xl shadow-[0px_0px_15px_0px] shadow-indigo-100/60 dark:shadow-black/30">
+        <div class="text-center">
+            <div class="flex items-center justify-center bg-surface-light dark:bg-gray-700 px-4 py-1.5 shadow-[0_4px_6px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_6px_rgba(255,255,255,0.05)] gap-1.5 rounded-full text-sm mb-4 border border-gray-200 dark:border-gray-700 mx-auto w-fit">
+                 <i class="fa-solid fa-graduation-cap text-primary dark:text-secondary"></i>
+                 <span class="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent font-medium">Learn, Connect, Grow</span>
+             </div>
+            <h2 id="auth-main-title" class="mt-6 text-3xl font-extrabold text-text-primary dark:text-white">
+                {% if show_login %}
+                    Sign In to <span class="bg-gradient-to-r from-text-gradient-start to-text-gradient-end bg-clip-text text-transparent">RecSys-MRI</span>
+                {% else %}
+                    Create Your Account on <span class="bg-gradient-to-r from-text-gradient-start to-text-gradient-end bg-clip-text text-transparent">RecSys-MRI</span>
+                {% endif %}
+            </h2>
+             <p id="auth-subtitle" class="mt-2 text-sm text-text-secondary dark:text-text-secondary">Choose your authentication method</p>
+             {% if error %}
+                 <div id="backend-error" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ error }}</div>
+             {% endif %}
+        </div>
+
+        <div class="mt-8 space-y-4"> {# Adjusted spacing slightly for multiple social buttons #}
+            <div class="space-y-3"> {# Container for social buttons #}
+                <div>
+                    <button type="button" onclick="handleGoogleSignIn()" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 text-text-primary dark:text-white border border-gray-300 dark:border-gray-600 rounded-md py-2.5 px-4 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 active:scale-95">
+                         <i class="fab fa-google text-blue-500"></i>
+                         Continue with Google
+                     </button>
+                </div>
+
+                 <div>
+                     <button type="button" onclick="handleGitHubSignIn()" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 text-text-primary dark:text-white border border-gray-300 dark:border-gray-600 rounded-md py-2.5 px-4 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200 active:scale-95">
+                          <i class="fab fa-github text-gray-800 dark:text-white"></i> {# Adjusted color for dark mode #}
+                          Continue with GitHub
+                      </button>
+                 </div>
+                 {# Add other social login buttons here if needed #}
+            </div>
+
+
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300 dark:border-gray-600"></div></div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-surface-light dark:bg-gray-800 text-text-secondary dark:text-text-secondary">Or continue with email</span>
+                </div>
+            </div>
+
+            <form id="authForm" class="space-y-6">
+                 {% if not show_login %}
+                 <div>
+                     <label for="name" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Full name</label>
+                     <input id="name" name="name" type="text" {% if not show_login %}required{% endif %}
+                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                             placeholder="John Doe">
+                 </div>
+                 {% endif %}
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Email address</label>
+                    <input id="email" name="email" type="email" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                            placeholder="email@example.com">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Password</label>
+                    <input id="password" name="password" type="password" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                            placeholder="••••••••">
+                </div>
+
+                 {% if not show_login %}
+                 <div>
+                     <label for="confirm-password" class="block text-sm font-medium text-text-primary dark:text-text-secondary">Confirm Password</label>
+                     <input id="confirm-password" name="confirm-password" type="password" required
+                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700 text-text-primary dark:text-white placeholder-text-secondary"
+                             placeholder="••••••••">
+                 </div>
+                 {% endif %}
+
+
+                {% if show_login %}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-primary dark:text-primary-dark border-gray-300 dark:border-gray-600 rounded focus:ring-primary/50 dark:focus:ring-primary-dark/50 transition-colors bg-surface-secondary-light dark:bg-gray-700">
+                        <label for="remember-me" class="ml-2 block text-sm text-text-secondary dark:text-text-secondary">Remember me</label>
+                    </div>
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-primary dark:text-primary-dark hover:underline">Forgot password?</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <button type="submit"
+                        class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary dark:bg-primary hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-primary-dark transition-colors active:scale-95">
+                    {% if show_login %}
+                        Sign In
+                    {% else %}
+                        Create Account
+                    {% endif %}
+                </button>
+            </form>
+
+            <div class="text-center text-sm text-text-secondary dark:text-text-secondary">
+                {% if show_login %}
+                    New user?
+                    <a href="/auth/register" class="font-medium text-primary dark:text-primary-dark hover:underline">Create account</a>
+                {% else %}
+                    Already have an account?
+                    <a href="/auth/login" class="font-medium text-primary dark:text-primary-dark hover:underline">Sign in</a>
+                {% endif %}
+            </div>
+
+             <div id="auth-status" class="mt-4 text-sm text-green-600 dark:text-green-400 hidden"></div>
+             <div id="auth-error" class="mt-4 text-sm text-red-600 dark:text-red-400 hidden"></div>
+
+        </div>
+    </div>
+</section>
+
+<script type="module">
+    // Firebase Configuration (Use the actual values from your config1)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCnJujPGddALRfd6Ysxc3LnHdBpnz-S9nA", // Replace with your actual API Key from config1
+        authDomain: "databade-recom.firebaseapp.com",
+        databaseURL: "https://databade-recom-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "databade-recom",
+        storageBucket: "databade-recom.firebasestorage.app", // Added from config1
+        messagingSenderId: "144971757963", // Added from config1
+        // UPDATED: Use the correct appId provided by the user
+        appId: "1:144971757963:web:144971757963-compj876nkdrbfopm51mdc12mq1md7fg", // Use the correct appId
+        measurementId: "G-T9LFNTYK64" // Added from config1
+    };
+
+    // Import Firebase modules using modular syntax
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+        getAuth,
+        createUserWithEmailAndPassword, // For email/password sign-up
+        signInWithEmailAndPassword,   // For email/password sign-in
+        GoogleAuthProvider,
+        GithubAuthProvider, // Import GithubAuthProvider
+        signInWithPopup,
+        onAuthStateChanged,           // To observe auth state changes
+        signOut                       // For signing out
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+
+    // Initialize Firebase
+    const fbApp = initializeApp(firebaseConfig);
+    const fbAuth = getAuth(fbApp);
+    const googleProvider = new GoogleAuthProvider();
+    const githubProvider = new GithubAuthProvider(); // Initialize GithubAuthProvider
+
+    // Optional: Configure GitHub provider scopes if needed (e.g., 'read:user', 'user:email')
+    // githubProvider.addScope('read:user');
+    // githubProvider.addScope('user:email');
+
+
+    // Get UI elements
+    const authForm = document.getElementById('authForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const nameInput = document.getElementById('name'); // For register form
+    const confirmPasswordInput = document.getElementById('confirm-password'); // For register form
+    // No need to get social buttons by ID if using onclick handlers
+
+
+    const authStatus = document.getElementById('auth-status');
+    const authError = document.getElementById('auth-error');
+    const authMainTitle = document.getElementById('auth-main-title'); // Get the main title element
+
+
+    // --- Helper Functions ---
+
+    // Function to display status messages
+    const showStatus = (message) => {
+        authStatus.textContent = message;
+        authStatus.classList.remove('hidden', 'text-red-600', 'dark:text-red-400');
+        authStatus.classList.add('text-green-600', 'dark:text-green-400');
+        authError.classList.add('hidden'); // Hide error message
+    };
+
+    // Function to display error messages
+    const showError = (message) => {
+        authError.textContent = message;
+        authError.classList.remove('hidden', 'text-green-600', 'dark:text-green-400');
+         authError.classList.add('text-red-600', 'dark:text-red-400');
+        authStatus.classList.add('hidden'); // Hide status message
+    };
+
+    // Function to clear messages
+    const clearMessages = () => {
+        authStatus.classList.add('hidden');
+        authError.classList.add('hidden');
+         // Clear backend error message if it exists
+         const backendError = document.getElementById('backend-error');
+         if (backendError) {
+             backendError.classList.add('hidden');
+         }
+    };
+
+    // Function to send ID token to backend
+    const sendIdTokenToBackend = async (idToken, endpoint, bodyPayload = {}) => { // Added bodyPayload parameter
+        try {
+            const resp = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // It's good practice to send the token in the Authorization header too
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify(bodyPayload) // Use the passed payload
+            });
+
+            if (!resp.ok) {
+                const errorData = await resp.json();
+                console.error(`Backend error from ${endpoint}:`, errorData); // Log backend error
+                showError(`Backend error: ${errorData.detail || resp.statusText}`);
+                return false; // Indicate failure
+            }
+
+            console.log(`ID token sent to backend endpoint ${endpoint} successfully.`);
+            return true; // Indicate success
+
+        } catch (err) {
+            console.error(`Error sending ID token to backend ${endpoint}:`, err);
+            showError(`Failed to communicate with the server: ${err.message}`);
+            return false; // Indicate failure
+        }
+    };
+
+
+    // --- Event Handlers ---
+
+    // Handle Email/Password Form Submission (both Sign Up and Sign In)
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages(); // Clear previous messages
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            // Determine if it's a sign-up or sign-in based on form structure/state
+            const isSignUp = authForm.querySelector('#name') !== null; // Check if name field exists
+
+            if (isSignUp) {
+                // Handle Sign Up
+                const name = nameInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                if (password !== confirmPassword) {
+                    showError('Passwords do not match.');
+                    return;
+                }
+
+                try {
+                    showStatus('Creating account...');
+                    const userCredential = await createUserWithEmailAndPassword(fbAuth, email, password);
+                    const user = userCredential.user;
+                    console.log('User created:', user);
+
+                    // Get ID token and send to backend for session management and profile creation
+                    const idToken = await user.getIdToken();
+                    // Explicitly include name and id_token in the payload for registration
+                    const success = await sendIdTokenToBackend(idToken, '/auth/register', { id_token: idToken, name: name });
+
+                    if (success) {
+                         // Redirect to profile page after successful backend processing
+                         window.location.href = '/profile';
+                    } else {
+                         // Handle backend error after successful Firebase registration
+                         // Firebase user is created, but backend session/profile failed.
+                         // You might want to handle this case specifically (e.g., prompt user to try again or contact support)
+                         showError('Account created, but failed to set up profile. Please try logging in.');
+                         // Optionally sign out the user from Firebase if backend setup failed critically
+                         // await signOut(fbAuth);
+                    }
+
+
+                } catch (error) {
+                    console.error('Sign up error:', error);
+                    showError(`Sign up failed: ${error.message}`);
+                }
+
+            } else {
+                // Handle Sign In
+                try {
+                    showStatus('Signing in...');
+                    const userCredential = await signInWithEmailAndPassword(fbAuth, email, password);
+                    const user = userCredential.user;
+                    console.log('User signed in:', user);
+
+                    // Get ID token and send to backend for session management
+                    const idToken = await user.getIdToken();
+                    // Explicitly include id_token in the payload for login
+                    const success = await sendIdTokenToBackend(idToken, '/auth/login', { id_token: idToken });
+
+                    if (success) {
+                        // Redirect to profile page after successful backend session setup
+                        window.location.href = '/profile';
+                    } else {
+                         // Handle backend error after successful Firebase sign-in
+                         showError('Signed in, but failed to establish session. Please try again.');
+                         // Optionally sign out the user from Firebase if backend session failed critically
+                         // await signOut(fbAuth);
+                    }
+
+
+                } catch (error) {
+                    console.error('Sign in error:', error);
+                    showError(`Sign in failed: ${error.message}`);
+                }
+            }
+        });
+    }
+
+
+    // Handle Google Sign-In (using the function called by the button's onclick)
+    window.handleGoogleSignIn = async function() {
+        clearMessages(); // Clear previous messages
+        try {
+            showStatus('Signing in with Google...');
+            const result = await signInWithPopup(fbAuth, googleProvider);
+            const user = result.user;
+            console.log('Google Sign-in successful:', user);
+
+            // Get ID token and send to backend for session management and user creation/linking
+            const idToken = await user.getIdToken();
+            console.log('Obtained ID Token:', idToken);
+            // Explicitly include id_token in the payload for Google Sign-In
+            const success = await sendIdTokenToBackend(idToken, '/auth/google', { id_token: idToken });
+
+             if (success) {
+                 // Redirect to profile page after successful backend processing
+                 window.location.href = '/profile';
+             } else {
+                 // Handle backend error after successful Firebase Google sign-in
+                 // The sendIdTokenToBackend function already shows the error message
+                 // No need to show another here unless specific client-side handling is needed
+             }
+
+        } catch (error) {
+            console.error('Google Sign-in error:', error);
+            // Handle specific error codes, e.g., popup closed by user
+            if (error.code === 'auth/popup-closed-by-user') {
+                 showError('Google Sign-in popup was closed.');
+            } else {
+                 showError(`Google Sign-in failed: ${error.message}`);
+            }
+        }
+    }
+
+    // Handle GitHub Sign-In
+    window.handleGitHubSignIn = async function() {
+        clearMessages(); // Clear previous messages
+        try {
+            showStatus('Signing in with GitHub...');
+            const result = await signInWithPopup(fbAuth, githubProvider);
+            const user = result.user;
+            console.log('GitHub Sign-in successful:', user);
+
+            // Get ID token and send to backend for session management and user creation/linking
+            const idToken = await user.getIdToken();
+            console.log('Obtained ID Token:', idToken);
+            // Send ID token to the new backend endpoint for GitHub auth
+            const success = await sendIdTokenToBackend(idToken, '/auth/github', { id_token: idToken });
+
+             if (success) {
+                 // Redirect to profile page after successful backend processing
+                 window.location.href = '/profile';
+             } else {
+                 // Handle backend error after successful Firebase GitHub sign-in
+                 // The sendIdTokenToBackend function already shows the error message
+                 // No need to show another here unless specific client-side handling is needed
+             }
+
+        } catch (error) {
+            console.error('GitHub Sign-in error:', error);
+            // Handle specific error codes, e.g., popup closed by user
+            if (error.code === 'auth/popup-closed-by-user') {
+                 showError('GitHub Sign-in popup was closed.');
+            } else {
+                 showError(`GitHub Sign-in failed: ${error.message}`);
+            }
+        }
+    }
+
+
+    // Optional: Listen for auth state changes to update UI if needed (e.g., show/hide auth form vs user info)
+    // Although in this template, the page redirects after successful auth,
+    // this is useful if you have a persistent auth state display.
+    onAuthStateChanged(fbAuth, (user) => {
+        if (user) {
+            // User is signed in
+            console.log('Auth state changed: User is signed in', user);
+            // You could redirect here if not already on a protected page
+            // if (window.location.pathname !== '/profile') {
+            //     window.location.href = '/profile';
+            // }
+        } else {
+            // User is signed out
+            console.log('Auth state changed: User is signed out');
+            // You could redirect to login page if on a protected page
+            // if (window.location.pathname === '/profile') {
+            //     window.location.href = '/auth/login';
+            // }
+        }
+    });
+
+    // --- Initial Setup ---
+    // Clear any messages when the page loads
+    clearMessages();
+
+</script>
+
+{% endblock %}

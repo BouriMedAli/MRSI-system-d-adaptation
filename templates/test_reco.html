@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Test Recommendations - RecSys-MRI{% endblock %}
+
+{% block content %}
+<section class="mb-12 scroll-animate">
+    <div class="bg-gradient-to-br from-indigo-50 dark:from-gray-900 to-purple-100 dark:to-gray-800 py-12 rounded-2xl shadow-[0px_0px_15px_0px] shadow-indigo-100/60 dark:shadow-black/30">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-6 text-text-primary dark:text-white">
+                Test du Système de Recommandation
+            </h2>
+            
+            <form method="POST" action="/test-reco" class="mb-8">
+                <div class="flex flex-col md:flex-row gap-4 justify-center items-center">
+                    <input type="text" 
+                           name="student_id" 
+                           placeholder="ID Étudiant" 
+                           value="{{ student_id if student_id else '' }}"
+                           class="w-64 px-4 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark"
+                           required>
+                    
+                    <button type="submit" 
+                            class="bg-primary dark:bg-primary text-white py-2.5 px-6 rounded-full shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors duration-200 active:scale-95">
+                        Générer les Recommandations
+                    </button>
+                </div>
+            </form>
+
+            {% if recommendations %}
+            <div class="mt-8 text-left">
+                <h3 class="text-xl font-semibold mb-4 text-text-primary dark:text-white">
+                    Résultats pour l'étudiant {{ student_id }}
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for rec in recommendations %}
+                    <div class="bg-surface-light dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-lg mb-2 text-primary dark:text-primary-dark">
+                            {{ rec.Title }}
+                        </h4>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-text-secondary dark:text-text-secondary">
+                                Catégorie : {{ rec.Category }}
+                            </span>
+                            {% if rec.Rating %}
+                            <span class="text-text-secondary dark:text-text-secondary">
+                                Note : {{ rec.Rating }}/10
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if rec.Description %}
+                        <p class="text-text-secondary dark:text-text-secondary text-sm">
+                            {{ rec.Description }}
+                        </p>
+                        {% endif %}
+                        {% if rec.Link %}
+                        <div class="mt-3">
+                            <a href="{{ rec.Link }}" target="_blank" 
+                               class="text-sm text-primary dark:text-primary-dark hover:underline">
+                                Lien vers la ressource
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="mt-6 p-4 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
+                {{ error }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
