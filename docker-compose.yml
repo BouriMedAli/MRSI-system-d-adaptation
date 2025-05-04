@@ -1,22 +1,80 @@
-services:
-  fastapi:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
-    environment:
-      - PYTHONUNBUFFERED=1
+name: Build and Test Docker
 
-  streamlit:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8501:8501"
-    command: streamlit run streamlit_app.py --server.port 8501 --server.address 0.0.0.0
-    environment:
-      - PYTHONUNBUFFERED=1
-    depends_on:
-      - fastapi
+on:
+  push:
+    branches:
+      - eya-supriseknn
+  pull_request:
+    branches:
+      - eya-supriseknn
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker images
+        run: |
+          docker compose build
+
+      - name: Start services
+        run: |
+          docker compose up -d
+
+      - name: Show service logs
+        run: |
+          docker compose logs fastapi
+          docker compose logs streamlit
+
+      - name: Train model
+        run: |
+          docker compose exec -T fastapi python train_model.py
+
+      - name: Run generate_recommendations.py
+        run: |
+          docker compose exec -T fastapi python generate_recommendations.py
+
+      - name: Copy generated files from container
+        run: |
+          docker cp $(docker compose ps -q fastapi):/app/students_df.pkl ./students_df.pkl
+          docker cp $(docker compose ps -q fastapi):/app/model.pkl ./model.pkl
+
+      - name: Upload generated files as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-files
+          path: |
+            students_df.pkl
+            model.pkl
+
+      - name: Test FastAPI service
+        run: |
+          # Attendre que FastAPI soit prêt (jusqu'à 60 secondes)
+          for i in {1..60}; do
+            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 2, "n_recommendations": 5}' && break
+            echo "FastAPI pas encore prêt, attente 1 seconde..."
+            sleep 1
+          done
+          # Vérifier que la requête a réussi
+          curl --fail -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 2, "n_recommendations": 5}' || exit 1
+
+      - name: Test Streamlit service
+        run: |
+          # Attendre que Streamlit soit prêt (jusqu'à 60 secondes)
+          for i in {1..60}; do
+            curl -s -f http://localhost:8501 && break
+            echo "Streamlit pas encore prêt, attente 1 seconde..."
+            sleep 1
+          done
+          # Vérifier que la requête a réussi
+          curl --fail http://localhost:8501 || exit 1
+
+      - name: Stop services
+        run: |
+          docker compose down

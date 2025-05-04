@@ -1,74 +1,57 @@
-import pickle
-import pandas as pd
-import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from collections import defaultdict
-from typing import List, Dict, Optional
-import time
-import os
+from typing import List, Optional
+import pandas as pd
+import joblib
+from generate_recommendations import get_recommendations, get_fictitious_recommendations
 
-# FastAPI app
-app = FastAPI(title="Student Recommendation API")
+app = FastAPI()
 
-# ----------- Utility functions --------------
+# Charger les données et le modèle
+model = joblib.load('model.pkl')
+df = pd.read_pickle('students_df.pkl')
 
-def load_pickle_file(filepath: str, description: str):
-    try:
-        with open(filepath, 'rb') as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail=f"{description} file not found.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading {description}: {str(e)}")
+class RecommendationRequest(BaseModel):
+    student_id: int
+    n_recommendations: int = 5
+    skill_filter: Optional[List[str]] = None
+    interest_filter: Optional[List[str]] = None
+    skill_weight: float = 0.5
+    interest_weight: float = 0.5
 
-def normalize(value: float, max_val: float) -> float:
-    return value / max_val if max_val else 0
+class FictitiousRecommendationRequest(BaseModel):
+    student_id: int
+    n_recommendations: int = 5
 
-# ----------- Load data and model -------------
+@app.post("/recommendations/")
+async def recommend(request: RecommendationRequest):
+    result, error = get_recommendations(
+        student_id=request.student_id,
+        model=model,
+        df=df,
+        n_recommendations=request.n_recommendations,
+        skill_filter=request.skill_filter,
+        interest_filter=request.interest_filter,
+        skill_weight=request.skill_weight,
+        interest_weight=request.interest_weight
+    )
+    
+    if error:
+        raise HTTPException(status_code=404, detail=error)
+    return result
 
-def load_all_resources():
-    print("Loading model and student data...")
-    model = load_pickle_file('model.pkl', 'model')
-    data = load_pickle_file('data.pkl', 'data')
-    #student_features = load_pickle_file('student_features.pkl', 'student features')
-    #metadata = load_pickle_file('metadata.pkl', 'metadata')
-    print("Loaded all resources successfully.")
-    # return model, data, student_features, metadata
-    return model, data
+@app.post("/fictitious_recommendations/")
+async def fictitious_recommend(request: FictitiousRecommendationRequest):
+    result, error = get_fictitious_recommendations(
+        student_id=request.student_id,
+        df=df,
+        n_recommendations=request.n_recommendations
+    )
+    
+    if error:
+        raise HTTPException(status_code=404, detail=error)
+    return result
 
-#model, data, student_features, metadata = load_all_resources()
-model, data = load_all_resources()
-# Preprocessed sets for fast lookup
-student_communities = {row['ID_Étudiant']: set(row['Communautés']) for _, row in data.iterrows()}
-student_skills = {row['ID_Étudiant']: set(row['Compétences']) for _, row in data.iterrows()}
-student_interests = {row['ID_Étudiant']: set(row["Centres_d'Intérêt"]) for _, row in data.iterrows()}
-
-# ------------- Pydantic Schemas --------------
-
-class QueryProfile(BaseModel):
-    numeric: List[float]
-    communautés: List[str]
-    compétences: List[str]
-    centres_d_intérêt: List[str]
-    student_id: Optional[int] = None
-
-class StudentRegistration(BaseModel):
-    nom: str
-    travaux_collaboratifs: float
-    nombre_interactions: float
-    communautés: List[str]
-    compétences: List[str]
-    centres_d_intérêt: List[str]
-
-# ----------- Similarity and recommendation functions --------------
-
-def convert_to_ratings(profile: QueryProfile):
-    ratings = []
-    for cat, prefix in [
-        (profile.communautés, "comm"),
-        (profile.compétences, "skill"),
-        (profile.centres_d_intérêt, "int")
-    ]:
-        ratings += [("query_user", f"{prefix}_{val}", 1) for val in cat]
-    return ratings
+@app.get("/health/")
+async def health_check():
+    return {"status": "API is running"}

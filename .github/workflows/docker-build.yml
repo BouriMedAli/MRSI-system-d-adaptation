@@ -27,6 +27,11 @@ jobs:
         run: |
           docker compose up -d
 
+      - name: Show service logs
+        run: |
+          docker compose logs fastapi
+          docker compose logs streamlit
+
       - name: Train model
         run: |
           docker compose exec -T fastapi python train_model.py
@@ -41,7 +46,7 @@ jobs:
           docker cp $(docker compose ps -q fastapi):/app/model.pkl ./model.pkl
 
       - name: Upload generated files as artifacts
-        uses: actions/upload-artifact@v4   # <= ici changé v3 -> v4
+        uses: actions/upload-artifact@v4
         with:
           name: generated-files
           path: |
@@ -50,11 +55,24 @@ jobs:
 
       - name: Test FastAPI service
         run: |
-          sleep 10  # Attendre que le service démarre
-          curl --fail http://localhost:8000/recommend/2 || exit 1
+          # Attendre que FastAPI soit prêt (jusqu'à 60 secondes)
+          for i in {1..60}; do
+            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 2, "n_recommendations": 5}' && break
+            echo "FastAPI pas encore prêt, attente 1 seconde..."
+            sleep 1
+          done
+          # Vérifier que la requête a réussi
+          curl --fail -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 2, "n_recommendations": 5}' || exit 1
 
       - name: Test Streamlit service
         run: |
+          # Attendre que Streamlit soit prêt (jusqu'à 60 secondes)
+          for i in {1..60}; do
+            curl -s -f http://localhost:8501 && break
+            echo "Streamlit pas encore prêt, attente 1 seconde..."
+            sleep 1
+          done
+          # Vérifier que la requête a réussi
           curl --fail http://localhost:8501 || exit 1
 
       - name: Stop services
