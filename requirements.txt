@@ -11,3 +11,4 @@ scikit-surprise>=1.1.1
 python-dotenv
 google-generativeai
 itsdangerous
+firebase_admin
