@@ -56,8 +56,9 @@ jobs:
       - name: Test FastAPI service
         run: |
           # Test 1 : /recommendations/ pour l'étudiant 5
+          echo "=== Début Test 1 : /recommendations/ pour student_id=5 ==="
           for i in {1..60}; do
-            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 5, "n_recommendations": 5, "skill_filter": ["Python"], "interest_filter": ["Robotique"], "skill_weight": 0.7, "interest_weight": 0.3}' && break
+            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 5, "n_recommendations": 5, "skill_filter": ["Python"], "interest_filter": ["Robotique"], "skill_weight": 0.7, "interest_weight": 0.3}' -o /dev/null && break
             echo "FastAPI pas encore prêt pour /recommendations/ (étudiant 5), attente 1 seconde..."
             sleep 1
           done
@@ -66,13 +67,15 @@ jobs:
           if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_skills_from_db' manquant pour l'étudiant 5"; exit 1; fi
           if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_courses' manquant pour l'étudiant 5"; exit 1; fi
           echo "Test 1 de /recommendations/ pour l'étudiant 5 réussi"
+          echo "=== Fin Test 1 ==="
 
           # Attendre un peu
           sleep 2
 
           # Test 2 : /recommendations/ pour l'étudiant 20
+          echo "=== Début Test 2 : /recommendations/ pour student_id=20 ==="
           for i in {1..60}; do
-            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 20, "n_recommendations": 5, "skill_filter": ["Data Science"], "interest_filter": ["Technologie"], "skill_weight": 0.4, "interest_weight": 0.6}' && break
+            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 20, "n_recommendations": 5, "skill_filter": ["Data Science"], "interest_filter": ["Technologie"], "skill_weight": 0.4, "interest_weight": 0.6}' -o /dev/null && break
             echo "FastAPI pas encore prêt pour /recommendations/ (étudiant 20), attente 1 seconde..."
             sleep 1
           done
@@ -81,74 +84,87 @@ jobs:
           if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_skills_from_db' manquant pour l'étudiant 20"; exit 1; fi
           if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_courses' manquant pour l'étudiant 20"; exit 1; fi
           echo "Test 2 de /recommendations/ pour l'étudiant 20 réussi"
+          echo "=== Fin Test 2 ==="
 
           # Attendre un peu
           sleep 2
 
-          # Test 1 : /fictitious_recommendations/ pour l'étudiant 7
+          # Test 3 : /fictitious_recommendations/ pour l'étudiant 7
+          echo "=== Début Test 3 : /fictitious_recommendations/ pour student_id=7 ==="
           for i in {1..60}; do
-            curl -s -f -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 7, "n_recommendations": 5}' && break
+            curl -s -f -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 7, "n_recommendations": 5}' -o /dev/null && break
             echo "FastAPI pas encore prêt pour /fictitious_recommendations/ (étudiant 7), attente 1 seconde..."
             sleep 1
           done
           response=$(curl -s -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 7, "n_recommendations": 5}')
           if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_skills_from_db' manquant pour l'étudiant 7"; exit 1; fi
           if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_courses' manquant pour l'étudiant 7"; exit 1; fi
-          echo "Test 1 de /fictitious_recommendations/ pour l'étudiant 7 réussi"
+          echo "Test 3 de /fictitious_recommendations/ pour l'étudiant 7 réussi"
+          echo "=== Fin Test 3 ==="
 
           # Attendre un peu
           sleep 2
 
-          # Test 2 : /fictitious_recommendations/ pour l'étudiant 30
+          # Test 4 : /fictitious_recommendations/ pour l'étudiant 30
+          echo "=== Début Test 4 : /fictitious_recommendations/ pour student_id=30 ==="
           for i in {1..60}; do
-            curl -s -f -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 30, "n_recommendations": 5}' && break
+            curl -s -f -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 30, "n_recommendations": 5}' -o /dev/null && break
             echo "FastAPI pas encore prêt pour /fictitious_recommendations/ (étudiant 30), attente 1 seconde..."
             sleep 1
           done
           response=$(curl -s -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 30, "n_recommendations": 5}')
           if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_skills_from_db' manquant pour l'étudiant 30"; exit 1; fi
           if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then echo "Erreur : 'recommended_courses' manquant pour l'étudiant 30"; exit 1; fi
-          echo "Test 2 de /fictitious_recommendations/ pour l'étudiant 30 réussi"
+          echo "Test 4 de /fictitious_recommendations/ pour l'étudiant 30 réussi"
+          echo "=== Fin Test 4 ==="
 
       - name: Test Streamlit service
         run: |
           # Test 1 : Streamlit pour l'étudiant 5
+          echo "=== Début Test 1 : Streamlit pour student_id=5 ==="
           for i in {1..60}; do
-            curl -s -f http://localhost:8501 && break
+            curl -s -f http://localhost:8501 -o /dev/null && break
             echo "Streamlit pas encore prêt pour l'étudiant 5, attente 1 seconde..."
             sleep 1
           done
           echo "Test 1 : Streamlit accessible pour l'étudiant 5. Veuillez vérifier manuellement avec student_id=5, skill_filter=['Python'], interest_filter=['Robotique'], skill_weight=0.7, interest_weight=0.3"
+          echo "=== Fin Test 1 ==="
           sleep 2
 
           # Test 2 : Streamlit pour l'étudiant 20
+          echo "=== Début Test 2 : Streamlit pour student_id=20 ==="
           for i in {1..60}; do
-            curl -s -f http://localhost:8501 && break
+            curl -s -f http://localhost:8501 -o /dev/null && break
             echo "Streamlit pas encore prêt pour l'étudiant 20, attente 1 seconde..."
             sleep 1
           done
           echo "Test 2 : Streamlit accessible pour l'étudiant 20. Veuillez vérifier manuellement avec student_id=20, skill_filter=['Data Science'], interest_filter=['Technologie'], skill_weight=0.4, interest_weight=0.6"
+          echo "=== Fin Test 2 ==="
           sleep 2
 
           # Test 3 : Streamlit pour l'étudiant 7
+          echo "=== Début Test 3 : Streamlit pour student_id=7 ==="
           for i in {1..60}; do
-            curl -s -f http://localhost:8501 && break
+            curl -s -f http://localhost:8501 -o /dev/null && break
             echo "Streamlit pas encore prêt pour l'étudiant 7, attente 1 seconde..."
             sleep 1
           done
           echo "Test 3 : Streamlit accessible pour l'étudiant 7. Veuillez vérifier manuellement avec student_id=7"
+          echo "=== Fin Test 3 ==="
           sleep 2
 
           # Test 4 : Streamlit pour l'étudiant 30
+          echo "=== Début Test 4 : Streamlit pour student_id=30 ==="
           for i in {1..60}; do
-            curl -s -f http://localhost:8501 && break
+            curl -s -f http://localhost:8501 -o /dev/null && break
             echo "Streamlit pas encore prêt pour l'étudiant 30, attente 1 seconde..."
             sleep 1
           done
           echo "Test 4 : Streamlit accessible pour l'étudiant 30. Veuillez vérifier manuellement avec student_id=30"
+          echo "=== Fin Test 4 ==="
 
           # Vérification finale que Streamlit répond
-          curl --fail http://localhost:8501 || exit 1
+          curl --fail http://localhost:8501 -o /dev/null || exit 1
 
       - name: Instructions pour ouvrir les interfaces
         run: |
