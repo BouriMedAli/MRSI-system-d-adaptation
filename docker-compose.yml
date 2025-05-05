@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/api/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./db:/app/db
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/frontend/Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - api
+
+  training:
+    build:
+      context: .
+      dockerfile: src/training/Dockerfile
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  db:
+    image: alpine:latest
+    volumes:
+      - ./db:/app/db
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  data:
+  models:
+  db:
