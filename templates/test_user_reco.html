@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Test Recommendations - StudentRecSys{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <!-- En-tête -->
+  <header class="text-center mb-12">
+    <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">
+      Système de Recommandation Étudiant
+    </h1>
+    <p class="text-gray-600 dark:text-gray-300">
+      Testez différentes méthodes de recommandation
+    </p>
+  </header>
+
+  <!-- Formulaire -->
+  <section aria-labelledby="form-title" class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+    <h2 id="form-title" class="sr-only">Formulaire de test des recommandations</h2>
+    <form id="recoForm" method="POST" action="/test-reco-user" class="space-y-6" novalidate>
+      <div>
+        <label for="reco_type" class="block text-gray-700 dark:text-gray-300 mb-2">
+          Méthode de recommandation
+        </label>
+        <select id="reco_type" name="reco_type" required
+                class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                aria-describedby="reco-type-desc">
+          <option value="knn" {% if reco_type=='knn' %}selected{% endif %}>KNN (Collaborative Filtering)</option>
+          <option value="llm" {% if reco_type=='llm' %}selected{% endif %}>LLM (Gemini AI)</option>
+          <option value="hybrid" {% if reco_type=='hybrid' %}selected{% endif %}>Hybride (KNN + LLM)</option>
+        </select>
+        <p id="reco-type-desc" class="text-sm text-gray-500 dark:text-gray-400">
+          Choisissez la méthode utilisée pour générer les recommandations.
+        </p>
+      </div>
+
+      <div>
+        <label for="student_id" class="block text-gray-700 dark:text-gray-300 mb-2">
+          ID Étudiant
+        </label>
+        <input type="number" id="student_id" name="student_id"
+               value="{{ student_id or '' }}" required
+               class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+               placeholder="Entrez l'ID de l'étudiant"
+               aria-invalid="{{ 'true' if error else 'false' }}">
+      </div>
+
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all"
+              aria-label="Générer les recommandations">
+        Générer les recommandations
+      </button>
+    </form>
+
+    {% if error %}
+    <aside class="mt-6 p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg" role="alert">
+      <strong>Erreur :</strong> {{ error }}
+    </aside>
+    {% endif %}
+  </section>
+
+  <!-- Résultats -->
+  {% if recommendations %}
+  <section aria-labelledby="results-title" class="max-w-4xl mx-auto space-y-8">
+    <h2 id="results-title" class="sr-only">Résultats des recommandations</h2>
+
+    <!-- KNN -->
+    {% if recommendations.knn %}
+    <article class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8" tabindex="0">
+      <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+        Recommandations Collaboratives (KNN)
+      </h3>
+
+      <!-- Compétences -->
+      <div class="mb-8">
+        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Compétences à développer
+        </h4>
+        <ul class="flex flex-wrap gap-2" role="list">
+          {% for skill in recommendations.knn.skills %}
+          <li>
+            <span class="px-4 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 rounded-full">
+              {{ skill }}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Communautés -->
+      <div class="mb-8">
+        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Communautés suggérées
+        </h4>
+        <ul class="list-disc pl-6 space-y-2">
+          {% for community in recommendations.knn.communities %}
+          <li class="text-gray-600 dark:text-gray-400">{{ community }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Étudiants similaires -->
+      <div>
+        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          Étudiants similaires
+        </h4>
+        <div class="grid gap-4 md:grid-cols-2">
+          {% for peer in recommendations.knn.similar_peers %}
+          <div class="p-4 border rounded-lg dark:border-gray-700" role="group" aria-labelledby="peer-{{ peer.ID_Étudiant }}">
+            <h5 id="peer-{{ peer.ID_Étudiant }}" class="font-medium text-blue-600 dark:text-blue-400">
+              {{ peer.Nom }} (ID : {{ peer.ID_Étudiant }})
+            </h5>
+            <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p class="mb-2">
+                <strong>Compétences :</strong>
+                {% for skill in peer.Compétences %}
+                <span class="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded mr-1 mt-1">
+                  {{ skill }}
+                </span>
+                {% endfor %}
+              </p>
+              <p>
+                <strong>Centres d'intérêt :</strong>
+                {{ peer["Centres_d'Intérêt"] | join(', ') }}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+    {% endif %}
+
+    <!-- LLM -->
+    {% if recommendations.llm %}
+    <article class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8" tabindex="0">
+      <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+        Recommandations IA (LLM)
+      </h3>
+      <div class="grid gap-4 md:grid-cols-2">
+        {% for peer in recommendations.llm.similar_peers %}
+        <div class="p-4 border rounded-lg dark:border-gray-700" role="group" aria-labelledby="llm-peer-{{ peer.ID_Étudiant }}">
+          <h5 id="llm-peer-{{ peer.ID_Étudiant }}" class="font-medium text-blue-600 dark:text-blue-400">
+            {{ peer.Nom }} (ID : {{ peer.ID_Étudiant }})
+          </h5>
+          <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mb-2">
+              <strong>Compétences :</strong>
+              {% for skill in peer.Compétences %}
+              <span class="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded mr-1 mt-1">
+                {{ skill }}
+              </span>
+              {% endfor %}
+            </p>
+            <p>
+              <strong>Centres d'intérêt :</strong>
+              {{ peer["Centres_d'Intérêt"] | join(', ') }}
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+    {% endif %}
+  </section>
+  {% endif %}
+</main>
+{% endblock %}

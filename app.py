@@ -17,6 +17,12 @@ from google.auth.transport import requests as google_requests
 
 
 import modules.gemini_api as llm
+# Import de votre classe de recommandation
+from modules.userrecom import StudentRecommender
+# Instanciation du recommendateur
+recommender = StudentRecommender()
+
+
 
 
 # Load environment variables from .env file
@@ -780,17 +786,18 @@ def generate_recommendations(user_profile: Dict[str, Any], all_contents_raw: Any
 
 
 
-# --- test ---
+# --- test1 ---
 
 @app.get("/test-reco", response_class=HTMLResponse)
 async def test_reco_page(request: Request, user=Depends(get_session_user)):
     """Page de test des recommandations"""
-    return templates.TemplateResponse("test_reco.html", {"request": request,"user": user,})
+    return templates.TemplateResponse("test_reco.html", {"request": request, "user": user})
 
 @app.post("/test-reco", response_class=HTMLResponse)
 async def process_test_reco(
     request: Request,
-    student_id: str = Form(...)
+    student_id: str = Form(...), 
+    user = Depends(get_session_user)
 ):
     """Traitement du formulaire de test"""
     recommendations = []
@@ -835,11 +842,60 @@ async def process_test_reco(
         "request": request,
         "recommendations": recommendations,
         "error": error,
-        "student_id": student_id
+        "student_id": student_id,
+        "user": user
     })
 
 # --- test ---
 
+
+
+#----test2-----#
+# 4. Route GET pour afficher le formulaire de test
+@app.get("/test-reco-user", response_class=HTMLResponse)
+async def show_form(request: Request, user = Depends(get_session_user)):
+    """
+    Affiche le formulaire Jinja2 pour tester les recommandations.
+    """
+    return templates.TemplateResponse("test_user_reco.html", {"request": request, "user": user})  # Rendu du template :contentReference[oaicite:8]{index=8}
+
+# 5. Route POST pour traiter le formulaire
+@app.post("/test-reco-user", response_class=HTMLResponse)
+async def process_form(
+    request: Request,
+    student_id: int = Form(...),
+    reco_type: str = Form("hybrid"),
+    user = Depends(get_session_user)
+):
+    """
+    Traite le formulaire, appelle StudentRecommender et ré-affiche le template avec les résultats.
+    """
+    error = None
+    recommendations = None
+
+    try:
+        result = recommender.get_recommendations(student_id, reco_type)
+        if result.get("status") == "success":
+            recommendations = result["recommendations"]
+        else:
+            error = result.get("error", "Erreur inconnue lors de la génération.")
+    except Exception as e:
+        error = str(e)
+
+    return templates.TemplateResponse(
+        "test_user_reco.html",
+        {
+            "request": request,
+            "recommendations": recommendations,
+            "error": error,
+            "student_id": student_id,
+            "user": user
+        }
+    )
+
+
+
+#----test2----#
 
 
 
