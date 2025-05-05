@@ -1,0 +1,8 @@
+fastapi==0.68.1 
+uvicorn==0.15.0 
+pandas==1.5.3 
+numpy==1.23.5 
+scikit-learn==1.2.2 
+tensorflow==2.15.0 
+pydantic==1.8.2 
+requests==2.26.0
