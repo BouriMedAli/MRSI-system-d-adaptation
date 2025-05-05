@@ -1,0 +1,146 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Co_Clustering Étudiants</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1.0/dist/chartjs-chart-matrix.min.js"></script>
+
+
+
+</head>
+<body>
+  <h1>🔍 Co_Clustering par Communauté</h1>
+  <form id="formulaire">
+    <label for="communaute">Choisissez une communauté :</label>
+    <select id="communaute" name="communaute" required>
+      <option value="" disabled selected>-- Sélectionner --</option>
+      <option value="Groupe IA">Groupe IA</option>
+      <option value="Club Robotique">Club Robotique</option>
+      <option value="Club Data Science">Club Data Science</option>
+      <option value="Club Entrepreneurs">Club Entrepreneurs</option>
+      <option value="Association Écologie">Association Écologie</option>
+    </select>
+    <button type="submit">Lancer</button>
+  </form>
+
+  <h2>📄 Tableau</h2>
+  <table id="tableau_nom"></table>
+
+  <h2>🧩 Tableau trié par cluster</h2>
+  <table id="tableau_cluster"></table>
+
+  <h2>📊 Graphique des prédictions</h2>
+  <canvas id="graph_pred" width="600" height="300"></canvas>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1.0/dist/chartjs-chart-matrix.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+<script>
+document.getElementById("formulaire").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const c = document.getElementById("communaute").value;
+  const res = await fetch(`/co_clustering/?communaute=${encodeURIComponent(c)}`);
+  const data = await res.json();
+
+  remplirTableau("tableau_nom", data.tableau_par_nom);
+  remplirTableau("tableau_cluster", data.tableau_par_cluster);
+  afficherGraphiquePredictions(data.tableau_par_cluster);
+  afficherHeatmap(data.heatmap);
+});
+
+// Fonction pour remplir un tableau HTML à partir de données JSON
+function remplirTableau(tableauId, data) {
+  const table = document.getElementById(tableauId);
+  table.innerHTML = "";
+  if (!data || data.length === 0) {
+    table.innerHTML = "<tr><td>Aucune donnée.</td></tr>";
+    return;
+  }
+
+  const headers = Object.keys(data[0]);
+  table.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+  data.forEach(row => {
+    table.innerHTML += "<tr>" + headers.map(h => `<td>${row[h]}</td>`).join("") + "</tr>";
+  });
+}
+
+// Fonction pour afficher le graphique des prédictions (barres)
+function afficherGraphiquePredictions(data) {
+  const ctx = document.getElementById("graph_pred").getContext("2d");
+  if (window.graphPred) {
+    window.graphPred.destroy();
+  }
+
+  const noms = data.map(row => row["Nom"]);
+  const preds = data.map(row => row["Pred"]);
+  const clusters = data.map(row => row["Cluster"]); // récupère le cluster
+
+  // Définir une couleur par cluster
+  const couleursParCluster = {};
+  const palette = [
+    "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+    "#9966FF", "#FF9F40", "#C9CBCF", "#009688", "#795548", "#607D8B"
+  ];
+
+  clusters.forEach((cl, i) => {
+    if (!(cl in couleursParCluster)) {
+      couleursParCluster[cl] = palette[Object.keys(couleursParCluster).length % palette.length];
+    }
+  });
+
+  const couleurs = clusters.map(cl => couleursParCluster[cl]);
+
+  window.graphPred = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: noms,
+      datasets: [{
+        label: "Prédictions (Nombre d'interactions estimé)",
+        data: preds,
+        backgroundColor: couleurs,
+        borderColor: couleurs,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: '#000',
+          font: { weight: 'bold' },
+          formatter: Math.round
+        },
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const index = context.dataIndex;
+              return `Prédiction: ${preds[index]} (Cluster ${clusters[index]})`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          suggestedMax: Math.max(...preds) + 10
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
+
+</script></body>
+</html>

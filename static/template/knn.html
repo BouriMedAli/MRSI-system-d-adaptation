@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #fffefb; /* Fond global très doux, presque blanc/beige */
+      font-family: 'Poppins', Arial, sans-serif;
+    }
+  
+    /* --- Cartes --- */
+    .card {
+      border-radius: 16px;
+      border: none;
+      background: #ffffff; /* Cartes blanches */
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+    .card:hover {
+      background: #fdf6ec; /* Beige clair au survol */
+      transform: translateY(-5px);
+    }
+  
+    /* --- En-tête de carte --- */
+    .card-header {
+      background: linear-gradient(145deg, #f0e6d2, #f8f1e7); /* Dégradé beige très doux */
+      color: #6e4b1f; /* Marron foncé (élégant) */
+      font-weight: bold;
+      text-align: center;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      font-size: 1.5rem;
+    }
+  
+    /* --- Boutons Visualiser --- */
+    .btn-visualiser {
+      background: linear-gradient(145deg, #d2a679, #b88b58); /* Dégradé beige-marron */
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      padding: 12px 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+    .btn-visualiser:hover {
+      background: linear-gradient(145deg, #b88b58, #d2a679);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(184, 139, 88, 0.4);
+    }
+  
+    /* --- Formulaires --- */
+    select, .form-label {
+      font-size: 1rem;
+      color: #6e4b1f;
+    }
+    .form-select {
+      border-radius: 10px;
+      border: 1px solid #e0c9a6;
+      background-color: #fdf6ec;
+    }
+  
+    /* --- Tableaux (Grille) --- */
+    table {
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    table th {
+      background-color: #f8f1e7; /* En-tête de tableau beige clair */
+      color: #6e4b1f; /* Texte marron foncé */
+      font-size: 1.1rem;
+      text-align: center;
+    }
+    table td {
+      background-color: #fdf6ec; /* Cellules beige très doux */
+      color: #6e4b1f;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 1rem;
+    }
+    .table-hover tbody tr:hover td {
+      background-color: #f0e6d2; /* Survol plus intense */
+    }
+  
+    /* --- Titres --- */
+    h3, h4 {
+      color: #8b5e3c;
+      font-weight: bold;
+      text-align: center;
+    }
+  
+    /* --- Canvas (Graphiques) --- */
+    canvas {
+      background-color: white;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+  </style>
+  
+  
+</head>
+<body>
+  <div class="container mt-5">
+    <!-- Formulaire de sélection -->
+    <div class="card shadow-lg">
+      <div class="card-header">
+        ✨ Recommandation Personnalisée ✨
+      </div>
+      <div class="card-body">
+        <form method="get" action="/api/knn" id="knn-form">
+         <div class="mb-5">
+              <label for="Compétences" class="form-label">Compétences</label>
+              <select id="Compétences" class="form-select" multiple required>
+                <option>Électronique</option>
+                <option>Python</option>
+                <option>Marketing</option>
+                <option>IA</option>
+                <option>Design</option>
+                <option>Data Science</option>
+                <option>Blockchain</option>
+              </select>
+            </div>
+            
+            <div class="mb-5">
+              <label for="Communautés" class="form-label">Communautés</label>
+              <select id="Communautés" class="form-select" multiple required>
+                <option>Club Robotique</option>
+                <option>Groupe IA</option>
+                <option>Club Entrepreneurs</option>
+                <option>Association Écologie</option>
+                <option>Club Data Science</option>
+              </select>
+            </div>
+            
+          </div>
+          <button type="submit" class="btn btn-visualiser w-100">Visualiser</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div class="card mt-5 shadow">
+    <div class="card-header">
+      📋 Résultats
+    </div>
+    <div class="card-body">
+      <table class="table table-hover" id="result-table">
+        <thead class="table-light">
+          <tr>
+            <th>Nom</th>
+            <th>Compétences</th>
+            <th>Communautés</th>
+            <th>Similarité (%)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Graphiques -->
+  <div class="card mt-5 shadow">
+    <div class="card-header">
+      🎯 Graphe Circulaire - Similarité (%)
+    </div>
+    <div class="card-body">
+      <canvas id="pie-chart" height="100"></canvas>
+    </div>
+  </div>
+
+  <div class="card mt-5 shadow">
+    <div class="card-header">
+      💠 Nuage de Similarité (Interactions vs Travaux)
+    </div>
+    <div class="card-body">
+      <canvas id="scatter-chart" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="card mt-5 shadow">
+    <div class="card-header">
+      📊 Histogramme des Communautés
+    </div>
+    <div class="card-body">
+      <canvas id="bar-chart" height="100"></canvas>
+    </div>
+  </div>
+
+
+
+<script>
+  document.getElementById("knn-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+  
+    const Compétences = Array.from(document.getElementById("Compétences").selectedOptions).map(opt => opt.value);
+    const Communautés = Array.from(document.getElementById("Communautés").selectedOptions).map(opt => opt.value);
+  
+    const response = await fetch("/api/knn", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ Compétences, Communautés }),
+    });
+
+    const data = await response.json();
+    const tableBody = document.querySelector("#result-table tbody");
+    tableBody.innerHTML = "";
+    const filteredResults = data.resultats.filter(r => r.Similarité > 0);
+    
+    
+    if (filteredResults.length > 0) {
+  tableBody.innerHTML = ""; // Nettoyer l'ancien contenu
+  
+  filteredResults.forEach(result => {
+    const similarite = parseFloat(result["Similarité"] || 0).toFixed(2); // 2 décimales
+    
+    // Définir une couleur en fonction de la similarité
+    let colorClass = "";
+    if (similarite >= 11) {
+      colorClass = "bg-success text-white"; // Vert
+    } else if (similarite >= 9) {
+      colorClass = "bg-warning text-dark"; // Orange
+    } else {
+      colorClass = "bg-danger text-white"; // Rouge
+    }
+    
+    const row = `
+      <tr>
+        <td>${result.Nom}</td>
+        <td>${result.Compétences}</td>
+        <td>${result.Communautés}</td>
+        <td class="${colorClass}">${similarite}%</td>
+      </tr>
+    `;
+    
+    tableBody.innerHTML += row;
+  });
+
+      // Graphe circulaire
+      const pieCtx = document.getElementById("pie-chart").getContext("2d");
+      new Chart(pieCtx, {
+        type: "pie",
+        data: {
+          labels: filteredResults.map(r => r.Nom),
+          datasets: [{
+            label: "Similarité",
+            data: filteredResults.map(r => r["Similarité"]),
+            backgroundColor: [
+              "#ff6384", "#36a2eb", "#cc65fe", "#ffce56", "#4bc0c0",
+              "#9966ff", "#ff9f40", "#c9cbcf", "#ff6666", "#66ff66"
+            ]
+          }]
+        }
+      });
+  
+      const scatterCtx = document.getElementById("scatter-chart").getContext("2d");
+
+// Générer une couleur aléatoire pour chaque étudiant
+const colors = filteredResults.map(() => {
+  const r = Math.floor(Math.random() * 255);
+  const g = Math.floor(Math.random() * 255);
+  const b = Math.floor(Math.random() * 255);
+  return `rgb(${r},${g},${b})`;
+});
+
+new Chart(scatterCtx, {
+  type: "scatter",
+  data: {
+    datasets: filteredResults.map((r, index) => ({
+      label: r.Nom,
+      data: [{ x: r.Nom, y: r.Similarité }],
+      backgroundColor: colors[index],
+      pointRadius: 6,
+      pointHoverRadius: 8,
+      pointBorderColor: "#ffffff",
+      pointBorderWidth: 2
+    }))
+  },
+  options: {
+    plugins: {
+      title: {
+        display: true,
+        text: "Nuage de Similarité",
+        font: {
+          size: 20,
+          weight: "bold"
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const nom = context.raw.x;
+            const similarite = context.raw.y;
+            return `${nom}: ${similarite}%`;
+          }
+        }
+      },
+      legend: {
+        display: false  // Tu peux mettre true si tu veux afficher le nom de chaque étudiant dans une légende
+      }
+    },
+    scales: {
+      x: {
+        type: 'category',
+        title: {
+          display: true,
+          text: "Étudiants",
+          font: {
+            size: 16
+          }
+        },
+        labels: filteredResults.map((r) => r.Nom),
+        ticks: {
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 45
+        },
+        grid: {
+          color: "#eee"
+        }
+      },
+      y: {
+        title: {
+          display: true,
+          text: "Similarité (%)",
+          font: {
+            size: 16
+          }
+        },
+        min: 0,
+        max: 20,
+        grid: {
+          color: "#eee"
+        }
+      }
+    }
+  }
+});
+
+  
+     
+
+// Histogramme par communautés
+const communityCount = {};
+
+// Parcourir les résultats filtrés
+filteredResults.forEach(r => {
+  // Récupérer les communautés de chaque étudiant
+  const communautés = r.Communautés;
+
+  // Séparer les communautés et incrémenter le compteur pour chaque communauté
+  communautés.forEach(communauté => {
+    communityCount[communauté] = (communityCount[communauté] || 0) + 1;
+  });
+});
+
+// Créer le graphique
+const barCtx = document.getElementById("bar-chart").getContext("2d");
+new Chart(barCtx, {
+  type: "bar",
+  data: {
+    labels: Object.keys(communityCount),  // Nom des communautés
+    datasets: [{
+      label: "Nombre d’étudiants",
+      data: Object.values(communityCount),  // Nombre d'étudiants par communauté
+      backgroundColor: "#6f42c1"
+    }]
+  }
+});
+
+
+  
+    } else {
+      tableBody.innerHTML = "<tr><td colspan='4' class='text-center text-danger'>Aucun résultat trouvé.</td></tr>";
+    }
+  });
+  </script>
+ 
+
+  </body>
+</html>
