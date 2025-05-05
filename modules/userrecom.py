@@ -98,25 +98,31 @@ class StudentRecommender:
             return {"error": str(e)}
 
     def _llm_recommendations(self, student_id, top_n=5):
-        """Génère les recommandations d’étudiants similaires avec Gemini."""
-        try:
-            student_data = self.df_students[self.df_students['ID_Étudiant'] == student_id].iloc[0]
-            # On envoie à Gemini les compétences et centres d'intérêt pour qu'il renvoie des pairs
-            prompt = f"""
-            Voici les données de l'étudiant cible :
-            {json.dumps(student_data.to_dict(), indent=2)}
-            
-            Parmi l'ensemble des étudiants suivants :
-            {self.df_students[['ID_Étudiant','Nom','Compétences','Centres_d\'Intérêt']].to_string(index=False)}
-            
-            Propose-moi jusqu'à {top_n} étudiants similaires en JSON, sous la forme :
-            {{
-              "similar_peers": [
-                {{"ID_Étudiant": ..., "Nom": "...", "Compétences": [...], "Centres_d'Intérêt": [...]}},
-                …
-              ]
-            }}
-            """
+        """Génère les recommandations d’étudiants similaires avec Gemini."""
+        try:
+            student_data = self.df_students[self.df_students['ID_Étudiant'] == student_id].iloc[0]
+
+            # --- MODIFICATION ICI ---
+            # Générer la chaîne du DataFrame séparément
+            students_string = self.df_students[['ID_Étudiant','Nom','Compétences','Centres_d\'Intérêt']].to_string(index=False)
+            # ------------------------
+
+            prompt = f"""
+            Voici les données de l'étudiant cible :
+            {json.dumps(student_data.to_dict(), indent=2)}
+
+            Parmi l'ensemble des étudiants suivants :
+            {students_string} # Utiliser la variable ici
+
+            Propose-moi jusqu'à {top_n} étudiants similaires en JSON, sous la forme :
+            {{
+              "similar_peers": [
+                {{"ID_Étudiant": ..., "Nom": "...", "Compétences": [...], "Centres_d'Intérêt": [...]}},
+                …
+              ]
+            }}
+            """
+            # ... reste de la méthode
             response = self.model.generate_content(prompt)
             cleaned = re.sub(r'^```json\s*|\s*```$', '', response.text, flags=re.MULTILINE)
             data = json.loads(cleaned)
