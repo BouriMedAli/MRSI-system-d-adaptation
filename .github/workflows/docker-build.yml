@@ -1,0 +1,68 @@
+name: CI for eya-neurone
+
+on:
+  push:
+    branches:
+      - eya-neurone
+  pull_request:
+    branches:
+      - eya-neurone
+
+env:
+  TEST_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/mrsi-system-adaptation:test
+  LATEST_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/mrsi-system-adaptation:latest
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Cloner le dépôt
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Configurer QEMU pour builds multi-plateformes
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Configurer Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Se connecter à Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Construire l'image Docker pour les tests
+      - name: Build Docker image for testing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: ${{ env.TEST_TAG }}
+          file: Dockerfile
+
+      # Exécuter les tests dans le conteneur
+      - name: Run tests
+        run: |
+          docker run --rm -d -p 8000:8000 --name app_test ${{ env.TEST_TAG }}
+          sleep 10
+          docker run --rm --network host python:3.9 bash -c "
+            pip install pytest httpx
+            curl -o test_api.py https://raw.githubusercontent.com/BouriMedAli/MRSI-system-d-adaptation/eya-neurone/tests/test_api.py
+            pytest -v test_api.py
+          "
+          docker stop app_test
+
+      # Construire et pousser l'image finale
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.LATEST_TAG }}
+          file: Dockerfile
