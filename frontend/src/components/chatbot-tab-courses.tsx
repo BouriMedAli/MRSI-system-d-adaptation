@@ -40,7 +40,7 @@ export default function ChatbotTab() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your student collaboration assistant. Here are the available courses:",
+      content: "Hello! I'm your Study Partner. You can select a course and boost your knowledge with me ! Here are the available courses:",
       type: "course-selection",
       courseOptions: [
         { id: "cs301", code: "CS301", name: "Advanced Data Structures", department: "CS" },

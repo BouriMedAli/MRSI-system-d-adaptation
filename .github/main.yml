@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - maryem-knn-surprise
+  pull_request:
+    branches:
+      - maryem-knn-surprise
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:20.10.7
+        options: --privileged
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # --- BACKEND ---
+      - name: Build backend Docker image
+        working-directory: backend
+        run: docker build -t recommender-backend .
+
+      - name: Run backend container
+        run: docker run -d --name backend-container -p 8000:8000 recommender-backend
+
+      - name: Wait for FastAPI to be ready
+        run: |
+          for i in {1..30}; do
+            curl --output /dev/null --silent --head --fail http://localhost:8000 && break
+            sleep 2
+          done
+
+      - name: Test backend API
+        run: |
+          curl -X 'GET' 'http://localhost:8000/' -H 'accept: application/json'
+
+      # --- FRONTEND ---
+      - name: Build frontend Docker image
+        working-directory: frontend
+        run: docker build -t recommender-frontend .
+
+      - name: Run frontend container
+        run: docker run -d --name frontend-container -p 5173:5173 recommender-frontend
+
+      - name: Wait for frontend to be ready
+        run: |
+          for i in {1..30}; do
+            curl --output /dev/null --silent --head --fail http://localhost:5173 && break
+            sleep 2
+          done
+
+      - name: Test frontend
+        run: |
+          curl -X 'GET' 'http://localhost:5173' -H 'accept: text/html'

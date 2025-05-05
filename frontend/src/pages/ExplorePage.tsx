@@ -8,11 +8,11 @@ export default function ExplorePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Explore Collaborations</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Find Collaborators</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="recommender">Collaborator Recommender</TabsTrigger>
+          <TabsTrigger value="recommender">Collaborators Recommender</TabsTrigger>
           <TabsTrigger value="chatbot">Chatbot</TabsTrigger>
         </TabsList>
 
