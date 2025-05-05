@@ -55,25 +55,151 @@ jobs:
 
       - name: Test FastAPI service
         run: |
-          # Attendre que FastAPI soit prêt (jusqu'à 60 secondes)
+          # Attendre que FastAPI soit prêt (jusqu'à 60 secondes) pour /recommendations/ (étudiant 5)
           for i in {1..60}; do
-            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 2, "n_recommendations": 5}' && break
-            echo "FastAPI pas encore prêt, attente 1 seconde..."
+            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 5, "n_recommendations": 5, "skill_filter": ["Python"], "interest_filter": ["Robotique"], "skill_weight": 0.7, "interest_weight": 0.3}' && break
+            echo "FastAPI pas encore prêt pour /recommendations/ (étudiant 5), attente 1 seconde..."
             sleep 1
           done
-          # Vérifier que la requête a réussi
-          curl --fail -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 2, "n_recommendations": 5}' || exit 1
+
+          # Vérifier la réponse de /recommendations/ pour l'étudiant 5
+          response=$(curl -s -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 5, "n_recommendations": 5, "skill_filter": ["Python"], "interest_filter": ["Robotique"], "skill_weight": 0.7, "interest_weight": 0.3}')
+          if [[ $(echo "$response" | jq -r '.teammates' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'teammates' est manquante ou vide dans la réponse de /recommendations/ pour l'étudiant 5"
+            exit 1
+          fi
+          if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_skills_from_db' est manquante ou vide dans la réponse de /recommendations/ pour l'étudiant 5"
+            exit 1
+          fi
+          if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_courses' est manquante ou vide dans la réponse de /recommendations/ pour l'étudiant 5"
+            exit 1
+          fi
+          echo "Test de /recommendations/ pour l'étudiant 5 réussi"
+
+          # Attendre un peu pour s'assurer que le serveur est prêt pour la prochaine requête
+          sleep 2
+
+          # Attendre que FastAPI soit prêt pour /recommendations/ (étudiant 20)
+          for i in {1..60}; do
+            curl -s -f -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 20, "n_recommendations": 5, "skill_filter": ["Data Science"], "interest_filter": ["Technologie"], "skill_weight": 0.4, "interest_weight": 0.6}' && break
+            echo "FastAPI pas encore prêt pour /recommendations/ (étudiant 20), attente 1 seconde..."
+            sleep 1
+          done
+
+          # Vérifier la réponse de /recommendations/ pour l'étudiant 20
+          response=$(curl -s -X POST http://localhost:8000/recommendations/ -H "Content-Type: application/json" -d '{"student_id": 20, "n_recommendations": 5, "skill_filter": ["Data Science"], "interest_filter": ["Technologie"], "skill_weight": 0.4, "interest_weight": 0.6}')
+          if [[ $(echo "$response" | jq -r '.teammates' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'teammates' est manquante ou vide dans la réponse de /recommendations/ pour l'étudiant 20"
+            exit 1
+          fi
+          if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_skills_from_db' est manquante ou vide dans la réponse de /recommendations/ pour l'étudiant 20"
+            exit 1
+          fi
+          if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_courses' est manquante ou vide dans la réponse de /recommendations/ pour l'étudiant 20"
+            exit 1
+          fi
+          echo "Test de /recommendations/ pour l'étudiant 20 réussi"
+
+          # Attendre un peu pour s'assurer que le serveur est prêt pour la prochaine requête
+          sleep 2
+
+          # Attendre que FastAPI soit prêt pour /fictitious_recommendations/ (étudiant 7)
+          for i in {1..60}; do
+            curl -s -f -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 7, "n_recommendations": 5}' && break
+            echo "FastAPI pas encore prêt pour /fictitious_recommendations/ (étudiant 7), attente 1 seconde..."
+            sleep 1
+          done
+
+          # Vérifier la réponse de /fictitious_recommendations/ pour l'étudiant 7
+          response=$(curl -s -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 7, "n_recommendations": 5}')
+          if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_skills_from_db' est manquante ou vide dans la réponse de /fictitious_recommendations/ pour l'étudiant 7"
+            exit 1
+          fi
+          if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_courses' est manquante ou vide dans la réponse de /fictitious_recommendations/ pour l'étudiant 7"
+            exit 1
+          fi
+          echo "Test de /fictitious_recommendations/ pour l'étudiant 7 réussi"
+
+          # Attendre un peu pour s'assurer que le serveur est prêt pour la prochaine requête
+          sleep 2
+
+          # Attendre que FastAPI soit prêt pour /fictitious_recommendations/ (étudiant 30)
+          for i in {1..60}; do
+            curl -s -f -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 30, "n_recommendations": 5}' && break
+            echo "FastAPI pas encore prêt pour /fictitious_recommendations/ (étudiant 30), attente 1 seconde..."
+            sleep 1
+          done
+
+          # Vérifier la réponse de /fictitious_recommendations/ pour l'étudiant 30
+          response=$(curl -s -X POST http://localhost:8000/fictitious_recommendations/ -H "Content-Type: application/json" -d '{"student_id": 30, "n_recommendations": 5}')
+          if [[ $(echo "$response" | jq -r '.recommended_skills_from_db' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_skills_from_db' est manquante ou vide dans la réponse de /fictitious_recommendations/ pour l'étudiant 30"
+            exit 1
+          fi
+          if [[ $(echo "$response" | jq -r '.recommended_courses' | grep -c .) -eq 0 ]]; then
+            echo "Erreur : La clé 'recommended_courses' est manquante ou vide dans la réponse de /fictitious_recommendations/ pour l'étudiant 30"
+            exit 1
+          fi
+          echo "Test de /fictitious_recommendations/ pour l'étudiant 30 réussi"
 
       - name: Test Streamlit service
         run: |
-          # Attendre que Streamlit soit prêt (jusqu'à 60 secondes)
+          # Attendre que Streamlit soit prêt (jusqu'à 60 secondes) pour l'étudiant 5
           for i in {1..60}; do
             curl -s -f http://localhost:8501 && break
-            echo "Streamlit pas encore prêt, attente 1 seconde..."
+            echo "Streamlit pas encore prêt pour l'étudiant 5, attente 1 seconde..."
             sleep 1
           done
-          # Vérifier que la requête a réussi
+          echo "Streamlit accessible pour l'étudiant 5. Veuillez vérifier manuellement avec student_id=5, skill_filter=['Python'], interest_filter=['Robotique'], skill_weight=0.7, interest_weight=0.3"
+
+          # Attendre un peu pour s'assurer que le serveur est prêt pour la prochaine requête
+          sleep 2
+
+          # Attendre que Streamlit soit prêt pour l'étudiant 20
+          for i in {1..60}; do
+            curl -s -f http://localhost:8501 && break
+            echo "Streamlit pas encore prêt pour l'étudiant 20, attente 1 seconde..."
+            sleep 1
+          done
+          echo "Streamlit accessible pour l'étudiant 20. Veuillez vérifier manuellement avec student_id=20, skill_filter=['Data Science'], interest_filter=['Technologie'], skill_weight=0.4, interest_weight=0.6"
+
+          # Attendre un peu pour s'assurer que le serveur est prêt pour la prochaine requête
+          sleep 2
+
+          # Attendre que Streamlit soit prêt pour l'étudiant 7
+          for i in {1..60}; do
+            curl -s -f http://localhost:8501 && break
+            echo "Streamlit pas encore prêt pour l'étudiant 7, attente 1 seconde..."
+            sleep 1
+          done
+          echo "Streamlit accessible pour l'étudiant 7. Veuillez vérifier manuellement avec student_id=7"
+
+          # Attendre un peu pour s'assurer que le serveur est prêt pour la prochaine requête
+          sleep 2
+
+          # Attendre que Streamlit soit prêt pour l'étudiant 30
+          for i in {1..60}; do
+            curl -s -f http://localhost:8501 && break
+            echo "Streamlit pas encore prêt pour l'étudiant 30, attente 1 seconde..."
+            sleep 1
+          done
+          echo "Streamlit accessible pour l'étudiant 30. Veuillez vérifier manuellement avec student_id=30"
+
+          # Vérification finale que Streamlit répond
           curl --fail http://localhost:8501 || exit 1
+
+      - name: Instructions pour ouvrir les interfaces
+        run: |
+          echo "Pour tester manuellement, ouvrez les URLs suivantes dans votre navigateur :"
+          echo "  - FastAPI Swagger UI: http://127.0.0.1:8000/docs"
+          echo "  - Streamlit Interface: http://localhost:8501"
+          echo "Note : Ces URLs ne s'ouvrent pas automatiquement dans GitHub Actions. Exécutez localement avec 'docker compose up' pour les tester."
 
       - name: Stop services
         run: |
