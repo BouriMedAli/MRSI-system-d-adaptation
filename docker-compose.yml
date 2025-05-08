@@ -1,0 +1,13 @@
+services:
+  dash-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dash-container
+    ports:
+      - "8050:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

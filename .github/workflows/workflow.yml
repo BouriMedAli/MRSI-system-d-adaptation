@@ -10,66 +10,167 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-run:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
+      # Cloner le dépôt
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Configurer Python
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.10'
 
+      # Installer les dépendances
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install --no-cache-dir -r requirements.txt
 
-      - name: Vérifier présence du dataset
+      # Vérifier la présence du dataset
+      - name: Check dataset presence
         run: |
           if [ ! -f Dataset/dataset_etudiants.csv ]; then
-            echo "Fichier dataset manquant"
+            echo "❌ Dataset file missing"
             exit 1
           else
-            echo "✅ Dataset trouvé"
+            echo "✅ Dataset found"
           fi
 
+      # Valider le format du dataset
+      - name: Validate dataset format
+        run: |
+          python -c "
+          import pandas as pd
+          df = pd.read_csv('Dataset/dataset_etudiants.csv')
+          required_cols = ['ID_Étudiant', 'Coéquipiers', 'Communautés', 'Compétences', \"Centres_d\'Intérêt\", 'Nom']
+          missing_cols = [col for col in required_cols if col not in df.columns]
+          if missing_cols:
+            print(f'❌ Missing columns: {missing_cols}')
+            exit(1)
+          if df['ID_Étudiant'].duplicated().any():
+            print('❌ Duplicate ID_Étudiant found')
+            exit(1)
+          print('✅ Dataset format validated')
+          "
+
+      # Vérifier la présence des fichiers de code
+      - name: Check presence of code files
+        run: |
+          if [ ! -f codeSVD.py ] || [ ! -f codeKNN.py ] || [ ! -f app.py ]; then
+            echo "❌ Missing required code files (codeSVD.py, codeKNN.py, or app.py)"
+            exit 1
+          else
+            echo "✅ All required code files found"
+          fi
+
+      # Construire l’image Docker
       - name: Build Docker image
-        run: docker build -t edg
+        run: docker build -t recommandation_system .
 
+      # Lancer le conteneur Docker
       - name: Run Docker container
-        run: docker run -d -p 8000:8000 --name recommandation_container recommandation_system
+        run: docker run -d -p 8050:8000 --name dash_container recommandation_system
 
-      - name: Wait for FastAPI to be ready
+      # Attendre que l’application Dash soit prête
+      - name: Wait for Dash app to be ready
         run: |
           for i in {1..30}; do
-            curl --output /dev/null --silent --head --fail http://localhost:8000/docs && break
-            echo " En attente du démarrage de l'API..."
+            curl --output /dev/null --silent --head --fail http://localhost:8050/ && break
+            echo "Waiting for Dash app to start..."
             sleep 2
           done
 
-      - name: Test recommander API
+      # Tester l’interface Dash
+      - name: Test Dash interface
         run: |
-          response=$(curl -s -X POST http://localhost:8000/recommander/ \
-            -H "Content-Type: application/json" \
-            -d '{"id_etudiant": 1}')
-          echo "Réponse API : $response"
-          echo "$response" | grep "ID_Étudiant" || (echo "❌ L'API ne renvoie pas de recommandations" && echo "$response" && exit 1)
+          response=$(curl -s http://localhost:8050/)
+          echo "$response" | grep "Système de Recommandation Étudiants" || (echo "❌ Dash interface not accessible" && exit 1)
 
-      - name: Test recommander_svd API
+      # Tester la fonctionnalité de recommandation Dash
+      - name: Test Dash recommendation functionality
         run: |
-          response=$(curl -s -X POST http://localhost:8000/recommander_svd/ \
-            -H "Content-Type: application/json" \
-            -d '{"id_etudiant": 1}')
-          echo "Réponse API (SVD) : $response"
-          echo "$response" | grep "ID_Étudiant" || (echo "❌ L'API SVD ne renvoie pas de recommandations" && echo "$response" && exit 1)
+          python -c "
+          import requests
+          import json
+          response = requests.post('http://localhost:8050/_dash-update-component', json={
+            'output': 'output-reco.children..output-sim.children..reco-ids.data..download-reco.data',
+            'outputs': [
+              {'id': 'output-reco', 'property': 'children'},
+              {'id': 'output-sim', 'property': 'children'},
+              {'id': 'reco-ids', 'property': 'data'},
+              {'id': 'download-reco', 'property': 'data'}
+            ],
+            'inputs': [
+              {'id': 'btn-recommend', 'property': 'n_clicks', 'value': 1},
+              {'id': 'btn-download', 'property': 'n_clicks', 'value': 0},
+              {'id': 'input-id', 'property': 'value', 'value': 1},
+              {'id': 'mode', 'property': 'value', 'value': 'svd'},
+              {'id': 'top-n', 'property': 'value', 'value': 5}
+            ],
+            'changedPropIds': ['btn-recommend.n_clicks']
+          })
+          if response.status_code != 200:
+            print('❌ Failed to get recommendations: HTTP', response.status_code)
+            exit(1)
+          data = response.json()
+          output = data['response']['output-reco']['children']
+          if isinstance(output, str) and 'Erreur' in output:
+            print(f'❌ Recommendation error: {output}')
+            exit(1)
+          if not isinstance(output, dict) or 'props' not in output or 'children' not in output['props']:
+            print('❌ Invalid recommendation output format')
+            exit(1)
+          print('✅ Recommendations generated successfully')
+          "
 
+      # Tester la génération des graphiques Dash
+      - name: Test Dash visualization functionality
+        run: |
+          python -c "
+          import requests
+          import json
+          response = requests.post('http://localhost:8050/_dash-update-component', json={
+            'output': 'graph-svd.figure',
+            'outputs': {'id': 'graph-svd', 'property': 'figure'},
+            'inputs': [{'id': 'input-id', 'property': 'value', 'value': 1}],
+            'changedPropIds': ['input-id.value']
+          })
+          if response.status_code != 200:
+            print('❌ Failed to generate SVD plot: HTTP', response.status_code)
+            exit(1)
+          data = response.json()
+          figure = data['response']['graph-svd']['figure']
+          if not figure or 'data' not in figure or not figure['data']:
+            print('❌ Invalid SVD plot format')
+            exit(1)
+          print('✅ SVD plot generated successfully')
+          response = requests.post('http://localhost:8050/_dash-update-component', json={
+            'output': 'graph-knn.figure',
+            'outputs': {'id': 'graph-knn', 'property': 'figure'},
+            'inputs': [{'id': 'input-id', 'property': 'value', 'value': 1}],
+            'changedPropIds': ['input-id.value']
+          })
+          if response.status_code != 200:
+            print('❌ Failed to generate KNN plot: HTTP', response.status_code)
+            exit(1)
+          data = response.json()
+          figure = data['response']['graph-knn']['figure']
+          if not figure or 'data' not in figure or not figure['data']:
+            print('❌ Invalid KNN plot format')
+            exit(1)
+          print('✅ KNN plot generated successfully')
+          "
+
+      # Nettoyer le conteneur Docker
       - name: Cleanup Docker container
         if: always()
-        run: docker rm -f recommandation_container || true
+        run: docker rm -f dash_container || true
 
+      # Afficher les logs en cas d’échec
       - name: Show Docker logs on failure
         if: failure()
-        run: docker logs recommandation_container || true
+        run: docker logs dash_container || true
