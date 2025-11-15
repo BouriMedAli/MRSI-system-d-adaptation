@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Branching Guide - Professional Presentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/monokai.css">
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 {
+            text-transform: none;
+        }
+        .reveal pre {
+            width: 100%;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        .reveal code {
+            padding: 2px 5px;
+        }
+        .reveal .slides section .fragment.highlight-current-blue {
+            opacity: 1;
+            visibility: inherit;
+        }
+        .reveal .slides section .fragment.highlight-current-blue.current-fragment {
+            color: #42affa;
+        }
+        .best-practice {
+            background: #1e7a1e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .step-number {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .command-explanation {
+            font-size: 0.8em;
+            color: #42affa;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section data-background-gradient="linear-gradient(to bottom, #283048, #859398)">
+                <h1>Git Branching Guide</h1>
+                <h3>Master Branch Management</h3>
+                <p>
+                    <small>A Professional Guide to Git Workflow</small>
+                </p>
+            </section>
+
+            <!-- Introduction -->
+            <section>
+                <h2>What You'll Learn</h2>
+                <ul>
+                    <li class="fragment">Creating and managing branches</li>
+                    <li class="fragment">Working without affecting the main branch</li>
+                    <li class="fragment">Best practices for team collaboration</li>
+                    <li class="fragment">Pull request workflow</li>
+                </ul>
+            </section>
+
+            <!-- Step 1: Clone Repository -->
+            <section>
+                <section>
+                    <div class="step-number">Step 1</div>
+                    <h2>Clone the Repository</h2>
+                    <p>First, get a local copy of your repository</p>
+                    <pre><code data-trim data-line-numbers class="language-bash">
+git clone &lt;repository-url&gt;
+cd &lt;repository-name&gt;
+                    </code></pre>
+                    <div class="command-explanation">
+                        This creates a local copy of your remote repository
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Example</h3>
+                    <pre><code data-trim class="language-bash">
+git clone https://github.com/username/my-project.git
+cd my-project
+                    </code></pre>
+                </section>
+            </section>
+
+            <!-- Step 2: Switch to Main -->
+            <section>
+                <div class="step-number">Step 2</div>
+                <h2>Ensure You're on Main Branch</h2>
+                <pre><code data-trim class="language-bash">
+git checkout main
+                </code></pre>
+                <div class="command-explanation">
+                    Switches your working directory to the main branch
+                </div>
+            </section>
+
+            <!-- Step 3: Pull Latest Changes -->
+            <section>
+                <div class="step-number">Step 3</div>
+                <h2>Pull Latest Changes</h2>
+                <pre><code data-trim class="language-bash">
+git pull origin main
+                </code></pre>
+                <div class="command-explanation">
+                    Downloads and integrates remote changes into your local branch
+                </div>
+                <p class="fragment" style="margin-top: 20px; color: #e74c3c;">
+                    ⚠️ Always do this before creating a new branch!
+                </p>
+            </section>
+
+            <!-- Step 4: Create New Branch -->
+            <section>
+                <section>
+                    <div class="step-number">Step 4</div>
+                    <h2>Create and Switch to New Branch</h2>
+                    <pre><code data-trim class="language-bash">
+git checkout -b &lt;new-branch-name&gt;
+                </code></pre>
+                    <div class="command-explanation">
+                        Creates a new branch and switches to it in one command
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Branch Naming Conventions</h3>
+                    <pre><code data-trim class="language-bash">
+# Feature branches
+git checkout -b feature/login-page
+git checkout -b feature/user-dashboard
+
+# Bug fix branches
+git checkout -b bugfix/auth-error
+git checkout -b fix/header-alignment
+
+# Hotfix branches
+git checkout -b hotfix/security-patch
+                    </code></pre>
+                </section>
+            </section>
+
+            <!-- Step 5: Make Changes -->
+            <section>
+                <div class="step-number">Step 5</div>
+                <h2>Make Your Changes</h2>
+                <ul>
+                    <li class="fragment">Edit existing files</li>
+                    <li class="fragment">Add new features</li>
+                    <li class="fragment">Fix bugs</li>
+                    <li class="fragment">Update documentation</li>
+                </ul>
+                <p class="fragment" style="margin-top: 30px; color: #2ecc71;">
+                    💡 Your changes are isolated in your branch
+                </p>
+            </section>
+
+            <!-- Step 6: Commit Changes -->
+            <section>
+                <section>
+                    <div class="step-number">Step 6</div>
+                    <h2>Add and Commit Changes</h2>
+                    <pre><code data-trim class="language-bash">
+git add .
+git commit -m "Your commit message"
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Writing Good Commit Messages</h3>
+                    <pre><code data-trim class="language-bash">
+# Good commit messages
+git commit -m "Add user authentication feature"
+git commit -m "Fix navigation menu overflow on mobile"
+git commit -m "Update README with installation instructions"
+
+# Bad commit messages ❌
+git commit -m "changes"
+git commit -m "fix"
+git commit -m "update"
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Staging Specific Files</h3>
+                    <pre><code data-trim class="language-bash">
+# Add specific files
+git add src/app.js
+git add styles/main.css
+
+# Add all files in a directory
+git add src/
+
+# Add all JavaScript files
+git add *.js
+                    </code></pre>
+                </section>
+            </section>
+
+            <!-- Step 7: Push Branch -->
+            <section>
+                <div class="step-number">Step 7</div>
+                <h2>Push Branch to GitHub</h2>
+                <pre><code data-trim class="language-bash">
+git push origin &lt;new-branch-name&gt;
+                </code></pre>
+                <div class="command-explanation">
+                    Uploads your branch and commits to the remote repository
+                </div>
+                <p class="fragment" style="margin-top: 20px;">
+                    First time pushing? Use:
+                </p>
+                <pre class="fragment"><code data-trim class="language-bash">
+git push -u origin &lt;new-branch-name&gt;
+                </code></pre>
+            </section>
+
+            <!-- Step 8: Pull Request -->
+            <section>
+                <section>
+                    <div class="step-number">Step 8</div>
+                    <h2>Create a Pull Request</h2>
+                    <ol>
+                        <li class="fragment">Go to your GitHub repository</li>
+                        <li class="fragment">Find your branch</li>
+                        <li class="fragment">Click "Compare & pull request"</li>
+                        <li class="fragment">Add description and submit</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h3>Pull Request Best Practices</h3>
+                    <ul>
+                        <li>Write clear descriptions</li>
+                        <li>Link related issues</li>
+                        <li>Request reviewers</li>
+                        <li>Respond to feedback</li>
+                        <li>Keep PRs focused and small</li>
+                    </ul>
+                </section>
+            </section>
+
+            <!-- Step 9: Switch Back -->
+            <section>
+                <div class="step-number">Step 9</div>
+                <h2>Switch Back to Main</h2>
+                <pre><code data-trim class="language-bash">
+git checkout main
+                </code></pre>
+                <p style="margin-top: 20px;">
+                    After your PR is merged:
+                </p>
+                <pre><code data-trim class="language-bash">
+git checkout main
+git pull origin main
+git branch -d &lt;branch-name&gt;  # Delete local branch
+                </code></pre>
+            </section>
+
+            <!-- Best Practices -->
+            <section>
+                <h2>Best Practices Summary</h2>
+                <div class="best-practice">
+                    <ul style="text-align: left;">
+                        <li>✅ Always pull latest changes before creating a branch</li>
+                        <li>✅ Use meaningful branch names</li>
+                        <li>✅ Commit early and often</li>
+                        <li>✅ Write descriptive commit messages</li>
+                        <li>✅ Regularly push your changes</li>
+                        <li>✅ Keep branches focused on single features</li>
+                        <li>✅ Delete branches after merging</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Visual Workflow -->
+            <section>
+                <h2>Visual Workflow</h2>
+                <pre><code data-trim class="language-text">
+main branch:    ●───●───●───●───●
+                     │           │
+                     │           │ (merge)
+                     └──●──●──●──┘
+                    feature branch
+                </code></pre>
+                <p style="margin-top: 30px;">
+                    Your feature branch stays separate until ready to merge
+                </p>
+            </section>
+
+            <!-- Common Commands Reference -->
+            <section>
+                <h2>Quick Reference</h2>
+                <pre><code data-trim class="language-bash">
+# Check current branch
+git branch
+
+# See all branches (including remote)
+git branch -a
+
+# Check status
+git status
+
+# View commit history
+git log --oneline
+
+# Discard local changes
+git checkout -- &lt;file&gt;
+
+# Update branch with main changes
+git merge main
+                </code></pre>
+            </section>
+
+            <!-- Troubleshooting -->
+            <section>
+                <section>
+                    <h2>Common Issues</h2>
+                    <h3>Merge Conflicts</h3>
+                    <pre><code data-trim class="language-bash">
+# When conflicts occur
+git status  # See conflicted files
+# Edit files to resolve conflicts
+git add .
+git commit -m "Resolve merge conflicts"
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Forgot to Create Branch</h3>
+                    <pre><code data-trim class="language-bash">
+# Made changes on main by mistake?
+git stash  # Save your changes
+git checkout -b new-feature  # Create new branch
+git stash pop  # Apply your changes
+git add .
+git commit -m "Add feature"
+                    </code></pre>
+                </section>
+            </section>
+
+            <!-- Conclusion -->
+            <section data-background-gradient="linear-gradient(to bottom, #283048, #859398)">
+                <h2>You're Ready!</h2>
+                <p>Follow these steps for a clean Git workflow</p>
+                <div style="margin-top: 50px;">
+                    <h3>Key Takeaways</h3>
+                    <ul>
+                        <li>Branches keep your work isolated</li>
+                        <li>Pull requests enable code review</li>
+                        <li>Good naming and messages matter</li>
+                        <li>Practice makes perfect!</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Thank You -->
+            <section data-background-gradient="linear-gradient(to bottom, #283048, #859398)">
+                <h1>Thank You!</h1>
+                <p>Happy Branching! 🌿</p>
+                <p style="margin-top: 50px;">
+                    <small>Press 'F' for fullscreen | Arrow keys to navigate | 'Esc' for overview</small>
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/markdown/markdown.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            plugins: [ RevealHighlight, RevealNotes, RevealMarkdown ],
+            highlight: {
+                beforeHighlight: hljs => {
+                    // Custom highlight configuration
+                }
+            }
+        });
+    </script>
+</body>
+</html>
