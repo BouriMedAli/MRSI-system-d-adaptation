@@ -1,0 +1,242 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.reveal {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 2rem;
+  color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* Title Slide */
+.title-main {
+  font-size: 4rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 1rem !important;
+  text-shadow: 2px 2px 20px rgba(0,0,0,0.3);
+  letter-spacing: -2px;
+}
+
+.subtitle {
+  font-size: 1.5rem !important;
+  font-weight: 300 !important;
+  margin-bottom: 2rem !important;
+  opacity: 0.9;
+}
+
+.date-text {
+  font-size: 1rem !important;
+  opacity: 0.7;
+  margin-top: 2rem !important;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 3rem;
+  padding: 0 2rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.stat-number {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+}
+
+/* Chart Container */
+.chart-container {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Insights */
+.insights-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 3rem;
+  padding: 0 2rem;
+}
+
+.insight-box {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.insight-box:hover {
+  transform: scale(1.05);
+}
+
+.insight-box h3 {
+  font-size: 2rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.insight-box p {
+  font-size: 1.2rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Conclusion */
+.conclusion-content {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.conclusion-text {
+  font-size: 1.3rem !important;
+  margin-bottom: 2rem !important;
+  line-height: 1.8 !important;
+}
+
+.conclusion-list {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+}
+
+.conclusion-list li {
+  font-size: 1.2rem !important;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  border-left: 4px solid #10b981;
+}
+
+.conclusion-footer {
+  font-size: 2rem !important;
+  text-align: center;
+  margin-top: 3rem !important;
+  font-weight: 600 !important;
+}
+
+/* Reveal.js overrides */
+.reveal h2 {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 2rem !important;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+
+.reveal section {
+  padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .insights-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .title-main {
+    font-size: 2.5rem !important;
+  }
+  
+  .stat-number {
+    font-size: 2.5rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal .slides section {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Tooltip styling */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+/* Custom scrollbar for charts */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
