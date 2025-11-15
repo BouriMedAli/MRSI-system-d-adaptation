@@ -1,0 +1,97 @@
+{
+  "total_etudiants": 50,
+  "travaux_collaboratifs": {
+    "moyenne": 5.2,
+    "min": 1,
+    "max": 10,
+    "total": 260
+  },
+  "interactions": {
+    "moyenne": 57.56,
+    "min": 7,
+    "max": 100,
+    "total": 2878
+  },
+  "communautes": {
+    "Club Robotique": 18,
+    "Groupe IA": 17,
+    "Association Écologie": 17,
+    "Club Entrepreneurs": 14,
+    "Club Data Science": 13
+  },
+  "competences": {
+    "Blockchain": 24,
+    "Data Science": 16,
+    "IA": 15,
+    "Design": 12,
+    "Électronique": 11,
+    "Marketing": 11,
+    "Python": 8
+  },
+  "centres_interet": {
+    "Musique": 21,
+    "Robotique": 17,
+    "Jeux vidéo": 16,
+    "Entrepreneuriat": 14,
+    "Hackathon": 14,
+    "Écologie": 12
+  },
+  "reseau": {
+    "total_connexions": 154,
+    "moyenne_coequipiers": 3.08
+  },
+  "travaux_distribution": {
+    "1": 5,
+    "2": 8,
+    "3": 3,
+    "4": 6,
+    "5": 8,
+    "6": 1,
+    "7": 5,
+    "8": 4,
+    "9": 7,
+    "10": 3
+  },
+  "top_etudiants": [
+    {
+      "Nom": "Etudiant_21",
+      "Nombre_Interactions": 100
+    },
+    {
+      "Nom": "Etudiant_29",
+      "Nombre_Interactions": 98
+    },
+    {
+      "Nom": "Etudiant_30",
+      "Nombre_Interactions": 93
+    },
+    {
+      "Nom": "Etudiant_1",
+      "Nombre_Interactions": 91
+    },
+    {
+      "Nom": "Etudiant_35",
+      "Nombre_Interactions": 90
+    },
+    {
+      "Nom": "Etudiant_13",
+      "Nombre_Interactions": 89
+    },
+    {
+      "Nom": "Etudiant_25",
+      "Nombre_Interactions": 89
+    },
+    {
+      "Nom": "Etudiant_45",
+      "Nombre_Interactions": 89
+    },
+    {
+      "Nom": "Etudiant_11",
+      "Nombre_Interactions": 88
+    },
+    {
+      "Nom": "Etudiant_32",
+      "Nombre_Interactions": 88
+    }
+  ]
+}
